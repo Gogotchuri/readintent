@@ -1,0 +1,4 @@
+## Editors (VSCode for Flutter, .idea (Goland) for BFF and .zed for everything else and monorepo management)
+.vscode/
+.idea/
+.zed/
