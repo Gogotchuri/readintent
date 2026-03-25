@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package auth.v1;
+
+option go_package = "github.com/gogotchuri/readintent/backend/proto/auth/v1;authv1";
+
+message Identity {
+    string id = 1;
+    string email = 2;
+    optional string first_name = 3;
+    optional string last_name = 4;
+}
+
+message Session {
+    string session_token = 1;
+    int64 expired_at_unix = 2;
+    Identity identity = 3;
+}
+
+message EmailVerificationFlow {
+    string flow_id = 1;
+    string verifiable_address = 2;
+}
+
+message GetSessionRequest {}
+
+message GetSessionResponse {
+    Session session = 1;
+}
+
+message PasswordLoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message PasswordLoginResponse {
+    Session session = 1;
+}
+
+message PasswordRegistrationRequest {
+  string email = 1;
+  string password = 2;
+  optional string first_name = 3;
+  optional string last_name = 4;
+}
+
+message PasswordRegistrationResponse {
+    Session session = 1;
+    optional EmailVerificationFlow verification_flow = 2;
+}
+
+message LogoutRequest {}
+message LogoutResponse {}
+
+service AuthService {
+    rpc PasswordLogin(PasswordLoginRequest) returns (PasswordLoginResponse);
+    rpc PasswordRegistration(PasswordRegistrationRequest) returns (PasswordRegistrationResponse);
+    rpc Logout(LogoutRequest) returns (LogoutResponse);
+    rpc GetSession(GetSessionRequest) returns (GetSessionResponse);
+}
