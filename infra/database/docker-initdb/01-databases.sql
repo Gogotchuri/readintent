@@ -1,0 +1,2 @@
+CREATE DATABASE kratos_db;
+CREATE DATABASE articles_db;
