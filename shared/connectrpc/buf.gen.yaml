@@ -2,6 +2,12 @@ version: v2
 
 clean: true
 
+inputs:
+  - directory: proto
+  - module: buf.build/googleapis/googleapis
+    types:
+      - google.rpc.BadRequest
+
 plugins:
   - local: protoc-gen-connect-go
     out: gen/go
