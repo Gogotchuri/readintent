@@ -87,7 +87,6 @@ func startComposeStackForKratos(t *testing.T) (*compose.DockerCompose, error) {
 	return stack, nil
 }
 
-// startConnectRPCAuthServer Assembles and start auth service and connectRPC auth server
 func startConnectRPCAuthServer(t *testing.T) {
 	t.Helper()
 	rpcURL := fmt.Sprintf("localhost:%s", rpcPort)
@@ -145,9 +144,6 @@ func generateTestCredentials() (string, string) {
 	return email, password
 }
 
-// mustContainFieldErrorWithKeyword Checks connect error returns for a specific field
-// If the error for the field exists and contains the provided keyword this function does nothing.
-// Otherwise, adds error to the test.
 func mustContainFieldErrorWithKeyword(t *testing.T, err error, field, keyword string) {
 	t.Helper()
 	br := connectRPCBadRequestError(t, err)
@@ -160,9 +156,6 @@ func mustContainFieldErrorWithKeyword(t *testing.T, err error, field, keyword st
 	t.Errorf("keyword %s wasn't found in field %s errors: %s", keyword, field, err)
 }
 
-// connectRPCBadRequestError Converts the given error to connectRPC error
-// and extracts BadRequest details from it. If the error is not a connectRPC error or doesn't contain BadRequest details,
-// fails the test with a fatal error. Otherwise, returns the extracted BadRequest details.
 func connectRPCBadRequestError(t *testing.T, err error) *errdetails.BadRequest {
 	t.Helper()
 	connectErr, ok := errors.AsType[*connect.Error](err)
@@ -186,8 +179,6 @@ type responseWithSession interface {
 	GetSession() *authv1.Session
 }
 
-// checkResponseSession checks if the returned connectRPC response with Session has a non-empty session token
-// And if the email provided as the third argument matches one returned by the identity in response
 func checkResponseSession[T responseWithSession](t *testing.T, msg T, email string) {
 	t.Helper()
 	session := msg.GetSession()
