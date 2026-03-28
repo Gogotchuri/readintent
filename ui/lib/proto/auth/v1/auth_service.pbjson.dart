@@ -172,6 +172,24 @@ const LogoutResponse$json = {
 final $typed_data.Uint8List logoutResponseDescriptor = $convert.base64Decode(
     'Cg5Mb2dvdXRSZXNwb25zZQ==');
 
+@$core.Deprecated('Use healthRequestDescriptor instead')
+const HealthRequest$json = {
+  '1': 'HealthRequest',
+};
+
+/// Descriptor for `HealthRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List healthRequestDescriptor = $convert.base64Decode(
+    'Cg1IZWFsdGhSZXF1ZXN0');
+
+@$core.Deprecated('Use healthResponseDescriptor instead')
+const HealthResponse$json = {
+  '1': 'HealthResponse',
+};
+
+/// Descriptor for `HealthResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List healthResponseDescriptor = $convert.base64Decode(
+    'Cg5IZWFsdGhSZXNwb25zZQ==');
+
 const $core.Map<$core.String, $core.dynamic> AuthServiceBase$json = {
   '1': 'AuthService',
   '2': [
@@ -179,6 +197,7 @@ const $core.Map<$core.String, $core.dynamic> AuthServiceBase$json = {
     {'1': 'PasswordRegistration', '2': '.auth.v1.PasswordRegistrationRequest', '3': '.auth.v1.PasswordRegistrationResponse'},
     {'1': 'Logout', '2': '.auth.v1.LogoutRequest', '3': '.auth.v1.LogoutResponse'},
     {'1': 'GetSession', '2': '.auth.v1.GetSessionRequest', '3': '.auth.v1.GetSessionResponse'},
+    {'1': 'Health', '2': '.auth.v1.HealthRequest', '3': '.auth.v1.HealthResponse'},
   ],
 };
 
@@ -195,6 +214,8 @@ const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> AuthServic
   '.auth.v1.LogoutResponse': LogoutResponse$json,
   '.auth.v1.GetSessionRequest': GetSessionRequest$json,
   '.auth.v1.GetSessionResponse': GetSessionResponse$json,
+  '.auth.v1.HealthRequest': HealthRequest$json,
+  '.auth.v1.HealthResponse': HealthResponse$json,
 };
 
 /// Descriptor for `AuthService`. Decode as a `google.protobuf.ServiceDescriptorProto`.
@@ -204,5 +225,6 @@ final $typed_data.Uint8List authServiceDescriptor = $convert.base64Decode(
     'cmF0aW9uEiQuYXV0aC52MS5QYXNzd29yZFJlZ2lzdHJhdGlvblJlcXVlc3QaJS5hdXRoLnYxLl'
     'Bhc3N3b3JkUmVnaXN0cmF0aW9uUmVzcG9uc2USOQoGTG9nb3V0EhYuYXV0aC52MS5Mb2dvdXRS'
     'ZXF1ZXN0GhcuYXV0aC52MS5Mb2dvdXRSZXNwb25zZRJFCgpHZXRTZXNzaW9uEhouYXV0aC52MS'
-    '5HZXRTZXNzaW9uUmVxdWVzdBobLmF1dGgudjEuR2V0U2Vzc2lvblJlc3BvbnNl');
+    '5HZXRTZXNzaW9uUmVxdWVzdBobLmF1dGgudjEuR2V0U2Vzc2lvblJlc3BvbnNlEjkKBkhlYWx0'
+    'aBIWLmF1dGgudjEuSGVhbHRoUmVxdWVzdBoXLmF1dGgudjEuSGVhbHRoUmVzcG9uc2U=');
 

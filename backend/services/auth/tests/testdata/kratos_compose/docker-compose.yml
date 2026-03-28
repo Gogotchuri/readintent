@@ -8,9 +8,7 @@ services:
         source: ./kratos
         target: /etc/config/kratos
     environment:
-      - DSN=${KRATOS_DSN}
-    networks:
-      - intranet
+      - DSN=postgres://kratos:kratos_secret@postgres:5432/kratos_db?sslmode=disable
 
   kratos:
     image: oryd/kratos:v25.4.0
@@ -19,17 +17,15 @@ services:
     command: "-c /etc/config/kratos/kratos.yml serve --dev --watch-courier"
     restart: unless-stopped
     ports:
-      - "4433:4433" # public
-      - "4434:4434" # admin
+      - '${KRATOS_PORT_ADMIN}:4434' # admin
+      - '${KRATOS_PORT_PUBLIC}:4433' # public
     volumes:
       - type: bind
         source: ./kratos
         target: /etc/config/kratos
     environment:
-      - DSN=${KRATOS_DSN}
+      - DSN=postgres://kratos:kratos_secret@postgres:5432/kratos_db?sslmode=disable
       - LOG_LEVEL=trace
-    networks:
-      - intranet
     healthcheck:
       test: ["CMD", "kratos", "remote", "status", "-e", "http://localhost:4434"]
       interval: 1s
@@ -37,40 +33,21 @@ services:
       retries: 10
       start_period: 1s
 
-  mailslurper:
-    image: oryd/mailslurper:latest-smtps
-    ports:
-      - "4436:4436"
-      - "4437:4437"
-    networks:
-      - intranet
-
   postgres:
     image: postgres:16-alpine
-    user: postgres
-    restart: always
+    restart: unless-stopped
     shm_size: 1024m
     volumes:
-      - type: volume
-        source: postgres_data
+      - type: tmpfs
         target: /var/lib/postgresql/data
-        read_only: false
-      - type: bind
-        source: ./database/pg_hba.conf
-        target: /etc/postgresql/pg_hba.conf
-      - type: bind
-        source: ./database/docker-initdb
-        target: /docker-entrypoint-initdb.d
-    ports:
-      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+        tmpfs:
+          size: 1073741824 # 1GB
+          mode: 1777 # The most permissive mode to avoid permission issues
     environment:
-      - POSTGRES_USER=${POSTGRES_ADMIN_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_ADMIN_PASSWORD}
-      - POSTGRES_PORT=${POSTGRES_PORT}
-      - KRATOS_POSTGRES_PASSWORD=${KRATOS_POSTGRES_PASSWORD}
-      - BFF_POSTGRES_PASSWORD=${BFF_POSTGRES_PASSWORD}
-    networks:
-      - intranet
+      - POSTGRES_USER=kratos
+      - POSTGRES_PASSWORD=kratos_secret
+      - POSTGRES_DB=kratos_db
+      - POSTGRES_PORT=5432
     healthcheck:
       test:
         [
@@ -79,14 +56,10 @@ services:
           "-h",
           "localhost",
           "-p",
-          "${POSTGRES_PORT}",
+          "5432",
           "-U",
-          "${POSTGRES_ADMIN_USER}",
+          "kratos"
         ]
       interval: 5s
       timeout: 5s
       retries: 5
-volumes:
-  postgres_data:
-networks:
-  intranet:

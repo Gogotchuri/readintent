@@ -25,6 +25,7 @@ abstract class AuthServiceBase extends $pb.GeneratedService {
   $async.Future<$0.PasswordRegistrationResponse> passwordRegistration($pb.ServerContext ctx, $0.PasswordRegistrationRequest request);
   $async.Future<$0.LogoutResponse> logout($pb.ServerContext ctx, $0.LogoutRequest request);
   $async.Future<$0.GetSessionResponse> getSession($pb.ServerContext ctx, $0.GetSessionRequest request);
+  $async.Future<$0.HealthResponse> health($pb.ServerContext ctx, $0.HealthRequest request);
 
   $pb.GeneratedMessage createRequest($core.String methodName) {
     switch (methodName) {
@@ -32,6 +33,7 @@ abstract class AuthServiceBase extends $pb.GeneratedService {
       case 'PasswordRegistration': return $0.PasswordRegistrationRequest();
       case 'Logout': return $0.LogoutRequest();
       case 'GetSession': return $0.GetSessionRequest();
+      case 'Health': return $0.HealthRequest();
       default: throw $core.ArgumentError('Unknown method: $methodName');
     }
   }
@@ -42,6 +44,7 @@ abstract class AuthServiceBase extends $pb.GeneratedService {
       case 'PasswordRegistration': return this.passwordRegistration(ctx, request as $0.PasswordRegistrationRequest);
       case 'Logout': return this.logout(ctx, request as $0.LogoutRequest);
       case 'GetSession': return this.getSession(ctx, request as $0.GetSessionRequest);
+      case 'Health': return this.health(ctx, request as $0.HealthRequest);
       default: throw $core.ArgumentError('Unknown method: $methodName');
     }
   }

@@ -6,7 +6,7 @@
 *.so
 *.dylib
 # Default linux binary name
-./backend
+backend
 
 # Test binary, built with `go test -c`
 *.test

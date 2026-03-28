@@ -675,6 +675,70 @@ class LogoutResponse extends $pb.GeneratedMessage {
   static LogoutResponse? _defaultInstance;
 }
 
+class HealthRequest extends $pb.GeneratedMessage {
+  factory HealthRequest() => create();
+  HealthRequest._() : super();
+  factory HealthRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory HealthRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'HealthRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth.v1'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  HealthRequest clone() => HealthRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  HealthRequest copyWith(void Function(HealthRequest) updates) => super.copyWith((message) => updates(message as HealthRequest)) as HealthRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static HealthRequest create() => HealthRequest._();
+  HealthRequest createEmptyInstance() => create();
+  static $pb.PbList<HealthRequest> createRepeated() => $pb.PbList<HealthRequest>();
+  @$core.pragma('dart2js:noInline')
+  static HealthRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<HealthRequest>(create);
+  static HealthRequest? _defaultInstance;
+}
+
+class HealthResponse extends $pb.GeneratedMessage {
+  factory HealthResponse() => create();
+  HealthResponse._() : super();
+  factory HealthResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory HealthResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'HealthResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth.v1'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  HealthResponse clone() => HealthResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  HealthResponse copyWith(void Function(HealthResponse) updates) => super.copyWith((message) => updates(message as HealthResponse)) as HealthResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static HealthResponse create() => HealthResponse._();
+  HealthResponse createEmptyInstance() => create();
+  static $pb.PbList<HealthResponse> createRepeated() => $pb.PbList<HealthResponse>();
+  @$core.pragma('dart2js:noInline')
+  static HealthResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<HealthResponse>(create);
+  static HealthResponse? _defaultInstance;
+}
+
 class AuthServiceApi {
   $pb.RpcClient _client;
   AuthServiceApi(this._client);
@@ -690,6 +754,9 @@ class AuthServiceApi {
   ;
   $async.Future<GetSessionResponse> getSession($pb.ClientContext? ctx, GetSessionRequest request) =>
     _client.invoke<GetSessionResponse>(ctx, 'AuthService', 'GetSession', request, GetSessionResponse())
+  ;
+  $async.Future<HealthResponse> health($pb.ClientContext? ctx, HealthRequest request) =>
+    _client.invoke<HealthResponse>(ctx, 'AuthService', 'Health', request, HealthResponse())
   ;
 }
 

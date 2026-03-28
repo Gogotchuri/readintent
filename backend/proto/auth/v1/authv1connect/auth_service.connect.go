@@ -43,6 +43,8 @@ const (
 	AuthServiceLogoutProcedure = "/auth.v1.AuthService/Logout"
 	// AuthServiceGetSessionProcedure is the fully-qualified name of the AuthService's GetSession RPC.
 	AuthServiceGetSessionProcedure = "/auth.v1.AuthService/GetSession"
+	// AuthServiceHealthProcedure is the fully-qualified name of the AuthService's Health RPC.
+	AuthServiceHealthProcedure = "/auth.v1.AuthService/Health"
 )
 
 // AuthServiceClient is a client for the auth.v1.AuthService service.
@@ -51,6 +53,7 @@ type AuthServiceClient interface {
 	PasswordRegistration(context.Context, *connect.Request[v1.PasswordRegistrationRequest]) (*connect.Response[v1.PasswordRegistrationResponse], error)
 	Logout(context.Context, *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error)
 	GetSession(context.Context, *connect.Request[v1.GetSessionRequest]) (*connect.Response[v1.GetSessionResponse], error)
+	Health(context.Context, *connect.Request[v1.HealthRequest]) (*connect.Response[v1.HealthResponse], error)
 }
 
 // NewAuthServiceClient constructs a client for the auth.v1.AuthService service. By default, it uses
@@ -88,6 +91,12 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(authServiceMethods.ByName("GetSession")),
 			connect.WithClientOptions(opts...),
 		),
+		health: connect.NewClient[v1.HealthRequest, v1.HealthResponse](
+			httpClient,
+			baseURL+AuthServiceHealthProcedure,
+			connect.WithSchema(authServiceMethods.ByName("Health")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -97,6 +106,7 @@ type authServiceClient struct {
 	passwordRegistration *connect.Client[v1.PasswordRegistrationRequest, v1.PasswordRegistrationResponse]
 	logout               *connect.Client[v1.LogoutRequest, v1.LogoutResponse]
 	getSession           *connect.Client[v1.GetSessionRequest, v1.GetSessionResponse]
+	health               *connect.Client[v1.HealthRequest, v1.HealthResponse]
 }
 
 // PasswordLogin calls auth.v1.AuthService.PasswordLogin.
@@ -119,12 +129,18 @@ func (c *authServiceClient) GetSession(ctx context.Context, req *connect.Request
 	return c.getSession.CallUnary(ctx, req)
 }
 
+// Health calls auth.v1.AuthService.Health.
+func (c *authServiceClient) Health(ctx context.Context, req *connect.Request[v1.HealthRequest]) (*connect.Response[v1.HealthResponse], error) {
+	return c.health.CallUnary(ctx, req)
+}
+
 // AuthServiceHandler is an implementation of the auth.v1.AuthService service.
 type AuthServiceHandler interface {
 	PasswordLogin(context.Context, *connect.Request[v1.PasswordLoginRequest]) (*connect.Response[v1.PasswordLoginResponse], error)
 	PasswordRegistration(context.Context, *connect.Request[v1.PasswordRegistrationRequest]) (*connect.Response[v1.PasswordRegistrationResponse], error)
 	Logout(context.Context, *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error)
 	GetSession(context.Context, *connect.Request[v1.GetSessionRequest]) (*connect.Response[v1.GetSessionResponse], error)
+	Health(context.Context, *connect.Request[v1.HealthRequest]) (*connect.Response[v1.HealthResponse], error)
 }
 
 // NewAuthServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -158,6 +174,12 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(authServiceMethods.ByName("GetSession")),
 		connect.WithHandlerOptions(opts...),
 	)
+	authServiceHealthHandler := connect.NewUnaryHandler(
+		AuthServiceHealthProcedure,
+		svc.Health,
+		connect.WithSchema(authServiceMethods.ByName("Health")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/auth.v1.AuthService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AuthServicePasswordLoginProcedure:
@@ -168,6 +190,8 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 			authServiceLogoutHandler.ServeHTTP(w, r)
 		case AuthServiceGetSessionProcedure:
 			authServiceGetSessionHandler.ServeHTTP(w, r)
+		case AuthServiceHealthProcedure:
+			authServiceHealthHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -191,4 +215,8 @@ func (UnimplementedAuthServiceHandler) Logout(context.Context, *connect.Request[
 
 func (UnimplementedAuthServiceHandler) GetSession(context.Context, *connect.Request[v1.GetSessionRequest]) (*connect.Response[v1.GetSessionResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.GetSession is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) Health(context.Context, *connect.Request[v1.HealthRequest]) (*connect.Response[v1.HealthResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.Health is not implemented"))
 }

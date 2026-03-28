@@ -37,4 +37,11 @@ abstract final class AuthService {
     authv1auth_service.GetSessionRequest.new,
     authv1auth_service.GetSessionResponse.new,
   );
+
+  static const health = connect.Spec(
+    '/$name/Health',
+    connect.StreamType.unary,
+    authv1auth_service.HealthRequest.new,
+    authv1auth_service.HealthResponse.new,
+  );
 }

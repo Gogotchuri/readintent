@@ -2,40 +2,59 @@ syntax = "proto3";
 
 package auth.v1;
 
+// This proto module defines authentication server
+// Everything is simple enough to not warrant further comment expect the error
+// handling Since connectRPC doesn't declare structured errors natively, we
+// can't type them here But agreed I can document them in comments here
+//
+// General errors and issues are straight forward, they return code and a small
+// error
+//
+// When we want to make errors more structured and available across languaged, I
+// have decided to use - buf.build/googleapis/googleapis This Buf extension
+// defines popular types from google.rpc.
+//
+// Currently we are going to use google.rpc.BadRequest when returning errors
+// from authenticated routes and need errors to be grouped by field. It is a
+// simple array of {field, description}
+// - The array can contain multiple or no elements for each field
+// - Error that are not specifically tied to the specific field, but are
+// convenient in an array form, are returned with a special field name
+// **general**
+//
+// *Read more about errors at https://connectrpc.com/docs/go/errors and
+// https://connectrpc.com/docs/dart/errors*
+
 option go_package = "github.com/gogotchuri/readintent/backend/proto/auth/v1;authv1";
 
 message Identity {
-    string id = 1;
-    string email = 2;
-    optional string first_name = 3;
-    optional string last_name = 4;
+  string id = 1;
+  string email = 2;
+  optional string first_name = 3;
+  optional string last_name = 4;
 }
 
 message Session {
-    string session_token = 1;
-    int64 expired_at_unix = 2;
-    Identity identity = 3;
+  string session_token = 1;
+  int64 expired_at_unix = 2;
+  Identity identity = 3;
 }
 
 message EmailVerificationFlow {
-    string flow_id = 1;
-    string verifiable_address = 2;
+  string flow_id = 1;
+  string verifiable_address = 2;
 }
 
 message GetSessionRequest {}
 
-message GetSessionResponse {
-    Session session = 1;
-}
+message GetSessionResponse { Session session = 1; }
 
 message PasswordLoginRequest {
   string email = 1;
   string password = 2;
 }
 
-message PasswordLoginResponse {
-    Session session = 1;
-}
+message PasswordLoginResponse { Session session = 1; }
 
 message PasswordRegistrationRequest {
   string email = 1;
@@ -45,16 +64,21 @@ message PasswordRegistrationRequest {
 }
 
 message PasswordRegistrationResponse {
-    Session session = 1;
-    optional EmailVerificationFlow verification_flow = 2;
+  Session session = 1;
+  optional EmailVerificationFlow verification_flow = 2;
 }
 
 message LogoutRequest {}
 message LogoutResponse {}
 
+message HealthRequest {}
+message HealthResponse {}
+
 service AuthService {
-    rpc PasswordLogin(PasswordLoginRequest) returns (PasswordLoginResponse);
-    rpc PasswordRegistration(PasswordRegistrationRequest) returns (PasswordRegistrationResponse);
-    rpc Logout(LogoutRequest) returns (LogoutResponse);
-    rpc GetSession(GetSessionRequest) returns (GetSessionResponse);
+  rpc PasswordLogin(PasswordLoginRequest) returns (PasswordLoginResponse);
+  rpc PasswordRegistration(PasswordRegistrationRequest)
+      returns (PasswordRegistrationResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc GetSession(GetSessionRequest) returns (GetSessionResponse);
+  rpc Health(HealthRequest) returns (HealthResponse);
 }
