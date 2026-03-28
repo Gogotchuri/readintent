@@ -2,13 +2,17 @@ package authconnectrpc
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 
 	"connectrpc.com/connect"
 	"connectrpc.com/validate"
+	"github.com/gogotchuri/readintent/backend/middlewares"
 	authv1 "github.com/gogotchuri/readintent/backend/proto/auth/v1"
 	"github.com/gogotchuri/readintent/backend/proto/auth/v1/authv1connect"
 	"github.com/gogotchuri/readintent/backend/services/auth"
+	authmodels "github.com/gogotchuri/readintent/backend/services/auth/models"
 )
 
 var _ authv1connect.AuthServiceHandler = &AuthServer{}
@@ -25,6 +29,7 @@ func NewAuthServer(service *auth.Service) *AuthServer {
 
 func (a *AuthServer) BindAuthServerToMux(mux *http.ServeMux) {
 	interceptors := connect.WithInterceptors(
+		middlewares.NewAuthInterceptor(a.service).NewUnaryInterceptor(),
 		validate.NewInterceptor(),
 	)
 	path, handler := authv1connect.NewAuthServiceHandler(a, interceptors)
@@ -33,30 +38,91 @@ func (a *AuthServer) BindAuthServerToMux(mux *http.ServeMux) {
 
 // Health Returns health of the auth service
 func (a *AuthServer) Health(ctx context.Context, _ *connect.Request[authv1.HealthRequest]) (*connect.Response[authv1.HealthResponse], error) {
-	//TODO implement me
-	panic("implement me")
+	err := a.service.Health(ctx)
+	if err != nil {
+		return nil, newConnectError(connect.CodeInternal, fmt.Errorf("auth service health check failed: %w", err))
+	}
+	return &connect.Response[authv1.HealthResponse]{}, nil
 }
 
 // GetSession implements authv1connect.AuthServiceHandler.
 func (a *AuthServer) GetSession(ctx context.Context, _ *connect.Request[authv1.GetSessionRequest]) (*connect.Response[authv1.GetSessionResponse], error) {
-	//TODO implement me
-	panic("implement me")
+	session := middlewares.SessionFromCtx(ctx)
+	if session == nil {
+		return nil, newConnectError(connect.CodeUnauthenticated, errors.New("no valid session"))
+	}
+	return connect.NewResponse(&authv1.GetSessionResponse{
+		Session: rpcSessionFromSession(session),
+	}), nil
 }
 
 // Logout implements authv1connect.AuthServiceHandler.
 func (a *AuthServer) Logout(ctx context.Context, req *connect.Request[authv1.LogoutRequest]) (*connect.Response[authv1.LogoutResponse], error) {
-	//TODO implement me
-	panic("implement me")
+	session := middlewares.SessionFromCtx(ctx)
+	if session == nil {
+		return nil, newConnectError(connect.CodeUnauthenticated, errors.New("no valid session"))
+	}
+
+	err := a.service.Logout(ctx, session.SessionToken)
+	if err != nil {
+		return nil, newConnectError(connect.CodeInternal, err)
+	}
+
+	return connect.NewResponse(&authv1.LogoutResponse{}), nil
 }
 
 // PasswordLogin implements authv1connect.AuthServiceHandler.
 func (a *AuthServer) PasswordLogin(ctx context.Context, req *connect.Request[authv1.PasswordLoginRequest]) (*connect.Response[authv1.PasswordLoginResponse], error) {
-	//TODO implement me
-	panic("implement me")
+	loginRes, err := a.service.PasswordLogin(ctx, authmodels.PasswordLoginRequest{
+		Email:    req.Msg.Email,
+		Password: req.Msg.Password,
+	})
+	if err != nil {
+		return nil, newConnectError(connect.CodeUnauthenticated, err)
+	}
+
+	return connect.NewResponse(&authv1.PasswordLoginResponse{
+		Session: rpcSessionFromSession(&loginRes.Session),
+	}), nil
 }
 
 // PasswordRegistration implements authv1connect.AuthServiceHandler.
 func (a *AuthServer) PasswordRegistration(ctx context.Context, req *connect.Request[authv1.PasswordRegistrationRequest]) (*connect.Response[authv1.PasswordRegistrationResponse], error) {
-	//TODO implement me
-	panic("implement me")
+	res, err := a.service.PasswordRegistration(ctx, authmodels.PasswordRegistrationRequest{
+		Email:     req.Msg.Email,
+		Password:  req.Msg.Password,
+		FirstName: req.Msg.GetFirstName(),
+		LastName:  req.Msg.GetLastName(),
+	})
+	if err != nil {
+		return nil, newConnectError(connect.CodeInvalidArgument, err)
+	}
+	return connect.NewResponse(&authv1.PasswordRegistrationResponse{
+		Session: rpcSessionFromSession(&res.Session),
+	}), nil
+}
+
+func rpcSessionFromSession(session *authmodels.Session) *authv1.Session {
+	var expiredAt int64
+	if session.ExpiresAt != nil {
+		expiredAt = session.ExpiresAt.Unix()
+	}
+	var firstName, lastName *string
+	if session.Identity.FirstName != "" {
+		firstName = &session.Identity.FirstName
+	}
+	if session.Identity.LastName != "" {
+		lastName = &session.Identity.LastName
+	}
+
+	return &authv1.Session{
+		SessionToken:  session.SessionToken,
+		ExpiredAtUnix: expiredAt,
+		Identity: &authv1.Identity{
+			Id:        session.Identity.ID,
+			Email:     session.Identity.Email,
+			FirstName: firstName,
+			LastName:  lastName,
+		},
+	}
 }

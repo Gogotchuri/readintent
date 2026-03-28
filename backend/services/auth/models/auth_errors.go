@@ -15,6 +15,15 @@ func (e *SessionInactiveError) Error() string {
 	return e.Message
 }
 
+// InvalidCredentialsError is returned when the provided credentials are invalid.
+type InvalidCredentialsError struct {
+	Message error
+}
+
+func (e *InvalidCredentialsError) Error() string {
+	return e.Message.Error()
+}
+
 type AuthUIError struct {
 	Message       string              `json:"message"`
 	GeneralErrors []string            `json:"general_errors"`
