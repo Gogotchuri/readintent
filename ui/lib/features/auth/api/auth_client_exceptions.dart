@@ -1,0 +1,66 @@
+import 'package:connectrpc/connect.dart';
+import 'package:readintent_flutter/proto/google/rpc/error_details.pb.dart'
+    as rpc;
+
+/// Represents a field-level validation error from a BadRequest response.
+class FieldError {
+  final String field;
+  final String description;
+
+  const FieldError({required this.field, required this.description});
+
+  @override
+  String toString() => '$field: $description';
+}
+
+/// Thrown when the server returns a BadRequest with field violations.
+class ValidationException implements Exception {
+  final String message;
+  final List<FieldError> fieldErrors;
+
+  const ValidationException({required this.message, required this.fieldErrors});
+
+  @override
+  String toString() {
+    if (fieldErrors.isEmpty) return message;
+    final details = fieldErrors.map((e) => e.toString()).join('; ');
+    return '$message ($details)';
+  }
+}
+
+/// General auth exception for non-validation errors.
+class AuthException implements Exception {
+  final String message;
+
+  const AuthException(this.message);
+
+  @override
+  String toString() => message;
+}
+
+/// Extracts a BadRequest from ConnectException details, if present.
+rpc.BadRequest? extractBadRequest(ConnectException e) {
+  for (final detail in e.details) {
+    if (detail.type == 'google.rpc.BadRequest') {
+      return rpc.BadRequest.fromBuffer(detail.value);
+    }
+  }
+  return null;
+}
+
+/// Handles a ConnectException by parsing BadRequest details or throwing a
+/// general AuthException. Throws [ValidationException] if BadRequest details
+/// are present, otherwise throws [AuthException].
+Never handleConnectException(ConnectException e, String context) {
+  final badRequest = extractBadRequest(e);
+  if (badRequest != null && badRequest.fieldViolations.isNotEmpty) {
+    final fieldErrors = badRequest.fieldViolations
+        .map((v) => FieldError(field: v.field_1, description: v.description))
+        .toList();
+    throw ValidationException(
+      message: 'Failed to $context',
+      fieldErrors: fieldErrors,
+    );
+  }
+  throw AuthException('Failed to $context: ${e.message}');
+}
