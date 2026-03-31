@@ -28,7 +28,7 @@ class AuthLayout extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
 
-    if (authState is AuthLoading) {
+    if (authState is AuthLoading || authState is AuthInitial) {
       return const LoadingScreen();
     }
 

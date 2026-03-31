@@ -48,4 +48,4 @@ final class AuthServiceProvider
   }
 }
 
-String _$authServiceHash() => r'f9e93a2a224836efecf2c9e3c1f952b1b30f57f0';
+String _$authServiceHash() => r'971412f9b24713bf7d7d1541860d5062f6a38464';

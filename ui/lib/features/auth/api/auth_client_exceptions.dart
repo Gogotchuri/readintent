@@ -11,6 +11,16 @@ class FieldError {
 
   @override
   String toString() => '$field: $description';
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! FieldError) return false;
+    return field == other.field && description == other.description;
+  }
+
+  @override
+  int get hashCode => Object.hash(field, description);
 }
 
 /// Thrown when the server returns a BadRequest with field violations.
