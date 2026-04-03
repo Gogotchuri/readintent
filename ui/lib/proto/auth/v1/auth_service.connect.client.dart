@@ -7,7 +7,7 @@ import "package:connectrpc/connect.dart" as connect;
 import "auth_service.pb.dart" as authv1auth_service;
 import "auth_service.connect.spec.dart" as specs;
 
-extension type AuthServiceClient (connect.Transport _transport) {
+extension type AuthServiceClient(connect.Transport _transport) {
   Future<authv1auth_service.PasswordLoginResponse> passwordLogin(
     authv1auth_service.PasswordLoginRequest input, {
     connect.Headers? headers,

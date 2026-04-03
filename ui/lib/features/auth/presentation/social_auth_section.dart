@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import "package:flutter/material.dart";
+import "package:flutter_svg/flutter_svg.dart";
 
 class SocialAuthSection extends StatelessWidget {
+  const SocialAuthSection({super.key});
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -11,12 +13,8 @@ class SocialAuthSection extends StatelessWidget {
         onPressed: () {
           // TODO: Implement Google Sign-In
         },
-        icon: SvgPicture.asset(
-          'assets/images/google_logo.svg',
-          height: 20,
-          width: 20,
-        ),
-        label: const Text('Continue with Google'),
+        icon: SvgPicture.asset("assets/images/google_logo.svg", height: 20, width: 20),
+        label: const Text("Continue with Google"),
       ),
     );
   }

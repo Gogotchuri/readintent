@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:readintent_flutter/features/auth/presentation/loading_screen.dart';
-import 'package:readintent_flutter/features/auth/presentation/social_auth_section.dart';
-import 'package:readintent_flutter/features/auth/providers/auth_provider.dart';
+import "package:flutter/material.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
+import "package:readintent_flutter/features/auth/presentation/loading_screen.dart";
+import "package:readintent_flutter/features/auth/presentation/social_auth_section.dart";
+import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
 
 class AuthLayout extends ConsumerWidget {
   final String title;
@@ -16,7 +16,7 @@ class AuthLayout extends ConsumerWidget {
   const AuthLayout({
     super.key,
     required this.title,
-    this.subtitle = '',
+    this.subtitle = "",
     required this.fields,
     required this.submitLabel,
     required this.onSubmit,
@@ -51,10 +51,7 @@ class AuthLayout extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: Colors.red[200]!),
                       ),
-                      child: Text(
-                        authState.message,
-                        style: TextStyle(color: Colors.red[800]),
-                      ),
+                      child: Text(authState.message, style: TextStyle(color: Colors.red[800])),
                     ),
                   Form(
                     key: formKey,
@@ -82,9 +79,7 @@ class AuthLayout extends ConsumerWidget {
                         const SizedBox(height: 24),
                         ElevatedButton(
                           onPressed: onSubmit,
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
+                          style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
                           child: Text(submitLabel),
                         ),
                         // Divider with "OR"
@@ -93,13 +88,8 @@ class AuthLayout extends ConsumerWidget {
                           children: [
                             const Expanded(child: Divider()),
                             Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-                              child: Text(
-                                'OR',
-                                style: TextStyle(color: Colors.grey[500]),
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Text("OR", style: TextStyle(color: Colors.grey[500])),
                             ),
                             const Expanded(child: Divider()),
                           ],
@@ -108,10 +98,7 @@ class AuthLayout extends ConsumerWidget {
                         // Social Auth
                         SocialAuthSection(),
                         const SizedBox(height: 16),
-                        if (switchSection != null) ...[
-                          const SizedBox(height: 12),
-                          switchSection!,
-                        ],
+                        if (switchSection != null) ...[const SizedBox(height: 12), switchSection!],
                       ],
                     ),
                   ),

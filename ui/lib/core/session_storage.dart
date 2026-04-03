@@ -1,16 +1,16 @@
-import 'dart:convert';
+import "dart:convert";
 
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:readintent_flutter/models/user.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import "package:flutter_secure_storage/flutter_secure_storage.dart";
+import "package:readintent_flutter/models/user.dart";
+import "package:riverpod_annotation/riverpod_annotation.dart";
 
-part 'session_storage.g.dart';
+part "session_storage.g.dart";
 
 /// SessionStorage is a simple wrapper around FlutterSecureStorage to manage session tokens and user data
 class SessionStorage {
   final _storage = const FlutterSecureStorage();
-  static const _tokenKey = 'session_token';
-  static const _userKey = 'user_data';
+  static const _tokenKey = "session_token";
+  static const _userKey = "user_data";
   // _cache is used to store the session token and user data in memory for faster access, avoiding slight overhead of secure storage reads on every request
   String? _cachedToken;
 

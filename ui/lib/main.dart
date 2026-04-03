@@ -1,11 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:readintent_flutter/core/router.dart';
+import "package:flutter/material.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
+import "package:readintent_flutter/core/router.dart";
 
 void main() {
-  runApp(
-    ProviderScope(child: const MyApp()),
-  );
+  runApp(ProviderScope(child: const MyApp()));
 }
 
 class MyApp extends ConsumerWidget {
@@ -16,10 +14,8 @@ class MyApp extends ConsumerWidget {
     final router = ref.watch(appRouterProvider);
     return MaterialApp.router(
       routerConfig: router,
-      title: 'ReadIntent',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      title: "ReadIntent",
+      theme: ThemeData(primarySwatch: Colors.blue),
     );
   }
-} 
+}

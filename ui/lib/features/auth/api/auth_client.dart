@@ -1,19 +1,18 @@
-import 'package:readintent_flutter/core/session_storage.dart';
-import 'package:readintent_flutter/features/auth/api/auth_client_exceptions.dart';
-import 'package:readintent_flutter/features/auth/api/auth_service_client.dart';
-import 'package:readintent_flutter/features/auth/providers/auth_provider.dart';
-import 'package:readintent_flutter/models/user.dart';
-import 'package:connectrpc/connect.dart';
-import 'package:connectrpc/protobuf.dart';
-import 'package:connectrpc/http2.dart';
-import 'package:connectrpc/protocol/connect.dart' as connect_p;
-import 'package:readintent_flutter/proto/auth/v1/auth_service.connect.client.dart';
-import 'package:readintent_flutter/proto/auth/v1/auth_service.pb.dart'
-    as auth_pb;
+import "package:readintent_flutter/core/session_storage.dart";
+import "package:readintent_flutter/features/auth/api/auth_client_exceptions.dart";
+import "package:readintent_flutter/features/auth/api/auth_service_client.dart";
+import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
+import "package:readintent_flutter/models/user.dart";
+import "package:connectrpc/connect.dart";
+import "package:connectrpc/protobuf.dart";
+import "package:connectrpc/http2.dart";
+import "package:connectrpc/protocol/connect.dart" as connect_p;
+import "package:readintent_flutter/proto/auth/v1/auth_service.connect.client.dart";
+import "package:readintent_flutter/proto/auth/v1/auth_service.pb.dart" as auth_pb;
 
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import "package:riverpod_annotation/riverpod_annotation.dart";
 
-part 'auth_client.g.dart';
+part "auth_client.g.dart";
 
 const String baseUrl = "http://localhost:8000"; //TODO: Move to config
 const String tokenHeaderKey = "X-Session-Token";
@@ -24,10 +23,7 @@ class Session {
 
   Session({required this.sessionToken, required this.user});
   factory Session.fromRpcSession(auth_pb.Session session) {
-    return Session(
-      sessionToken: session.sessionToken,
-      user: User.fromRpcIdentity(session.identity),
-    );
+    return Session(sessionToken: session.sessionToken, user: User.fromRpcIdentity(session.identity));
   }
 }
 
@@ -37,21 +33,17 @@ class AuthClient {
 
   late final AuthServiceClientI _client;
 
-  AuthClient({
-    required this.getToken,
-    required this.onUnauthorized,
-    required AuthServiceClientI client,
-  }) : _client = client;
-
+  AuthClient({required this.getToken, required this.onUnauthorized, required AuthServiceClientI client})
+    : _client = client;
 
   Future<Session> getSession() async {
     try {
       final response = await _client.getSession(auth_pb.GetSessionRequest());
       return Session.fromRpcSession(response.session);
     } on ConnectException catch (e) {
-      handleConnectException(e, 'validate session');
+      handleConnectException(e, "validate session");
     } catch (e) {
-      throw AuthException('Failed to validate session: $e');
+      throw AuthException("Failed to validate session: $e");
     }
   }
 
@@ -62,9 +54,9 @@ class AuthClient {
       );
       return Session.fromRpcSession(response.session);
     } on ConnectException catch (e) {
-      handleConnectException(e, 'login');
+      handleConnectException(e, "login");
     } catch (e) {
-      throw AuthException('Failed to login: $e');
+      throw AuthException("Failed to login: $e");
     }
   }
 
@@ -85,9 +77,9 @@ class AuthClient {
       );
       return Session.fromRpcSession(response.session);
     } on ConnectException catch (e) {
-      handleConnectException(e, 'register');
+      handleConnectException(e, "register");
     } catch (e) {
-      throw AuthException('Failed to register: $e');
+      throw AuthException("Failed to register: $e");
     }
   }
 
@@ -95,9 +87,9 @@ class AuthClient {
     try {
       await _client.logout(auth_pb.LogoutRequest());
     } on ConnectException catch (e) {
-      handleConnectException(e, 'logout');
+      handleConnectException(e, "logout");
     } catch (e) {
-      throw AuthException('Failed to logout: $e');
+      throw AuthException("Failed to logout: $e");
     }
   }
 }
@@ -105,7 +97,7 @@ class AuthClient {
 @riverpod
 AuthClient authService(Ref ref) {
   final sessionStorage = ref.read(sessionStorageProvider);
-  
+
   Interceptor getAuthInterceptor() {
     return <I extends Object, O extends Object>(AnyFn<I, O> next) {
       return (request) async {

@@ -17,7 +17,14 @@ import 'dart:typed_data' as $typed_data;
 const BadRequest$json = {
   '1': 'BadRequest',
   '2': [
-    {'1': 'field_violations', '3': 1, '4': 3, '5': 11, '6': '.google.rpc.BadRequest.FieldViolation', '10': 'fieldViolations'},
+    {
+      '1': 'field_violations',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.google.rpc.BadRequest.FieldViolation',
+      '10': 'fieldViolations'
+    },
   ],
   '3': [BadRequest_FieldViolation$json],
 };
@@ -29,7 +36,14 @@ const BadRequest_FieldViolation$json = {
     {'1': 'field', '3': 1, '4': 1, '5': 9, '10': 'field'},
     {'1': 'description', '3': 2, '4': 1, '5': 9, '10': 'description'},
     {'1': 'reason', '3': 3, '4': 1, '5': 9, '10': 'reason'},
-    {'1': 'localized_message', '3': 4, '4': 1, '5': 11, '6': '.google.rpc.LocalizedMessage', '10': 'localizedMessage'},
+    {
+      '1': 'localized_message',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.google.rpc.LocalizedMessage',
+      '10': 'localizedMessage'
+    },
   ],
 };
 
@@ -54,4 +68,3 @@ const LocalizedMessage$json = {
 final $typed_data.Uint8List localizedMessageDescriptor = $convert.base64Decode(
     'ChBMb2NhbGl6ZWRNZXNzYWdlEhYKBmxvY2FsZRgBIAEoCVIGbG9jYWxlEhgKB21lc3NhZ2UYAi'
     'ABKAlSB21lc3NhZ2U=');
-

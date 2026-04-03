@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:readintent_flutter/features/auth/providers/auth_provider.dart';
+import "package:flutter/material.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
+import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -10,18 +10,18 @@ class HomeScreen extends ConsumerWidget {
     final authState = ref.read(authProvider);
     final user = (authState as AuthAuthenticated).user;
     return Scaffold(
-      appBar: AppBar(title: Text('Home')),
+      appBar: AppBar(title: Text("Home")),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Welcome, ${user.firstName} ${user.lastName}!'),
+            Text("Welcome, ${user.firstName} ${user.lastName}!"),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
                 ref.read(authProvider.notifier).logout();
               },
-              child: const Text('Logout'),
+              child: const Text("Logout"),
             ),
           ],
         ),

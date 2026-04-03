@@ -1,9 +1,9 @@
-import 'package:readintent_flutter/core/session_storage.dart';
-import 'package:readintent_flutter/features/auth/api/auth_client.dart';
-import 'package:readintent_flutter/models/user.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import "package:readintent_flutter/core/session_storage.dart";
+import "package:readintent_flutter/features/auth/api/auth_client.dart";
+import "package:readintent_flutter/models/user.dart";
+import "package:riverpod_annotation/riverpod_annotation.dart";
 
-part 'auth_provider.g.dart';
+part "auth_provider.g.dart";
 
 /// AuthState Sealed class used for auth state machine
 /// This has the following implementations:
@@ -73,10 +73,7 @@ class Auth extends _$Auth {
     try {
       // TODO differentiate between 401 and other errors and set state to unauthenticated or error accordingly
       final session = await _authClient.getSession();
-      state = AuthAuthenticated(
-        sessionToken: session.sessionToken,
-        user: session.user,
-      );
+      state = AuthAuthenticated(sessionToken: session.sessionToken, user: session.user);
     } catch (e) {
       state = const AuthUnauthenticated();
     }
@@ -92,37 +89,21 @@ class Auth extends _$Auth {
       await _sessionStorage.saveToken(session.sessionToken);
       await _sessionStorage.saveUser(session.user);
 
-      state = AuthAuthenticated(
-        sessionToken: session.sessionToken,
-        user: session.user,
-      );
+      state = AuthAuthenticated(sessionToken: session.sessionToken, user: session.user);
     } catch (e) {
       state = AuthError(message: e.toString());
     }
   }
 
   /// passwordRegistration attempts to create a new account with email and password
-  Future<void> passwordRegistration(
-    String email,
-    String password,
-    String firstName,
-    String lastName,
-  ) async {
+  Future<void> passwordRegistration(String email, String password, String firstName, String lastName) async {
     state = const AuthLoading();
     try {
-      final session = await _authClient.passwordRegistration(
-        email,
-        password,
-        firstName,
-        lastName,
-      );
+      final session = await _authClient.passwordRegistration(email, password, firstName, lastName);
       await _sessionStorage.saveToken(session.sessionToken);
       await _sessionStorage.saveUser(session.user);
 
-      state = AuthAuthenticated(
-        sessionToken: session.sessionToken,
-        user: session.user,
-      );
+      state = AuthAuthenticated(sessionToken: session.sessionToken, user: session.user);
     } catch (e) {
       state = AuthError(message: e.toString());
     }

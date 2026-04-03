@@ -1,6 +1,5 @@
-import 'package:connectrpc/connect.dart';
-import 'package:readintent_flutter/proto/google/rpc/error_details.pb.dart'
-    as rpc;
+import "package:connectrpc/connect.dart";
+import "package:readintent_flutter/proto/google/rpc/error_details.pb.dart" as rpc;
 
 /// Represents a field-level validation error from a BadRequest response.
 class FieldError {
@@ -10,7 +9,7 @@ class FieldError {
   const FieldError({required this.field, required this.description});
 
   @override
-  String toString() => '$field: $description';
+  String toString() => "$field: $description";
 
   @override
   bool operator ==(Object other) {
@@ -33,8 +32,8 @@ class ValidationException implements Exception {
   @override
   String toString() {
     if (fieldErrors.isEmpty) return message;
-    final details = fieldErrors.map((e) => e.toString()).join('; ');
-    return '$message ($details)';
+    final details = fieldErrors.map((e) => e.toString()).join("; ");
+    return "$message ($details)";
   }
 }
 
@@ -51,7 +50,7 @@ class AuthException implements Exception {
 /// Extracts a BadRequest from ConnectException details, if present.
 rpc.BadRequest? extractBadRequest(ConnectException e) {
   for (final detail in e.details) {
-    if (detail.type == 'google.rpc.BadRequest') {
+    if (detail.type == "google.rpc.BadRequest") {
       return rpc.BadRequest.fromBuffer(detail.value);
     }
   }
@@ -67,10 +66,7 @@ Never handleConnectException(ConnectException e, String context) {
     final fieldErrors = badRequest.fieldViolations
         .map((v) => FieldError(field: v.field_1, description: v.description))
         .toList();
-    throw ValidationException(
-      message: 'Failed to $context',
-      fieldErrors: fieldErrors,
-    );
+    throw ValidationException(message: "Failed to $context", fieldErrors: fieldErrors);
   }
-  throw AuthException('Failed to $context: ${e.message}');
+  throw AuthException("Failed to $context: ${e.message}");
 }
