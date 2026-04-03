@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
+import "package:readintent_flutter/models/auth_state.dart";
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});

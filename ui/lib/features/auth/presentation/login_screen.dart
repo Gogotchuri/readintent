@@ -3,6 +3,7 @@ import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 import "package:readintent_flutter/features/auth/presentation/auth_layout.dart";
 import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
+import "package:readintent_flutter/models/auth_state.dart";
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -32,6 +33,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authProvider);
+
+    String? fieldError(String field) {
+      if (authState is! AuthError) return null;
+      return authState.getJoinedFieldErrors(field);
+    }
+
     return AuthLayout(
       title: "Welcome Back",
       subtitle: "Sign in to continue",
@@ -43,10 +51,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: "Email",
-            prefixIcon: Icon(Icons.email_outlined),
-            border: OutlineInputBorder(),
+            prefixIcon: const Icon(Icons.email_outlined),
+            border: const OutlineInputBorder(),
+            errorText: fieldError("email"),
           ),
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
@@ -65,6 +74,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             labelText: "Password",
             prefixIcon: const Icon(Icons.lock_outlined),
             border: const OutlineInputBorder(),
+            errorText: fieldError("password"),
             suffixIcon: IconButton(
               icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
               onPressed: () {

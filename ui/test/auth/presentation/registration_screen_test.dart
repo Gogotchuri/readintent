@@ -9,6 +9,7 @@ import "package:mockito/annotations.dart";
 import "package:mockito/mockito.dart";
 import "package:readintent_flutter/features/auth/presentation/registration_screen.dart";
 import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
+import "package:readintent_flutter/models/auth_state.dart";
 import "package:readintent_flutter/models/user.dart";
 import "package:readintent_flutter/proto/google/rpc/error_details.pb.dart";
 
@@ -152,10 +153,10 @@ void main() {
     await tester.pumpAndSettle(); // Wait for the registration process to complete
 
     // Should show field validation errors
-    expect(find.text("general issue 1"), findsOneWidget);
-    expect(find.text("general issue 2"), findsOneWidget);
-    expect(find.text("Invalid email format"), findsOneWidget);
-    expect(find.text("Password too short"), findsOneWidget);
+    expect(find.textContaining("general issue 1"), findsOneWidget);
+    expect(find.textContaining("general issue 2"), findsOneWidget);
+    expect(find.textContaining("Invalid email format"), findsOneWidget);
+    expect(find.textContaining("Password too short"), findsOneWidget);
   });
 
   // Successful registration

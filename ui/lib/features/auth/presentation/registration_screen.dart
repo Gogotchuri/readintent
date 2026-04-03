@@ -2,8 +2,8 @@ import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 import "package:readintent_flutter/features/auth/presentation/auth_layout.dart";
-import "package:readintent_flutter/features/auth/presentation/loading_screen.dart";
 import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
+import "package:readintent_flutter/models/auth_state.dart";
 
 class RegistrationScreen extends ConsumerStatefulWidget {
   const RegistrationScreen({super.key});
@@ -49,12 +49,13 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
 
-    if (authState is AuthLoading) {
-      return const LoadingScreen();
+    String? fieldError(String field) {
+      if (authState is! AuthError) return null;
+      return authState.getJoinedFieldErrors(field);
     }
 
     return AuthLayout(
-      title: "Create Account",
+      title: "Create an Account",
       submitLabel: "Sign Up",
       onSubmit: _submit,
       formKey: _formKey,
@@ -98,10 +99,11 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: "Email",
-            prefixIcon: Icon(Icons.email_outlined),
-            border: OutlineInputBorder(),
+            prefixIcon: const Icon(Icons.email_outlined),
+            border: const OutlineInputBorder(),
+            errorText: fieldError("email"),
           ),
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
@@ -119,6 +121,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             labelText: "Password",
             prefixIcon: const Icon(Icons.lock_outlined),
             border: const OutlineInputBorder(),
+            errorText: fieldError("password"),
             suffixIcon: IconButton(
               icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
               onPressed: () {
@@ -132,8 +135,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             if (value == null || value.isEmpty) {
               return "Please enter a password";
             }
-            if (value.length < 6) {
-              return "Password must be at least 6 characters";
+            if (value.length < 8) {
+              return "Password must be at least 8 characters";
             }
             return null;
           },

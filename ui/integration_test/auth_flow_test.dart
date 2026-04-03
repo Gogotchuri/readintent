@@ -138,7 +138,7 @@ void main() {
         ],
       );
 
-      when(mockRPCClient.passwordRegistration(any)).thenThrow(
+      when(mockRPCClient.passwordLogin(any)).thenThrow(
         ConnectException(
           Code.invalidArgument,
           "Validation failed",
@@ -149,19 +149,16 @@ void main() {
       await tester.pumpWidget(createApp());
       await tester.pumpAndSettle();
 
-      // Enter registration details and submit
+      // Enter login details and submit
       await tester.enterText(find.widgetWithText(TextField, "Email"), "user@example.com");
-      await tester.enterText(find.widgetWithText(TextField, "First Name"), "John");
-      await tester.enterText(find.widgetWithText(TextField, "Last Name"), "Doe");
       await tester.enterText(find.widgetWithText(TextField, "Password"), "password");
-      await tester.enterText(find.widgetWithText(TextField, "Confirm Password"), "password");
-      await tester.tap(find.widgetWithText(ElevatedButton, "Sign Up"));
+      await tester.tap(find.widgetWithText(ElevatedButton, "Login"));
       await tester.pumpAndSettle();
 
       // Should show field validation errors
-      expect(find.text("general issue 1"), findsOneWidget);
-      expect(find.text("general issue 2"), findsOneWidget);
-      expect(find.text("Invalid email format"), findsOneWidget);
+      expect(find.textContaining("general issue 1"), findsOneWidget);
+      expect(find.textContaining("general issue 2"), findsOneWidget);
+      expect(find.textContaining("Invalid email format"), findsOneWidget);
     });
 
     group("Registration flows", () {
@@ -171,6 +168,10 @@ void main() {
         ).thenAnswer((_) async => auth_pb.PasswordRegistrationResponse(session: protoSession));
 
         await tester.pumpWidget(createApp());
+        await tester.pumpAndSettle();
+
+        // Go to registration screen
+        await tester.tap(find.widgetWithText(TextButton, "Sign Up"));
         await tester.pumpAndSettle();
 
         // Enter registration details and submit
@@ -190,6 +191,10 @@ void main() {
       when(mockRPCClient.passwordRegistration(any)).thenThrow(Exception("Registration failed"));
 
       await tester.pumpWidget(createApp());
+      await tester.pumpAndSettle();
+
+      // Go to registration screen
+      await tester.tap(find.widgetWithText(TextButton, "Sign Up"));
       await tester.pumpAndSettle();
 
       // Enter registration details and submit
@@ -225,6 +230,10 @@ void main() {
       await tester.pumpWidget(createApp());
       await tester.pumpAndSettle();
 
+      // Go to registration screen
+      await tester.tap(find.widgetWithText(TextButton, "Sign Up"));
+      await tester.pumpAndSettle();
+
       // Enter registration details and submit
       await tester.enterText(find.widgetWithText(TextField, "Email"), "user@example.com");
       await tester.enterText(find.widgetWithText(TextField, "First Name"), "John");
@@ -234,11 +243,13 @@ void main() {
       await tester.tap(find.widgetWithText(ElevatedButton, "Sign Up"));
       await tester.pumpAndSettle();
 
+      // Check we are actually on sign up still
+      expect(find.text("Create an Account"), findsOneWidget);
       // Should show field validation errors
-      expect(find.text("general issue 1"), findsOneWidget);
-      expect(find.text("general issue 2"), findsOneWidget);
-      expect(find.text("Invalid email format"), findsOneWidget);
-      expect(find.text("Password too short"), findsOneWidget);
+      expect(find.textContaining("general issue 1"), findsOneWidget);
+      expect(find.textContaining("general issue 2"), findsOneWidget);
+      expect(find.textContaining("Invalid email format"), findsOneWidget);
+      expect(find.textContaining("Password too short"), findsOneWidget);
     });
 
     testWidgets("Logout", (WidgetTester tester) async {

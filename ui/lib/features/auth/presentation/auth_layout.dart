@@ -3,6 +3,7 @@ import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:readintent_flutter/features/auth/presentation/loading_screen.dart";
 import "package:readintent_flutter/features/auth/presentation/social_auth_section.dart";
 import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
+import "package:readintent_flutter/models/auth_state.dart";
 
 class AuthLayout extends ConsumerWidget {
   final String title;
@@ -32,6 +33,11 @@ class AuthLayout extends ConsumerWidget {
       return const LoadingScreen();
     }
 
+    List<String>? generalErrors;
+    if (authState is AuthError) {
+      generalErrors = authState.getGeneralErrors();
+    }
+
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -41,7 +47,8 @@ class AuthLayout extends ConsumerWidget {
               constraints: const BoxConstraints(maxWidth: 480),
               child: Column(
                 children: [
-                  if (authState is AuthError)
+                  // General errors messages displayed as buttet points at the top
+                  if (generalErrors != null && generalErrors.isNotEmpty)
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
@@ -51,7 +58,10 @@ class AuthLayout extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: Colors.red[200]!),
                       ),
-                      child: Text(authState.message, style: TextStyle(color: Colors.red[800])),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: generalErrors.map((e) => Text("- $e", style: TextStyle(color: Colors.red[800]))).toList(),
+                      ),
                     ),
                   Form(
                     key: formKey,

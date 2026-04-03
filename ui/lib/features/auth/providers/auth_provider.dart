@@ -1,49 +1,10 @@
 import "package:readintent_flutter/core/session_storage.dart";
 import "package:readintent_flutter/features/auth/api/auth_client.dart";
-import "package:readintent_flutter/models/user.dart";
+import "package:readintent_flutter/features/auth/api/auth_client_exceptions.dart";
+import "package:readintent_flutter/models/auth_state.dart";
 import "package:riverpod_annotation/riverpod_annotation.dart";
 
 part "auth_provider.g.dart";
-
-/// AuthState Sealed class used for auth state machine
-/// This has the following implementations:
-///
-/// `AuthInitial` - State before we know / validated the actual login state, required splash screen
-///
-/// `AuthLoading` - Loading state after user requests login
-///
-/// `AuthAuthenticated` - Successful authentication state
-///
-/// `AuthUnauthenticated` - User is unauthenticated, but no error needs to be displayed, first time app open for example
-///
-/// `AuthError` - Authentication request returned error response and we need to alter the user
-sealed class AuthState {
-  const AuthState();
-}
-
-class AuthInitial extends AuthState {
-  const AuthInitial();
-}
-
-class AuthLoading extends AuthState {
-  const AuthLoading();
-}
-
-class AuthAuthenticated extends AuthState {
-  final String sessionToken;
-  final User user;
-
-  const AuthAuthenticated({required this.sessionToken, required this.user});
-}
-
-class AuthUnauthenticated extends AuthState {
-  const AuthUnauthenticated();
-}
-
-class AuthError extends AuthState {
-  final String message;
-  const AuthError({required this.message});
-}
 
 /// AuthProvider is the main provider for authentication state management
 @riverpod
@@ -71,7 +32,6 @@ class Auth extends _$Auth {
       return;
     }
     try {
-      // TODO differentiate between 401 and other errors and set state to unauthenticated or error accordingly
       final session = await _authClient.getSession();
       state = AuthAuthenticated(sessionToken: session.sessionToken, user: session.user);
     } catch (e) {
@@ -90,6 +50,8 @@ class Auth extends _$Auth {
       await _sessionStorage.saveUser(session.user);
 
       state = AuthAuthenticated(sessionToken: session.sessionToken, user: session.user);
+    } on ValidationException catch (e) {
+      state = AuthError(message: e.message, fieldErrors: e.fieldErrors);
     } catch (e) {
       state = AuthError(message: e.toString());
     }
@@ -104,6 +66,8 @@ class Auth extends _$Auth {
       await _sessionStorage.saveUser(session.user);
 
       state = AuthAuthenticated(sessionToken: session.sessionToken, user: session.user);
+    } on ValidationException catch (e) {
+      state = AuthError(message: e.message, fieldErrors: e.fieldErrors);
     } catch (e) {
       state = AuthError(message: e.toString());
     }
