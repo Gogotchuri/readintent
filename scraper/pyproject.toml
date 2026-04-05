@@ -1,0 +1,17 @@
+[project]
+name = "scraper"
+version = "0.1.0"
+description = "Article Scraper"
+readme = "README.md"
+authors = [
+    { name = "Ilia Gogotchuri", email = "ilia.gogotchuri0@gmail.com" }
+]
+requires-python = ">= 3.13"
+dependencies = [
+    "trafilatura>=2.0",
+    "redis>=5.0",
+    "nodriver",
+]
+
+[dependency-groups]
+dev = ["pytest>=8.0", "testcontainers[redis]>=4.0"]
