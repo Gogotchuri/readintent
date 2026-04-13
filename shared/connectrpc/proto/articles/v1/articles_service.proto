@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package articles.v1;
+
+// This proto module defines articles server
+option go_package = "github.com/gogotchuri/readintent/backend/proto/articles/v1;articlesv1";
+
+message Identity {
+  string id = 1;
+  string email = 2;
+  optional string first_name = 3;
+  optional string last_name = 4;
+}
+
+message PhonemizerTokenMeta {
+  string text = 1;
+  uint32 phoneme_len = 2;
+  bool has_whitespace = 3;
+}
+
+message PhonemizerData {
+  string graphemes = 1;
+  string phonemes = 2;
+  repeated int64 token_ids = 3;
+  repeated PhonemizerTokenMeta token_meta = 4;
+}
+message ArticlePreview {
+  string id = 1;
+  // failed, started_gathering, text_ready, ready
+  string status = 2;
+  string title = 3;
+  string author = 4;
+  string date = 5;
+  string url = 6;
+  repeated string categories = 7;
+  // If the description failed to be extracted from the metadata,
+  // we should add put the first few hundred characters in
+  optional string description = 8;
+  optional string image = 9;
+}
+
+// Full article with all content
+message Article {
+  string id = 1;
+  // failed, started_gathering, text_ready, ready
+  string status = 2;
+  string title = 3;
+  string author = 4;
+  string date = 5;
+  string extracted_html = 6;
+  string pure_text = 7;
+  string url = 8;
+  repeated string categories = 9;
+  optional string description = 10;
+  optional string image = 11;
+  optional PhonemizerData phonemizer_data = 12;
+}
+
+message GetArticlesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+
+  // Optional filters
+  repeated string categories = 3;
+  optional string search_query = 4;
+  optional string author = 5;
+}
+
+message GetArticlesResponse {
+  repeated ArticlePreview articles = 1;
+  // Token for the cursor based pagination
+  string next_page_token = 2;
+
+  // Total number of articles matching the query
+  int32 total_count = 3;
+}
+
+message GetArticleRequest { string id = 1; }
+
+message GetArticleResponse { Article article = 1; }
+
+message ParseArticleRequest { string url = 1; }
+
+message ParseArticleResponse { Article article = 1; }
+
+message DeleteArticleRequest { string id = 1; }
+
+message DeleteArticleResponse { bool success = 1; }
+
+service ArticlesService {
+  rpc ParseArticle(ParseArticleRequest) returns (ParseArticleResponse);
+  rpc GetArticles(GetArticlesRequest) returns (GetArticlesResponse);
+  rpc GetArticle(GetArticleRequest) returns (GetArticleResponse);
+  rpc DeleteArticle(DeleteArticleRequest) returns (DeleteArticleResponse);
+}

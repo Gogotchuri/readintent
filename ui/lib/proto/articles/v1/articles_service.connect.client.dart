@@ -1,22 +1,22 @@
 //
 //  Generated code. Do not modify.
-//  source: auth/v1/auth_service.proto
+//  source: articles/v1/articles_service.proto
 //
 
 import "package:connectrpc/connect.dart" as connect;
-import "auth_service.pb.dart" as authv1auth_service;
-import "auth_service.connect.spec.dart" as specs;
+import "articles_service.pb.dart" as articlesv1articles_service;
+import "articles_service.connect.spec.dart" as specs;
 
-extension type AuthServiceClient (connect.Transport _transport) {
-  Future<authv1auth_service.PasswordLoginResponse> passwordLogin(
-    authv1auth_service.PasswordLoginRequest input, {
+extension type ArticlesServiceClient (connect.Transport _transport) {
+  Future<articlesv1articles_service.ParseArticleResponse> parseArticle(
+    articlesv1articles_service.ParseArticleRequest input, {
     connect.Headers? headers,
     connect.AbortSignal? signal,
     Function(connect.Headers)? onHeader,
     Function(connect.Headers)? onTrailer,
   }) {
     return connect.Client(_transport).unary(
-      specs.AuthService.passwordLogin,
+      specs.ArticlesService.parseArticle,
       input,
       signal: signal,
       headers: headers,
@@ -25,15 +25,15 @@ extension type AuthServiceClient (connect.Transport _transport) {
     );
   }
 
-  Future<authv1auth_service.PasswordRegistrationResponse> passwordRegistration(
-    authv1auth_service.PasswordRegistrationRequest input, {
+  Future<articlesv1articles_service.GetArticlesResponse> getArticles(
+    articlesv1articles_service.GetArticlesRequest input, {
     connect.Headers? headers,
     connect.AbortSignal? signal,
     Function(connect.Headers)? onHeader,
     Function(connect.Headers)? onTrailer,
   }) {
     return connect.Client(_transport).unary(
-      specs.AuthService.passwordRegistration,
+      specs.ArticlesService.getArticles,
       input,
       signal: signal,
       headers: headers,
@@ -42,15 +42,15 @@ extension type AuthServiceClient (connect.Transport _transport) {
     );
   }
 
-  Future<authv1auth_service.LogoutResponse> logout(
-    authv1auth_service.LogoutRequest input, {
+  Future<articlesv1articles_service.GetArticleResponse> getArticle(
+    articlesv1articles_service.GetArticleRequest input, {
     connect.Headers? headers,
     connect.AbortSignal? signal,
     Function(connect.Headers)? onHeader,
     Function(connect.Headers)? onTrailer,
   }) {
     return connect.Client(_transport).unary(
-      specs.AuthService.logout,
+      specs.ArticlesService.getArticle,
       input,
       signal: signal,
       headers: headers,
@@ -59,32 +59,15 @@ extension type AuthServiceClient (connect.Transport _transport) {
     );
   }
 
-  Future<authv1auth_service.GetSessionResponse> getSession(
-    authv1auth_service.GetSessionRequest input, {
+  Future<articlesv1articles_service.DeleteArticleResponse> deleteArticle(
+    articlesv1articles_service.DeleteArticleRequest input, {
     connect.Headers? headers,
     connect.AbortSignal? signal,
     Function(connect.Headers)? onHeader,
     Function(connect.Headers)? onTrailer,
   }) {
     return connect.Client(_transport).unary(
-      specs.AuthService.getSession,
-      input,
-      signal: signal,
-      headers: headers,
-      onHeader: onHeader,
-      onTrailer: onTrailer,
-    );
-  }
-
-  Future<authv1auth_service.HealthResponse> health(
-    authv1auth_service.HealthRequest input, {
-    connect.Headers? headers,
-    connect.AbortSignal? signal,
-    Function(connect.Headers)? onHeader,
-    Function(connect.Headers)? onTrailer,
-  }) {
-    return connect.Client(_transport).unary(
-      specs.AuthService.health,
+      specs.ArticlesService.deleteArticle,
       input,
       signal: signal,
       headers: headers,
