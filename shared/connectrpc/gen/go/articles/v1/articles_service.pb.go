@@ -21,74 +21,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type Identity struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
-	FirstName     *string                `protobuf:"bytes,3,opt,name=first_name,json=firstName,proto3,oneof" json:"first_name,omitempty"`
-	LastName      *string                `protobuf:"bytes,4,opt,name=last_name,json=lastName,proto3,oneof" json:"last_name,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Identity) Reset() {
-	*x = Identity{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Identity) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Identity) ProtoMessage() {}
-
-func (x *Identity) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Identity.ProtoReflect.Descriptor instead.
-func (*Identity) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *Identity) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *Identity) GetEmail() string {
-	if x != nil {
-		return x.Email
-	}
-	return ""
-}
-
-func (x *Identity) GetFirstName() string {
-	if x != nil && x.FirstName != nil {
-		return *x.FirstName
-	}
-	return ""
-}
-
-func (x *Identity) GetLastName() string {
-	if x != nil && x.LastName != nil {
-		return *x.LastName
-	}
-	return ""
-}
-
 type PhonemizerTokenMeta struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Text          string                 `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
@@ -100,7 +32,7 @@ type PhonemizerTokenMeta struct {
 
 func (x *PhonemizerTokenMeta) Reset() {
 	*x = PhonemizerTokenMeta{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[1]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -112,7 +44,7 @@ func (x *PhonemizerTokenMeta) String() string {
 func (*PhonemizerTokenMeta) ProtoMessage() {}
 
 func (x *PhonemizerTokenMeta) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[1]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -125,7 +57,7 @@ func (x *PhonemizerTokenMeta) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PhonemizerTokenMeta.ProtoReflect.Descriptor instead.
 func (*PhonemizerTokenMeta) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{1}
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *PhonemizerTokenMeta) GetText() string {
@@ -161,7 +93,7 @@ type PhonemizerData struct {
 
 func (x *PhonemizerData) Reset() {
 	*x = PhonemizerData{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[2]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -173,7 +105,7 @@ func (x *PhonemizerData) String() string {
 func (*PhonemizerData) ProtoMessage() {}
 
 func (x *PhonemizerData) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[2]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -186,7 +118,7 @@ func (x *PhonemizerData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PhonemizerData.ProtoReflect.Descriptor instead.
 func (*PhonemizerData) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{2}
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *PhonemizerData) GetGraphemes() string {
@@ -237,7 +169,7 @@ type ArticlePreview struct {
 
 func (x *ArticlePreview) Reset() {
 	*x = ArticlePreview{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[3]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -249,7 +181,7 @@ func (x *ArticlePreview) String() string {
 func (*ArticlePreview) ProtoMessage() {}
 
 func (x *ArticlePreview) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[3]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -262,7 +194,7 @@ func (x *ArticlePreview) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArticlePreview.ProtoReflect.Descriptor instead.
 func (*ArticlePreview) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{3}
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ArticlePreview) GetId() string {
@@ -350,7 +282,7 @@ type Article struct {
 
 func (x *Article) Reset() {
 	*x = Article{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[4]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -362,7 +294,7 @@ func (x *Article) String() string {
 func (*Article) ProtoMessage() {}
 
 func (x *Article) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[4]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -375,7 +307,7 @@ func (x *Article) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Article.ProtoReflect.Descriptor instead.
 func (*Article) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{4}
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Article) GetId() string {
@@ -476,7 +408,7 @@ type GetArticlesRequest struct {
 
 func (x *GetArticlesRequest) Reset() {
 	*x = GetArticlesRequest{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[5]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -488,7 +420,7 @@ func (x *GetArticlesRequest) String() string {
 func (*GetArticlesRequest) ProtoMessage() {}
 
 func (x *GetArticlesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[5]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -501,7 +433,7 @@ func (x *GetArticlesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetArticlesRequest.ProtoReflect.Descriptor instead.
 func (*GetArticlesRequest) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{5}
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GetArticlesRequest) GetPageSize() int32 {
@@ -552,7 +484,7 @@ type GetArticlesResponse struct {
 
 func (x *GetArticlesResponse) Reset() {
 	*x = GetArticlesResponse{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[6]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -564,7 +496,7 @@ func (x *GetArticlesResponse) String() string {
 func (*GetArticlesResponse) ProtoMessage() {}
 
 func (x *GetArticlesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[6]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -577,7 +509,7 @@ func (x *GetArticlesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetArticlesResponse.ProtoReflect.Descriptor instead.
 func (*GetArticlesResponse) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{6}
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetArticlesResponse) GetArticles() []*ArticlePreview {
@@ -610,7 +542,7 @@ type GetArticleRequest struct {
 
 func (x *GetArticleRequest) Reset() {
 	*x = GetArticleRequest{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[7]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -622,7 +554,7 @@ func (x *GetArticleRequest) String() string {
 func (*GetArticleRequest) ProtoMessage() {}
 
 func (x *GetArticleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[7]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -635,7 +567,7 @@ func (x *GetArticleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetArticleRequest.ProtoReflect.Descriptor instead.
 func (*GetArticleRequest) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{7}
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetArticleRequest) GetId() string {
@@ -654,7 +586,7 @@ type GetArticleResponse struct {
 
 func (x *GetArticleResponse) Reset() {
 	*x = GetArticleResponse{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[8]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -666,7 +598,7 @@ func (x *GetArticleResponse) String() string {
 func (*GetArticleResponse) ProtoMessage() {}
 
 func (x *GetArticleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[8]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -679,7 +611,7 @@ func (x *GetArticleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetArticleResponse.ProtoReflect.Descriptor instead.
 func (*GetArticleResponse) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{8}
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetArticleResponse) GetArticle() *Article {
@@ -698,7 +630,7 @@ type ParseArticleRequest struct {
 
 func (x *ParseArticleRequest) Reset() {
 	*x = ParseArticleRequest{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[9]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -710,7 +642,7 @@ func (x *ParseArticleRequest) String() string {
 func (*ParseArticleRequest) ProtoMessage() {}
 
 func (x *ParseArticleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[9]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -723,7 +655,7 @@ func (x *ParseArticleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ParseArticleRequest.ProtoReflect.Descriptor instead.
 func (*ParseArticleRequest) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{9}
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ParseArticleRequest) GetUrl() string {
@@ -735,14 +667,13 @@ func (x *ParseArticleRequest) GetUrl() string {
 
 type ParseArticleResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Article       *Article               `protobuf:"bytes,1,opt,name=article,proto3" json:"article,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ParseArticleResponse) Reset() {
 	*x = ParseArticleResponse{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[10]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -754,7 +685,7 @@ func (x *ParseArticleResponse) String() string {
 func (*ParseArticleResponse) ProtoMessage() {}
 
 func (x *ParseArticleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[10]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -767,14 +698,7 @@ func (x *ParseArticleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ParseArticleResponse.ProtoReflect.Descriptor instead.
 func (*ParseArticleResponse) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *ParseArticleResponse) GetArticle() *Article {
-	if x != nil {
-		return x.Article
-	}
-	return nil
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{9}
 }
 
 type DeleteArticleRequest struct {
@@ -786,7 +710,7 @@ type DeleteArticleRequest struct {
 
 func (x *DeleteArticleRequest) Reset() {
 	*x = DeleteArticleRequest{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[11]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -798,7 +722,7 @@ func (x *DeleteArticleRequest) String() string {
 func (*DeleteArticleRequest) ProtoMessage() {}
 
 func (x *DeleteArticleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[11]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -811,7 +735,7 @@ func (x *DeleteArticleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteArticleRequest.ProtoReflect.Descriptor instead.
 func (*DeleteArticleRequest) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{11}
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *DeleteArticleRequest) GetId() string {
@@ -823,14 +747,13 @@ func (x *DeleteArticleRequest) GetId() string {
 
 type DeleteArticleResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *DeleteArticleResponse) Reset() {
 	*x = DeleteArticleResponse{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[12]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -842,7 +765,7 @@ func (x *DeleteArticleResponse) String() string {
 func (*DeleteArticleResponse) ProtoMessage() {}
 
 func (x *DeleteArticleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[12]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -855,30 +778,14 @@ func (x *DeleteArticleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteArticleResponse.ProtoReflect.Descriptor instead.
 func (*DeleteArticleResponse) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *DeleteArticleResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{11}
 }
 
 var File_articles_v1_articles_service_proto protoreflect.FileDescriptor
 
 const file_articles_v1_articles_service_proto_rawDesc = "" +
 	"\n" +
-	"\"articles/v1/articles_service.proto\x12\varticles.v1\"\x93\x01\n" +
-	"\bIdentity\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
-	"\x05email\x18\x02 \x01(\tR\x05email\x12\"\n" +
-	"\n" +
-	"first_name\x18\x03 \x01(\tH\x00R\tfirstName\x88\x01\x01\x12 \n" +
-	"\tlast_name\x18\x04 \x01(\tH\x01R\blastName\x88\x01\x01B\r\n" +
-	"\v_first_nameB\f\n" +
-	"\n" +
-	"_last_name\"q\n" +
+	"\"articles/v1/articles_service.proto\x12\varticles.v1\"q\n" +
 	"\x13PhonemizerTokenMeta\x12\x12\n" +
 	"\x04text\x18\x01 \x01(\tR\x04text\x12\x1f\n" +
 	"\vphoneme_len\x18\x02 \x01(\rR\n" +
@@ -944,13 +851,11 @@ const file_articles_v1_articles_service_proto_rawDesc = "" +
 	"\x12GetArticleResponse\x12.\n" +
 	"\aarticle\x18\x01 \x01(\v2\x14.articles.v1.ArticleR\aarticle\"'\n" +
 	"\x13ParseArticleRequest\x12\x10\n" +
-	"\x03url\x18\x01 \x01(\tR\x03url\"F\n" +
-	"\x14ParseArticleResponse\x12.\n" +
-	"\aarticle\x18\x01 \x01(\v2\x14.articles.v1.ArticleR\aarticle\"&\n" +
+	"\x03url\x18\x01 \x01(\tR\x03url\"\x16\n" +
+	"\x14ParseArticleResponse\"&\n" +
 	"\x14DeleteArticleRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"1\n" +
-	"\x15DeleteArticleResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\xdf\x02\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x17\n" +
+	"\x15DeleteArticleResponse2\xdf\x02\n" +
 	"\x0fArticlesService\x12S\n" +
 	"\fParseArticle\x12 .articles.v1.ParseArticleRequest\x1a!.articles.v1.ParseArticleResponse\x12P\n" +
 	"\vGetArticles\x12\x1f.articles.v1.GetArticlesRequest\x1a .articles.v1.GetArticlesResponse\x12M\n" +
@@ -970,41 +875,39 @@ func file_articles_v1_articles_service_proto_rawDescGZIP() []byte {
 	return file_articles_v1_articles_service_proto_rawDescData
 }
 
-var file_articles_v1_articles_service_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_articles_v1_articles_service_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_articles_v1_articles_service_proto_goTypes = []any{
-	(*Identity)(nil),              // 0: articles.v1.Identity
-	(*PhonemizerTokenMeta)(nil),   // 1: articles.v1.PhonemizerTokenMeta
-	(*PhonemizerData)(nil),        // 2: articles.v1.PhonemizerData
-	(*ArticlePreview)(nil),        // 3: articles.v1.ArticlePreview
-	(*Article)(nil),               // 4: articles.v1.Article
-	(*GetArticlesRequest)(nil),    // 5: articles.v1.GetArticlesRequest
-	(*GetArticlesResponse)(nil),   // 6: articles.v1.GetArticlesResponse
-	(*GetArticleRequest)(nil),     // 7: articles.v1.GetArticleRequest
-	(*GetArticleResponse)(nil),    // 8: articles.v1.GetArticleResponse
-	(*ParseArticleRequest)(nil),   // 9: articles.v1.ParseArticleRequest
-	(*ParseArticleResponse)(nil),  // 10: articles.v1.ParseArticleResponse
-	(*DeleteArticleRequest)(nil),  // 11: articles.v1.DeleteArticleRequest
-	(*DeleteArticleResponse)(nil), // 12: articles.v1.DeleteArticleResponse
+	(*PhonemizerTokenMeta)(nil),   // 0: articles.v1.PhonemizerTokenMeta
+	(*PhonemizerData)(nil),        // 1: articles.v1.PhonemizerData
+	(*ArticlePreview)(nil),        // 2: articles.v1.ArticlePreview
+	(*Article)(nil),               // 3: articles.v1.Article
+	(*GetArticlesRequest)(nil),    // 4: articles.v1.GetArticlesRequest
+	(*GetArticlesResponse)(nil),   // 5: articles.v1.GetArticlesResponse
+	(*GetArticleRequest)(nil),     // 6: articles.v1.GetArticleRequest
+	(*GetArticleResponse)(nil),    // 7: articles.v1.GetArticleResponse
+	(*ParseArticleRequest)(nil),   // 8: articles.v1.ParseArticleRequest
+	(*ParseArticleResponse)(nil),  // 9: articles.v1.ParseArticleResponse
+	(*DeleteArticleRequest)(nil),  // 10: articles.v1.DeleteArticleRequest
+	(*DeleteArticleResponse)(nil), // 11: articles.v1.DeleteArticleResponse
 }
 var file_articles_v1_articles_service_proto_depIdxs = []int32{
-	1,  // 0: articles.v1.PhonemizerData.token_meta:type_name -> articles.v1.PhonemizerTokenMeta
-	2,  // 1: articles.v1.Article.phonemizer_data:type_name -> articles.v1.PhonemizerData
-	3,  // 2: articles.v1.GetArticlesResponse.articles:type_name -> articles.v1.ArticlePreview
-	4,  // 3: articles.v1.GetArticleResponse.article:type_name -> articles.v1.Article
-	4,  // 4: articles.v1.ParseArticleResponse.article:type_name -> articles.v1.Article
-	9,  // 5: articles.v1.ArticlesService.ParseArticle:input_type -> articles.v1.ParseArticleRequest
-	5,  // 6: articles.v1.ArticlesService.GetArticles:input_type -> articles.v1.GetArticlesRequest
-	7,  // 7: articles.v1.ArticlesService.GetArticle:input_type -> articles.v1.GetArticleRequest
-	11, // 8: articles.v1.ArticlesService.DeleteArticle:input_type -> articles.v1.DeleteArticleRequest
-	10, // 9: articles.v1.ArticlesService.ParseArticle:output_type -> articles.v1.ParseArticleResponse
-	6,  // 10: articles.v1.ArticlesService.GetArticles:output_type -> articles.v1.GetArticlesResponse
-	8,  // 11: articles.v1.ArticlesService.GetArticle:output_type -> articles.v1.GetArticleResponse
-	12, // 12: articles.v1.ArticlesService.DeleteArticle:output_type -> articles.v1.DeleteArticleResponse
-	9,  // [9:13] is the sub-list for method output_type
-	5,  // [5:9] is the sub-list for method input_type
-	5,  // [5:5] is the sub-list for extension type_name
-	5,  // [5:5] is the sub-list for extension extendee
-	0,  // [0:5] is the sub-list for field type_name
+	0,  // 0: articles.v1.PhonemizerData.token_meta:type_name -> articles.v1.PhonemizerTokenMeta
+	1,  // 1: articles.v1.Article.phonemizer_data:type_name -> articles.v1.PhonemizerData
+	2,  // 2: articles.v1.GetArticlesResponse.articles:type_name -> articles.v1.ArticlePreview
+	3,  // 3: articles.v1.GetArticleResponse.article:type_name -> articles.v1.Article
+	8,  // 4: articles.v1.ArticlesService.ParseArticle:input_type -> articles.v1.ParseArticleRequest
+	4,  // 5: articles.v1.ArticlesService.GetArticles:input_type -> articles.v1.GetArticlesRequest
+	6,  // 6: articles.v1.ArticlesService.GetArticle:input_type -> articles.v1.GetArticleRequest
+	10, // 7: articles.v1.ArticlesService.DeleteArticle:input_type -> articles.v1.DeleteArticleRequest
+	9,  // 8: articles.v1.ArticlesService.ParseArticle:output_type -> articles.v1.ParseArticleResponse
+	5,  // 9: articles.v1.ArticlesService.GetArticles:output_type -> articles.v1.GetArticlesResponse
+	7,  // 10: articles.v1.ArticlesService.GetArticle:output_type -> articles.v1.GetArticleResponse
+	11, // 11: articles.v1.ArticlesService.DeleteArticle:output_type -> articles.v1.DeleteArticleResponse
+	8,  // [8:12] is the sub-list for method output_type
+	4,  // [4:8] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_articles_v1_articles_service_proto_init() }
@@ -1012,17 +915,16 @@ func file_articles_v1_articles_service_proto_init() {
 	if File_articles_v1_articles_service_proto != nil {
 		return
 	}
-	file_articles_v1_articles_service_proto_msgTypes[0].OneofWrappers = []any{}
+	file_articles_v1_articles_service_proto_msgTypes[2].OneofWrappers = []any{}
 	file_articles_v1_articles_service_proto_msgTypes[3].OneofWrappers = []any{}
 	file_articles_v1_articles_service_proto_msgTypes[4].OneofWrappers = []any{}
-	file_articles_v1_articles_service_proto_msgTypes[5].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_articles_v1_articles_service_proto_rawDesc), len(file_articles_v1_articles_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -5,13 +5,6 @@ package articles.v1;
 // This proto module defines articles server
 option go_package = "github.com/gogotchuri/readintent/backend/proto/articles/v1;articlesv1";
 
-message Identity {
-  string id = 1;
-  string email = 2;
-  optional string first_name = 3;
-  optional string last_name = 4;
-}
-
 message PhonemizerTokenMeta {
   string text = 1;
   uint32 phoneme_len = 2;
@@ -81,11 +74,11 @@ message GetArticleResponse { Article article = 1; }
 
 message ParseArticleRequest { string url = 1; }
 
-message ParseArticleResponse { Article article = 1; }
+message ParseArticleResponse {}
 
 message DeleteArticleRequest { string id = 1; }
 
-message DeleteArticleResponse { bool success = 1; }
+message DeleteArticleResponse {}
 
 service ArticlesService {
   rpc ParseArticle(ParseArticleRequest) returns (ParseArticleResponse);

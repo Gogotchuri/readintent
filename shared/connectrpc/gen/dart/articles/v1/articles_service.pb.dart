@@ -15,98 +15,6 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-class Identity extends $pb.GeneratedMessage {
-  factory Identity({
-    $core.String? id,
-    $core.String? email,
-    $core.String? firstName,
-    $core.String? lastName,
-  }) {
-    final $result = create();
-    if (id != null) {
-      $result.id = id;
-    }
-    if (email != null) {
-      $result.email = email;
-    }
-    if (firstName != null) {
-      $result.firstName = firstName;
-    }
-    if (lastName != null) {
-      $result.lastName = lastName;
-    }
-    return $result;
-  }
-  Identity._() : super();
-  factory Identity.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Identity.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Identity', package: const $pb.PackageName(_omitMessageNames ? '' : 'articles.v1'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'email')
-    ..aOS(3, _omitFieldNames ? '' : 'firstName')
-    ..aOS(4, _omitFieldNames ? '' : 'lastName')
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  Identity clone() => Identity()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  Identity copyWith(void Function(Identity) updates) => super.copyWith((message) => updates(message as Identity)) as Identity;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static Identity create() => Identity._();
-  Identity createEmptyInstance() => create();
-  static $pb.PbList<Identity> createRepeated() => $pb.PbList<Identity>();
-  @$core.pragma('dart2js:noInline')
-  static Identity getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Identity>(create);
-  static Identity? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get id => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set id($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearId() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get email => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set email($core.String v) { $_setString(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasEmail() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearEmail() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.String get firstName => $_getSZ(2);
-  @$pb.TagNumber(3)
-  set firstName($core.String v) { $_setString(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasFirstName() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearFirstName() => clearField(3);
-
-  @$pb.TagNumber(4)
-  $core.String get lastName => $_getSZ(3);
-  @$pb.TagNumber(4)
-  set lastName($core.String v) { $_setString(3, v); }
-  @$pb.TagNumber(4)
-  $core.bool hasLastName() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearLastName() => clearField(4);
-}
-
 class PhonemizerTokenMeta extends $pb.GeneratedMessage {
   factory PhonemizerTokenMeta({
     $core.String? text,
@@ -954,21 +862,12 @@ class ParseArticleRequest extends $pb.GeneratedMessage {
 }
 
 class ParseArticleResponse extends $pb.GeneratedMessage {
-  factory ParseArticleResponse({
-    Article? article,
-  }) {
-    final $result = create();
-    if (article != null) {
-      $result.article = article;
-    }
-    return $result;
-  }
+  factory ParseArticleResponse() => create();
   ParseArticleResponse._() : super();
   factory ParseArticleResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ParseArticleResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ParseArticleResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'articles.v1'), createEmptyInstance: create)
-    ..aOM<Article>(1, _omitFieldNames ? '' : 'article', subBuilder: Article.create)
     ..hasRequiredFields = false
   ;
 
@@ -992,17 +891,6 @@ class ParseArticleResponse extends $pb.GeneratedMessage {
   @$core.pragma('dart2js:noInline')
   static ParseArticleResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ParseArticleResponse>(create);
   static ParseArticleResponse? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  Article get article => $_getN(0);
-  @$pb.TagNumber(1)
-  set article(Article v) { setField(1, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasArticle() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearArticle() => clearField(1);
-  @$pb.TagNumber(1)
-  Article ensureArticle() => $_ensure(0);
 }
 
 class DeleteArticleRequest extends $pb.GeneratedMessage {
@@ -1056,21 +944,12 @@ class DeleteArticleRequest extends $pb.GeneratedMessage {
 }
 
 class DeleteArticleResponse extends $pb.GeneratedMessage {
-  factory DeleteArticleResponse({
-    $core.bool? success,
-  }) {
-    final $result = create();
-    if (success != null) {
-      $result.success = success;
-    }
-    return $result;
-  }
+  factory DeleteArticleResponse() => create();
   DeleteArticleResponse._() : super();
   factory DeleteArticleResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeleteArticleResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteArticleResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'articles.v1'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
     ..hasRequiredFields = false
   ;
 
@@ -1094,15 +973,6 @@ class DeleteArticleResponse extends $pb.GeneratedMessage {
   @$core.pragma('dart2js:noInline')
   static DeleteArticleResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeleteArticleResponse>(create);
   static DeleteArticleResponse? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.bool get success => $_getBF(0);
-  @$pb.TagNumber(1)
-  set success($core.bool v) { $_setBool(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasSuccess() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearSuccess() => clearField(1);
 }
 
 class ArticlesServiceApi {

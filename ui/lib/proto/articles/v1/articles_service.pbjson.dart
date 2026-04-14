@@ -13,27 +13,6 @@ import 'dart:convert' as $convert;
 import 'dart:core' as $core;
 import 'dart:typed_data' as $typed_data;
 
-@$core.Deprecated('Use identityDescriptor instead')
-const Identity$json = {
-  '1': 'Identity',
-  '2': [
-    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
-    {'1': 'email', '3': 2, '4': 1, '5': 9, '10': 'email'},
-    {'1': 'first_name', '3': 3, '4': 1, '5': 9, '9': 0, '10': 'firstName', '17': true},
-    {'1': 'last_name', '3': 4, '4': 1, '5': 9, '9': 1, '10': 'lastName', '17': true},
-  ],
-  '8': [
-    {'1': '_first_name'},
-    {'1': '_last_name'},
-  ],
-};
-
-/// Descriptor for `Identity`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List identityDescriptor = $convert.base64Decode(
-    'CghJZGVudGl0eRIOCgJpZBgBIAEoCVICaWQSFAoFZW1haWwYAiABKAlSBWVtYWlsEiIKCmZpcn'
-    'N0X25hbWUYAyABKAlIAFIJZmlyc3ROYW1liAEBEiAKCWxhc3RfbmFtZRgEIAEoCUgBUghsYXN0'
-    'TmFtZYgBAUINCgtfZmlyc3RfbmFtZUIMCgpfbGFzdF9uYW1l');
-
 @$core.Deprecated('Use phonemizerTokenMetaDescriptor instead')
 const PhonemizerTokenMeta$json = {
   '1': 'PhonemizerTokenMeta',
@@ -210,15 +189,11 @@ final $typed_data.Uint8List parseArticleRequestDescriptor = $convert.base64Decod
 @$core.Deprecated('Use parseArticleResponseDescriptor instead')
 const ParseArticleResponse$json = {
   '1': 'ParseArticleResponse',
-  '2': [
-    {'1': 'article', '3': 1, '4': 1, '5': 11, '6': '.articles.v1.Article', '10': 'article'},
-  ],
 };
 
 /// Descriptor for `ParseArticleResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List parseArticleResponseDescriptor = $convert.base64Decode(
-    'ChRQYXJzZUFydGljbGVSZXNwb25zZRIuCgdhcnRpY2xlGAEgASgLMhQuYXJ0aWNsZXMudjEuQX'
-    'J0aWNsZVIHYXJ0aWNsZQ==');
+    'ChRQYXJzZUFydGljbGVSZXNwb25zZQ==');
 
 @$core.Deprecated('Use deleteArticleRequestDescriptor instead')
 const DeleteArticleRequest$json = {
@@ -235,14 +210,11 @@ final $typed_data.Uint8List deleteArticleRequestDescriptor = $convert.base64Deco
 @$core.Deprecated('Use deleteArticleResponseDescriptor instead')
 const DeleteArticleResponse$json = {
   '1': 'DeleteArticleResponse',
-  '2': [
-    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
-  ],
 };
 
 /// Descriptor for `DeleteArticleResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List deleteArticleResponseDescriptor = $convert.base64Decode(
-    'ChVEZWxldGVBcnRpY2xlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcw==');
+    'ChVEZWxldGVBcnRpY2xlUmVzcG9uc2U=');
 
 const $core.Map<$core.String, $core.dynamic> ArticlesServiceBase$json = {
   '1': 'ArticlesService',
@@ -258,14 +230,14 @@ const $core.Map<$core.String, $core.dynamic> ArticlesServiceBase$json = {
 const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> ArticlesServiceBase$messageJson = {
   '.articles.v1.ParseArticleRequest': ParseArticleRequest$json,
   '.articles.v1.ParseArticleResponse': ParseArticleResponse$json,
-  '.articles.v1.Article': Article$json,
-  '.articles.v1.PhonemizerData': PhonemizerData$json,
-  '.articles.v1.PhonemizerTokenMeta': PhonemizerTokenMeta$json,
   '.articles.v1.GetArticlesRequest': GetArticlesRequest$json,
   '.articles.v1.GetArticlesResponse': GetArticlesResponse$json,
   '.articles.v1.ArticlePreview': ArticlePreview$json,
   '.articles.v1.GetArticleRequest': GetArticleRequest$json,
   '.articles.v1.GetArticleResponse': GetArticleResponse$json,
+  '.articles.v1.Article': Article$json,
+  '.articles.v1.PhonemizerData': PhonemizerData$json,
+  '.articles.v1.PhonemizerTokenMeta': PhonemizerTokenMeta$json,
   '.articles.v1.DeleteArticleRequest': DeleteArticleRequest$json,
   '.articles.v1.DeleteArticleResponse': DeleteArticleResponse$json,
 };
