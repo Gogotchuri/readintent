@@ -51,7 +51,7 @@ final $typed_data.Uint8List phonemizerDataDescriptor = $convert.base64Decode(
 const ArticlePreview$json = {
   '1': 'ArticlePreview',
   '2': [
-    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'id', '3': 1, '4': 1, '5': 3, '10': 'id'},
     {'1': 'status', '3': 2, '4': 1, '5': 9, '10': 'status'},
     {'1': 'title', '3': 3, '4': 1, '5': 9, '10': 'title'},
     {'1': 'author', '3': 4, '4': 1, '5': 9, '10': 'author'},
@@ -69,7 +69,7 @@ const ArticlePreview$json = {
 
 /// Descriptor for `ArticlePreview`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List articlePreviewDescriptor = $convert.base64Decode(
-    'Cg5BcnRpY2xlUHJldmlldxIOCgJpZBgBIAEoCVICaWQSFgoGc3RhdHVzGAIgASgJUgZzdGF0dX'
+    'Cg5BcnRpY2xlUHJldmlldxIOCgJpZBgBIAEoA1ICaWQSFgoGc3RhdHVzGAIgASgJUgZzdGF0dX'
     'MSFAoFdGl0bGUYAyABKAlSBXRpdGxlEhYKBmF1dGhvchgEIAEoCVIGYXV0aG9yEhIKBGRhdGUY'
     'BSABKAlSBGRhdGUSEAoDdXJsGAYgASgJUgN1cmwSHgoKY2F0ZWdvcmllcxgHIAMoCVIKY2F0ZW'
     'dvcmllcxIlCgtkZXNjcmlwdGlvbhgIIAEoCUgAUgtkZXNjcmlwdGlvbogBARIZCgVpbWFnZRgJ'
@@ -79,7 +79,7 @@ final $typed_data.Uint8List articlePreviewDescriptor = $convert.base64Decode(
 const Article$json = {
   '1': 'Article',
   '2': [
-    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'id', '3': 1, '4': 1, '5': 3, '10': 'id'},
     {'1': 'status', '3': 2, '4': 1, '5': 9, '10': 'status'},
     {'1': 'title', '3': 3, '4': 1, '5': 9, '10': 'title'},
     {'1': 'author', '3': 4, '4': 1, '5': 9, '10': 'author'},
@@ -101,7 +101,7 @@ const Article$json = {
 
 /// Descriptor for `Article`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List articleDescriptor = $convert.base64Decode(
-    'CgdBcnRpY2xlEg4KAmlkGAEgASgJUgJpZBIWCgZzdGF0dXMYAiABKAlSBnN0YXR1cxIUCgV0aX'
+    'CgdBcnRpY2xlEg4KAmlkGAEgASgDUgJpZBIWCgZzdGF0dXMYAiABKAlSBnN0YXR1cxIUCgV0aX'
     'RsZRgDIAEoCVIFdGl0bGUSFgoGYXV0aG9yGAQgASgJUgZhdXRob3ISEgoEZGF0ZRgFIAEoCVIE'
     'ZGF0ZRIlCg5leHRyYWN0ZWRfaHRtbBgGIAEoCVINZXh0cmFjdGVkSHRtbBIbCglwdXJlX3RleH'
     'QYByABKAlSCHB1cmVUZXh0EhAKA3VybBgIIAEoCVIDdXJsEh4KCmNhdGVnb3JpZXMYCSADKAlS'

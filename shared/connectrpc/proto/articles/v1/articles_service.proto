@@ -18,7 +18,7 @@ message PhonemizerData {
   repeated PhonemizerTokenMeta token_meta = 4;
 }
 message ArticlePreview {
-  string id = 1;
+  int64 id = 1;
   // failed, started_gathering, text_ready, ready
   string status = 2;
   string title = 3;
@@ -34,7 +34,7 @@ message ArticlePreview {
 
 // Full article with all content
 message Article {
-  string id = 1;
+  int64 id = 1;
   // failed, started_gathering, text_ready, ready
   string status = 2;
   string title = 3;

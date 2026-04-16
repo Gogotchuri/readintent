@@ -151,7 +151,7 @@ func (x *PhonemizerData) GetTokenMeta() []*PhonemizerTokenMeta {
 
 type ArticlePreview struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id    int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	// failed, started_gathering, text_ready, ready
 	Status     string   `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
 	Title      string   `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
@@ -197,11 +197,11 @@ func (*ArticlePreview) Descriptor() ([]byte, []int) {
 	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *ArticlePreview) GetId() string {
+func (x *ArticlePreview) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
-	return ""
+	return 0
 }
 
 func (x *ArticlePreview) GetStatus() string {
@@ -263,7 +263,7 @@ func (x *ArticlePreview) GetImage() string {
 // Full article with all content
 type Article struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id    int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	// failed, started_gathering, text_ready, ready
 	Status         string          `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
 	Title          string          `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
@@ -310,11 +310,11 @@ func (*Article) Descriptor() ([]byte, []int) {
 	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *Article) GetId() string {
+func (x *Article) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
-	return ""
+	return 0
 }
 
 func (x *Article) GetStatus() string {
@@ -798,7 +798,7 @@ const file_articles_v1_articles_service_proto_rawDesc = "" +
 	"\n" +
 	"token_meta\x18\x04 \x03(\v2 .articles.v1.PhonemizerTokenMetaR\ttokenMeta\"\x88\x02\n" +
 	"\x0eArticlePreview\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\x12\x14\n" +
 	"\x05title\x18\x03 \x01(\tR\x05title\x12\x16\n" +
 	"\x06author\x18\x04 \x01(\tR\x06author\x12\x12\n" +
@@ -812,7 +812,7 @@ const file_articles_v1_articles_service_proto_rawDesc = "" +
 	"\f_descriptionB\b\n" +
 	"\x06_image\"\xa4\x03\n" +
 	"\aArticle\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\x12\x14\n" +
 	"\x05title\x18\x03 \x01(\tR\x05title\x12\x16\n" +
 	"\x06author\x18\x04 \x01(\tR\x06author\x12\x12\n" +

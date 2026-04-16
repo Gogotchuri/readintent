@@ -175,7 +175,7 @@ class PhonemizerData extends $pb.GeneratedMessage {
 
 class ArticlePreview extends $pb.GeneratedMessage {
   factory ArticlePreview({
-    $core.String? id,
+    $fixnum.Int64? id,
     $core.String? status,
     $core.String? title,
     $core.String? author,
@@ -220,7 +220,7 @@ class ArticlePreview extends $pb.GeneratedMessage {
   factory ArticlePreview.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ArticlePreview', package: const $pb.PackageName(_omitMessageNames ? '' : 'articles.v1'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aInt64(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'status')
     ..aOS(3, _omitFieldNames ? '' : 'title')
     ..aOS(4, _omitFieldNames ? '' : 'author')
@@ -254,9 +254,9 @@ class ArticlePreview extends $pb.GeneratedMessage {
   static ArticlePreview? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.String get id => $_getSZ(0);
+  $fixnum.Int64 get id => $_getI64(0);
   @$pb.TagNumber(1)
-  set id($core.String v) { $_setString(0, v); }
+  set id($fixnum.Int64 v) { $_setInt64(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
@@ -335,7 +335,7 @@ class ArticlePreview extends $pb.GeneratedMessage {
 /// Full article with all content
 class Article extends $pb.GeneratedMessage {
   factory Article({
-    $core.String? id,
+    $fixnum.Int64? id,
     $core.String? status,
     $core.String? title,
     $core.String? author,
@@ -392,7 +392,7 @@ class Article extends $pb.GeneratedMessage {
   factory Article.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Article', package: const $pb.PackageName(_omitMessageNames ? '' : 'articles.v1'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aInt64(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'status')
     ..aOS(3, _omitFieldNames ? '' : 'title')
     ..aOS(4, _omitFieldNames ? '' : 'author')
@@ -429,9 +429,9 @@ class Article extends $pb.GeneratedMessage {
   static Article? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.String get id => $_getSZ(0);
+  $fixnum.Int64 get id => $_getI64(0);
   @$pb.TagNumber(1)
-  set id($core.String v) { $_setString(0, v); }
+  set id($fixnum.Int64 v) { $_setInt64(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
