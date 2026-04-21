@@ -4,17 +4,19 @@ import (
 	"context"
 	"fmt"
 
-	models "github.com/gogotchuri/readintent/backend/services/articles/models"
+	"github.com/gogotchuri/readintent/backend/database/models"
+	iomodels "github.com/gogotchuri/readintent/backend/services/articles/models"
 )
 
 type Service struct {
 	articleRepo Repository
-	eventHub    EventHub
+	//TODO
+	eventHub EventHub
 }
 
 func (s Service) ParseArticle(ctx context.Context, userID, url string) error {
 	// Check if the article already exists for the user
-	_, err := s.articleRepo.GetArticleForUser(ctx, userID, url)
+	_, err := s.articleRepo.GetArticleForUserWithURL(ctx, userID, url)
 	if err == nil {
 		return fmt.Errorf("article already exists for user %s and url %s", userID, url)
 	}
@@ -23,7 +25,7 @@ func (s Service) ParseArticle(ctx context.Context, userID, url string) error {
 	article, err := s.articleRepo.GetArticleWithURL(ctx, url)
 	if err == nil {
 		// Article exists, we can just create the user-article relation and return
-		_, err := s.articleRepo.CreateFullArticle(ctx, userID, *article)
+		err := s.articleRepo.AddArticleForUser(ctx, userID, article.Id)
 		return err
 	}
 	// Otherwise we will create an initial article and submit it for parsing down the line
@@ -36,14 +38,14 @@ func (s Service) ParseArticle(ctx context.Context, userID, url string) error {
 	return nil
 }
 
-func (s Service) GetArticles(ctx context.Context, userID string, searchQ models.GetArticlesRequest) (*models.GetArticlesResponse, error) {
+func (s Service) GetArticles(ctx context.Context, userID string, searchQ iomodels.GetArticlesRequest) (*iomodels.GetArticlesResponse, error) {
 	return s.articleRepo.GetArticles(ctx, userID, searchQ)
 }
 
-func (s Service) GetArticle(ctx context.Context, userID, id string) (*models.Article, error) {
+func (s Service) GetArticle(ctx context.Context, userID string, id int64) (*models.Article, error) {
 	return s.articleRepo.GetArticleForUser(ctx, userID, id)
 }
 
-func (s Service) DeleteArticle(ctx context.Context, userID, id string) error {
+func (s Service) DeleteArticle(ctx context.Context, userID string, id int64) error {
 	return s.articleRepo.DeleteArticle(ctx, userID, id)
 }

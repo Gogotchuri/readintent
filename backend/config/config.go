@@ -31,6 +31,9 @@ func (dc DatabaseConfig) GetDSN() string {
 		dc.Hostname, dc.Port, dc.Username, dc.Password, dc.Database, dc.SSLMode)
 }
 
+// SetEnvFromFile loads environment variables from a file. If the path is empty, it defaults to ".env".
+// The thing to be careful about - This will not override the existing ENV variables and should be treated as providing
+// default values in the absence of ENV variable.
 func SetEnvFromFile(path string) error {
 	if path == "" {
 		path = ".env"
@@ -38,6 +41,7 @@ func SetEnvFromFile(path string) error {
 	return godotenv.Load(path)
 }
 
+// LoadConfigFromEnv loads the configuration from environment variables and returns a Config struct.
 func LoadConfigFromEnv() (*Config, error) {
 	var c Config
 	err := env.Parse(&c)

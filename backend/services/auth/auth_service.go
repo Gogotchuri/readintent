@@ -12,11 +12,13 @@ import (
 // Or if we want to change the underlying authClient only the new implementation would be required, even a custom one
 type Service struct {
 	authClient authClient
+	userRepo   UserRepository
 }
 
-func NewService(authClient authClient) *Service {
+func NewService(authClient authClient, userRepo UserRepository) *Service {
 	return &Service{
 		authClient: authClient,
+		userRepo:   userRepo,
 	}
 }
 
@@ -29,7 +31,15 @@ func (s *Service) Health(ctx context.Context) error {
 }
 
 func (s *Service) PasswordRegistration(ctx context.Context, r authmodels.PasswordRegistrationRequest) (*authmodels.PasswordRegistrationResponse, error) {
-	return s.authClient.PasswordRegistration(ctx, r)
+	resp, err := s.authClient.PasswordRegistration(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+	// Create the user in the database as well, so that we can link it to articles and other data down the line
+	if err := s.userRepo.CreateUser(ctx, resp.Session.Identity.ID); err != nil {
+		return nil, fmt.Errorf("creating user in database: %w", err)
+	}
+	return resp, nil
 }
 
 func (s *Service) PasswordLogin(ctx context.Context, r authmodels.PasswordLoginRequest) (*authmodels.LoginResponse, error) {

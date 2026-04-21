@@ -13,3 +13,7 @@ type authClient interface {
 	Logout(ctx context.Context, sessionToken string) error
 	Health(ctx context.Context) error
 }
+
+type UserRepository interface {
+	CreateUser(ctx context.Context, id string) error
+}
