@@ -20,6 +20,6 @@ type Repository interface {
 	DeleteArticle(ctx context.Context, userID string, id int64) error
 }
 
-type EventHub interface {
+type ArticleSubmitter interface {
 	SubmitArticle(ctx context.Context, url string) error
 }

@@ -11,6 +11,17 @@ type Config struct {
 	AuthServerPort     int            `env:"AUTHSERVER_PORT" default:"5050"`
 	ArticlesServerPort int            `env:"ARTICLESERVER_PORT" default:"6060"`
 	DatabaseConfig     DatabaseConfig `env:"DATABASE_CONFIG"`
+	RedisStreams       RedisStreams   `env:"REDIS_STREAMS"`
+}
+
+type RedisStreams struct {
+	Hostname string `env:"REDIS_HOSTNAME" default:"localhost"`
+	Port     int    `env:"REDIS_PORT" default:"6379"`
+	Password string `env:"REDIS_PASSWORD" default:""`
+	DB       int    `env:"REDIS_DB" default:"0"`
+
+	GroupName    string `env:"REDIS_GROUP_NAME" default:""`
+	ConsumerName string `env:"REDIS_CONSUMER_NAME" default:""`
 }
 
 type DatabaseConfig struct {

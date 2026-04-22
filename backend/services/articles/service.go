@@ -10,8 +10,14 @@ import (
 
 type Service struct {
 	articleRepo Repository
-	//TODO
-	eventHub EventHub
+	eventHub    ArticleSubmitter
+}
+
+func NewService(articleRepo Repository, eventHub ArticleSubmitter) *Service {
+	return &Service{
+		articleRepo: articleRepo,
+		eventHub:    eventHub,
+	}
 }
 
 func (s Service) ParseArticle(ctx context.Context, userID, url string) error {
@@ -48,4 +54,8 @@ func (s Service) GetArticle(ctx context.Context, userID string, id int64) (*mode
 
 func (s Service) DeleteArticle(ctx context.Context, userID string, id int64) error {
 	return s.articleRepo.DeleteArticle(ctx, userID, id)
+}
+
+func (s Service) UpdateArticle(ctx context.Context, article models.Article) error {
+	return s.articleRepo.UpdateArticle(ctx, article)
 }
