@@ -1,0 +1,29 @@
+{
+  "manifest_vesion": 3,
+  "name": "ReadIntent",
+  "version": "0.1.0",
+  "description": "Send the current article page or a custom URL for extraction.",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "src/popup.html",
+    "default_title": "ReadIntent",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png"
+    }
+  },
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "@readintent.ext",
+      "strict_min_version": "115.0"
+    }
+  }
+}

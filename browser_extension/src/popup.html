@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>ReadIntent</title>
+        <link rel="stylesheet" href="popup.css" />
+    </head>
+    <body>
+        <header>
+            <div class="logo">ReadIntent</div>
+            <button id="unpair-btn" hidden title="Unpair this device">
+                unpair
+            </button>
+        </header>
+
+        <main>
+            <!-- State 1: No code yet and unpaired, by default we will generate the code without user interaction -->
+            <section id="state-unpaired" hidden>
+                <p>Generating code...</p>
+            </section>
+
+            <!-- State 2: code generated, waiting for mobile to claim -->
+            <section id="state-pairing" hidden>
+                <p>Open the ReadIntent mobile app and enter this code:</p>
+                <div class="code" id="code-display">___</div>
+            </section>
+
+            <!-- State 3: paired, we will display authenticated actions -->
+            <section id="state-paired" hidden>
+                <div class="paired-row">
+                    <span class="dot ok"></span>
+                    <span>Paired</span>
+                </div>
+                <button id="send-page-btn" class="primary">
+                    Send this page
+                </button>
+                <div class="divider"><span>or</span></div>
+                <label for="custom-url" class="label">Custom URL</label>
+                <input id="custom-url" type="url" placeholder="https://…" />
+                <button id="send-custom-btn" class="secondary">Send URL</button>
+            </section>
+        </main>
+
+        <script type="module" src="popup.js"></script>
+    </body>
+</html>
