@@ -1,4 +1,4 @@
-import { sessionStorage } from "./browser_apis";
+import { sessionStorage } from "./browser_apis.js";
 
 const elByID = (id) => document.getElementById(id);
 
@@ -8,7 +8,7 @@ const pairingStateEl = elByID("state-pairing");
 const pairedStateEl = elByID("state-paired");
 
 const codeEl = elByID("code-display");
-const unpairBtn = $("unpair-btn");
+const unpairBtn = elByID("unpair-btn");
 
 function showState(state) {
   switch (state) {
@@ -57,22 +57,20 @@ function addStorageListeners() {
 
 // General rendering function detects and shows the state. Returns the state
 async function render() {
-  let state = "unpaired";
-  const [sessionToken, tokenErr] = await sessionStorage.getSessionToken();
-  if (!tokenErr && sessionToken) {
-    state = "paired";
+  const state = await sessionStorage.determineAuthState();
+  if (state !== "pairing") {
     showState(state);
     return state;
   }
-
+  // For the case of pairing
   const [code, codeErr] = await sessionStorage.getUserCode();
-  //TODO need to return expiration with the code
   if (!codeErr && code) {
-    state = "pairing";
     codeEl.textContent = code;
+    showState(state);
+    return state;
   }
-  showState(state);
-  return state;
+  // If we haven't returned yet, there likely has been an issue with code and let's change the state to unpaired
+  return "unpaired";
 }
 
 function initializeFromState(state) {

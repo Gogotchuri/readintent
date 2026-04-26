@@ -1,5 +1,5 @@
 {
-  "manifest_vesion": 3,
+  "manifest_version": 3,
   "name": "ReadIntent",
   "version": "0.1.0",
   "description": "Send the current article page or a custom URL for extraction.",
@@ -14,6 +14,7 @@
     }
   },
   "background": {
+    "type": "module",
     "service_worker": "src/background.js"
   },
   "icons": {
@@ -23,7 +24,7 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "@readintent.ext",
-      "strict_min_version": "115.0"
+      "strict_min_version": "128.0"
     }
   }
 }
