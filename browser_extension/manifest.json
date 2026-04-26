@@ -15,7 +15,8 @@
   },
   "background": {
     "type": "module",
-    "service_worker": "src/background.js"
+    "service_worker": "src/background.js",
+    "scripts": ["src/background.js"]
   },
   "icons": {
     "16": "icons/icon-16.png",

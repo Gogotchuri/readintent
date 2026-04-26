@@ -1,8 +1,8 @@
 // Most medium to long running processes should ideally be done in the background for the extension
 // otherwise user might accidentally cancer the requests mid-flight and cause issues
 
-import { checkPairingStatus, requestCodes } from "./api.js";
-import { scripting, sessionStorage, tabs } from "./browser_apis.js";
+import { checkPairingStatus, requestCodes, submitArticle } from "./api.js";
+import { runtime, scripting, sessionStorage, tabs } from "./browser_apis.js";
 
 let pollTimer = null;
 
@@ -80,7 +80,7 @@ async function extractContentFromActiveTab() {
     files: ["src/content_extraction.js"],
   });
 
-  const payload = results?.[0]?.results;
+  const payload = results?.[0]?.result;
   if (!payload?.url) return [null, new Error("Couldn't read active page")];
 
   return [payload, null];
@@ -90,17 +90,45 @@ runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   (async () => {
     try {
       switch (msg.type) {
-        case "START_PAIRING":
-          //TODO
+        case "START_PAIRING": {
+          const err = await startPairing();
+          if (err) {
+            sendResponse({ ok: false, error: err.message });
+          } else {
+            sendResponse({ ok: true });
+          }
           break;
+        }
         case "UNPAIR":
-          //TODO
+          await unpair();
+          sendResponse({ ok: true });
           break;
-        case "SEND_URL":
-          //TODO
+        case "SEND_URL": {
+          let url = msg.url;
+          let html;
+          if (msg.extractFromTab) {
+            const [payload, err] = await extractContentFromActiveTab();
+            if (err) {
+              sendResponse({ ok: false, error: err.message });
+              break;
+            }
+            url = payload.url;
+            html = payload.html;
+          }
+          const err = await submitArticle({ url, html });
+          if (err) {
+            sendResponse({ ok: false, error: err.message });
+          } else {
+            sendResponse({ ok: true });
+          }
           break;
+        }
         case "RESUME_POLLING": {
-          //TODO
+          const pairingObject = await sessionStorage.getPairingModeObject();
+          if (pairingObject?.intervalSec) {
+            startPolling(pairingObject.intervalSec);
+          }
+          sendResponse({ ok: true });
           break;
         }
         default:
@@ -115,6 +143,10 @@ runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 (async () => {
   const state = await sessionStorage.determineAuthState();
   if (state === "pairing") {
-    startPolling();
+    const pairingObject = await sessionStorage.getPairingModeObject();
+    // If pairing object isn't setup correctly we can simply return
+    if (pairingObject?.intervalSec) {
+      startPolling(pairingObject.intervalSec);
+    }
   }
 })();

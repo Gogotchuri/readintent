@@ -46,13 +46,13 @@ async function authenticatedRequest(method, uri, body = undefined) {
 }
 
 async function request(method, uri, body = undefined) {
-  const body = method === "GET" ? undefined : JSON.stringify(body);
+  const requestBody = method === "GET" ? undefined : JSON.stringify(body);
   const res = await fetch(`${API_URL}${uri}`, {
     method: method,
     headers: {
       "Content-Type": "application/json",
     },
-    body: body,
+    body: requestBody,
   });
   if (!res.ok) {
     throw new Error(`request failed: ${res.status}`);

@@ -1,4 +1,4 @@
-import { sessionStorage } from "./browser_apis.js";
+import { runtime, sessionStorage } from "./browser_apis.js";
 
 const elByID = (id) => document.getElementById(id);
 
@@ -6,28 +6,52 @@ const elByID = (id) => document.getElementById(id);
 const unpairedStateEl = elByID("state-unpaired");
 const pairingStateEl = elByID("state-pairing");
 const pairedStateEl = elByID("state-paired");
+const states = {
+  paired: pairedStateEl,
+  unpaired: unpairedStateEl,
+  pairing: pairingStateEl,
+};
 
 const codeEl = elByID("code-display");
 const unpairBtn = elByID("unpair-btn");
+const sendPageBtn = elByID("send-page-btn");
+const sendCustomBtn = elByID("send-custom-btn");
+const customUrlInput = elByID("custom-url");
+const statusMsg = elByID("status-message");
+const statusDotPaired = elByID("status-paired");
+const statusDotPairing = elByID("status-pairing");
+const statusDotUnpaired = elByID("status-unpaired");
+const statusDots = {
+  paired: statusDotPaired,
+  unpaired: statusDotUnpaired,
+  pairing: statusDotPairing,
+};
+
+function showFeedback(text, isError = false) {
+  statusMsg.textContent = text;
+  statusMsg.classList.toggle("error", isError);
+  statusMsg.classList.toggle("success", !isError);
+  statusMsg.hidden = false;
+  setTimeout(() => {
+    statusMsg.hidden = true;
+  }, 3000);
+}
 
 function showState(state) {
-  switch (state) {
-    case "unpaired":
-      unpairedStateEl.hidden = false;
-      pairingStateEl.hidden = true;
-      pairedStateEl.hidden = true;
-      break;
-    case "pairing":
-      unpairedStateEl.hidden = true;
-      pairingStateEl.hidden = false;
-      pairedStateEl.hidden = true;
-      break;
-    case "paired":
-      unpairedStateEl.hidden = true;
-      pairingStateEl.hidden = true;
-      pairedStateEl.hidden = false;
-      unpairBtn.hidden = false;
-      break;
+  // Hide everything
+  for (const s of ["paired", "pairing", "unpaired"]) {
+    statusDots[s].hidden = true;
+    states[s].hidden = true;
+  }
+  // Show the current status status and states
+  statusDots[state].hidden = false;
+  states[state].hidden = false;
+
+  // Show or hide unpair button
+  if (state === "paired") {
+    unpairBtn.hidden = false;
+  } else {
+    unpairBtn.hidden = true;
   }
 }
 
@@ -75,19 +99,64 @@ async function render() {
 
 function initializeFromState(state) {
   if (state === "paired") {
-    //Nothing to do here, we have paired state and rendered everything already
     return;
   }
   if (state === "unpaired") {
-    //TODO start pairing
+    runtime.sendMessage({ type: "START_PAIRING" }).then((res) => {
+      if (!res?.ok) showFeedback(res?.error || "Failed to start pairing", true);
+      //Try in 5 seconds
+      setTimeout(() => initializeFromState(state), 5000);
+    });
     return;
   }
   if (state === "pairing") {
-    //TODO resume polling we have the code up waiting for the user action
+    runtime.sendMessage({ type: "RESUME_POLLING" }).then((res) => {
+      if (!res?.ok)
+        showFeedback(res?.error || "Failed to resume polling", true);
+    });
   }
 }
 
-//TODO event listeners
+// Event listeners
+
+unpairBtn.addEventListener("click", async () => {
+  await runtime.sendMessage({ type: "UNPAIR" });
+  const state = await render();
+  initializeFromState(state);
+});
+
+sendPageBtn.addEventListener("click", async () => {
+  sendPageBtn.disabled = true;
+  showFeedback("Sending...");
+  const res = await runtime.sendMessage({
+    type: "SEND_URL",
+    extractFromTab: true,
+  });
+  sendPageBtn.disabled = false;
+  if (res?.ok) {
+    showFeedback("Sent!");
+  } else {
+    showFeedback(res?.error || "Failed to send page", true);
+  }
+});
+
+sendCustomBtn.addEventListener("click", async () => {
+  const url = customUrlInput.value.trim();
+  if (!url) {
+    showFeedback("Please enter a URL", true);
+    return;
+  }
+  sendCustomBtn.disabled = true;
+  showFeedback("Sending...");
+  const res = await runtime.sendMessage({ type: "SEND_URL", url });
+  sendCustomBtn.disabled = false;
+  if (res?.ok) {
+    showFeedback("Sent!");
+    customUrlInput.value = "";
+  } else {
+    showFeedback(res?.error || "Failed to send URL", true);
+  }
+});
 
 // Init
 (async () => {

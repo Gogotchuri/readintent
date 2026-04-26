@@ -8,7 +8,12 @@
     </head>
     <body>
         <header>
-            <div class="logo">ReadIntent</div>
+            <div class="logo">
+                ReadIntent
+                <span id="status-paired" hidden class="dot ok"></span>
+                <span id="status-pairing" hidden class="dot yellow"></span>
+                <span id="status-unpaired" hidden class="dot red"></span>
+            </div>
             <button id="unpair-btn" hidden title="Unpair this device">
                 unpair
             </button>
@@ -28,10 +33,6 @@
 
             <!-- State 3: paired, we will display authenticated actions -->
             <section id="state-paired" hidden>
-                <div class="paired-row">
-                    <span class="dot ok"></span>
-                    <span>Paired</span>
-                </div>
                 <button id="send-page-btn" class="primary">
                     Send this page
                 </button>
