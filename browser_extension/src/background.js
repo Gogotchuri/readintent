@@ -117,6 +117,10 @@ runtime.onMessage.addListener((msg, _sender, sendResponse) => {
           }
           const err = await submitArticle({ url, html });
           if (err) {
+            // Check if error contains 401 and unpair
+            if (err.message && err.message.includes("401")) {
+              await unpair();
+            }
             sendResponse({ ok: false, error: err.message });
           } else {
             sendResponse({ ok: true });

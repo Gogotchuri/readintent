@@ -2,14 +2,15 @@ package repositories
 
 import (
 	"context"
-	"database/sql"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type UserRepository struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewUserRepository(db *sql.DB) UserRepository {
+func NewUserRepository(db *sqlx.DB) UserRepository {
 	return UserRepository{
 		db: db,
 	}

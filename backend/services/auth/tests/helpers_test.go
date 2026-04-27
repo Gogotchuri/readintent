@@ -93,8 +93,9 @@ func startConnectRPCAuthServer(t *testing.T) {
 	kratosURL := fmt.Sprintf("http://127.0.0.1:%s", kratosPublicPort)
 	mux := http.NewServeMux()
 	kratosClient := adapters.NewKratosClient(kratosURL)
-	service := auth.NewService(kratosClient)
-	connectRPC := authconnectrpc.NewAuthServer(service)
+	service := auth.NewService(kratosClient, nil)
+	//TODO grantClaimer
+	connectRPC := authconnectrpc.NewAuthServer(service, nil)
 	connectRPC.BindAuthServerToMux(mux)
 	protoc := new(http.Protocols)
 	protoc.SetHTTP1(true)

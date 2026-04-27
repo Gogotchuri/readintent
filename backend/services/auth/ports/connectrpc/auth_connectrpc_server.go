@@ -17,13 +17,19 @@ import (
 
 var _ authv1connect.AuthServiceHandler = &AuthServer{}
 
-type AuthServer struct {
-	service *auth.Service
+type AuthGrantClaimer interface {
+	ClaimGrantCode(ctx context.Context, userCode, userID string) error
 }
 
-func NewAuthServer(service *auth.Service) *AuthServer {
+type AuthServer struct {
+	service             *auth.Service
+	grantClaimerService AuthGrantClaimer
+}
+
+func NewAuthServer(service *auth.Service, grantClaimer AuthGrantClaimer) *AuthServer {
 	return &AuthServer{
-		service: service,
+		service:             service,
+		grantClaimerService: grantClaimer,
 	}
 }
 
@@ -35,6 +41,8 @@ func (a *AuthServer) BindAuthServerToMux(mux *http.ServeMux) {
 	path, handler := authv1connect.NewAuthServiceHandler(a, interceptors)
 	mux.Handle(path, handler)
 }
+
+//TODO claim grant code in auth contract
 
 // Health Returns health of the auth service
 func (a *AuthServer) Health(ctx context.Context, _ *connect.Request[authv1.HealthRequest]) (*connect.Response[authv1.HealthResponse], error) {

@@ -20,7 +20,9 @@ func NewService(articleRepo Repository, eventHub ArticleSubmitter) *Service {
 	}
 }
 
-func (s Service) ParseArticle(ctx context.Context, userID, url string) error {
+//TODO incorporate the html here if persent and not empty
+
+func (s Service) ParseArticle(ctx context.Context, userID, url, html string) error {
 	// Check if the article already exists for the user
 	_, err := s.articleRepo.GetArticleForUserWithURL(ctx, userID, url)
 	if err == nil {
