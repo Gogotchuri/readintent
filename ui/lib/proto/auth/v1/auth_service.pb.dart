@@ -739,6 +739,88 @@ class HealthResponse extends $pb.GeneratedMessage {
   static HealthResponse? _defaultInstance;
 }
 
+class ClaimGrantCodeRequest extends $pb.GeneratedMessage {
+  factory ClaimGrantCodeRequest({
+    $core.String? userCode,
+  }) {
+    final $result = create();
+    if (userCode != null) {
+      $result.userCode = userCode;
+    }
+    return $result;
+  }
+  ClaimGrantCodeRequest._() : super();
+  factory ClaimGrantCodeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ClaimGrantCodeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ClaimGrantCodeRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userCode')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ClaimGrantCodeRequest clone() => ClaimGrantCodeRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ClaimGrantCodeRequest copyWith(void Function(ClaimGrantCodeRequest) updates) => super.copyWith((message) => updates(message as ClaimGrantCodeRequest)) as ClaimGrantCodeRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ClaimGrantCodeRequest create() => ClaimGrantCodeRequest._();
+  ClaimGrantCodeRequest createEmptyInstance() => create();
+  static $pb.PbList<ClaimGrantCodeRequest> createRepeated() => $pb.PbList<ClaimGrantCodeRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ClaimGrantCodeRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ClaimGrantCodeRequest>(create);
+  static ClaimGrantCodeRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userCode => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userCode($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserCode() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserCode() => clearField(1);
+}
+
+class ClaimGrantCodeResponse extends $pb.GeneratedMessage {
+  factory ClaimGrantCodeResponse() => create();
+  ClaimGrantCodeResponse._() : super();
+  factory ClaimGrantCodeResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ClaimGrantCodeResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ClaimGrantCodeResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth.v1'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ClaimGrantCodeResponse clone() => ClaimGrantCodeResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ClaimGrantCodeResponse copyWith(void Function(ClaimGrantCodeResponse) updates) => super.copyWith((message) => updates(message as ClaimGrantCodeResponse)) as ClaimGrantCodeResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ClaimGrantCodeResponse create() => ClaimGrantCodeResponse._();
+  ClaimGrantCodeResponse createEmptyInstance() => create();
+  static $pb.PbList<ClaimGrantCodeResponse> createRepeated() => $pb.PbList<ClaimGrantCodeResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ClaimGrantCodeResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ClaimGrantCodeResponse>(create);
+  static ClaimGrantCodeResponse? _defaultInstance;
+}
+
 class AuthServiceApi {
   $pb.RpcClient _client;
   AuthServiceApi(this._client);
@@ -757,6 +839,9 @@ class AuthServiceApi {
   ;
   $async.Future<HealthResponse> health($pb.ClientContext? ctx, HealthRequest request) =>
     _client.invoke<HealthResponse>(ctx, 'AuthService', 'Health', request, HealthResponse())
+  ;
+  $async.Future<ClaimGrantCodeResponse> claimGrantCode($pb.ClientContext? ctx, ClaimGrantCodeRequest request) =>
+    _client.invoke<ClaimGrantCodeResponse>(ctx, 'AuthService', 'ClaimGrantCode', request, ClaimGrantCodeResponse())
   ;
 }
 

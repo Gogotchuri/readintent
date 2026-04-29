@@ -74,6 +74,11 @@ message LogoutResponse {}
 message HealthRequest {}
 message HealthResponse {}
 
+message ClaimGrantCodeRequest {
+  string user_code = 1;
+}
+message ClaimGrantCodeResponse {}
+
 service AuthService {
   rpc PasswordLogin(PasswordLoginRequest) returns (PasswordLoginResponse);
   rpc PasswordRegistration(PasswordRegistrationRequest)
@@ -81,4 +86,5 @@ service AuthService {
   rpc Logout(LogoutRequest) returns (LogoutResponse);
   rpc GetSession(GetSessionRequest) returns (GetSessionResponse);
   rpc Health(HealthRequest) returns (HealthResponse);
+  rpc ClaimGrantCode(ClaimGrantCodeRequest) returns (ClaimGrantCodeResponse);
 }

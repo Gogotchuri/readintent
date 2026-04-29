@@ -190,6 +190,27 @@ const HealthResponse$json = {
 final $typed_data.Uint8List healthResponseDescriptor = $convert.base64Decode(
     'Cg5IZWFsdGhSZXNwb25zZQ==');
 
+@$core.Deprecated('Use claimGrantCodeRequestDescriptor instead')
+const ClaimGrantCodeRequest$json = {
+  '1': 'ClaimGrantCodeRequest',
+  '2': [
+    {'1': 'user_code', '3': 1, '4': 1, '5': 9, '10': 'userCode'},
+  ],
+};
+
+/// Descriptor for `ClaimGrantCodeRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List claimGrantCodeRequestDescriptor = $convert.base64Decode(
+    'ChVDbGFpbUdyYW50Q29kZVJlcXVlc3QSGwoJdXNlcl9jb2RlGAEgASgJUgh1c2VyQ29kZQ==');
+
+@$core.Deprecated('Use claimGrantCodeResponseDescriptor instead')
+const ClaimGrantCodeResponse$json = {
+  '1': 'ClaimGrantCodeResponse',
+};
+
+/// Descriptor for `ClaimGrantCodeResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List claimGrantCodeResponseDescriptor = $convert.base64Decode(
+    'ChZDbGFpbUdyYW50Q29kZVJlc3BvbnNl');
+
 const $core.Map<$core.String, $core.dynamic> AuthServiceBase$json = {
   '1': 'AuthService',
   '2': [
@@ -198,6 +219,7 @@ const $core.Map<$core.String, $core.dynamic> AuthServiceBase$json = {
     {'1': 'Logout', '2': '.auth.v1.LogoutRequest', '3': '.auth.v1.LogoutResponse'},
     {'1': 'GetSession', '2': '.auth.v1.GetSessionRequest', '3': '.auth.v1.GetSessionResponse'},
     {'1': 'Health', '2': '.auth.v1.HealthRequest', '3': '.auth.v1.HealthResponse'},
+    {'1': 'ClaimGrantCode', '2': '.auth.v1.ClaimGrantCodeRequest', '3': '.auth.v1.ClaimGrantCodeResponse'},
   ],
 };
 
@@ -216,6 +238,8 @@ const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> AuthServic
   '.auth.v1.GetSessionResponse': GetSessionResponse$json,
   '.auth.v1.HealthRequest': HealthRequest$json,
   '.auth.v1.HealthResponse': HealthResponse$json,
+  '.auth.v1.ClaimGrantCodeRequest': ClaimGrantCodeRequest$json,
+  '.auth.v1.ClaimGrantCodeResponse': ClaimGrantCodeResponse$json,
 };
 
 /// Descriptor for `AuthService`. Decode as a `google.protobuf.ServiceDescriptorProto`.
@@ -226,5 +250,7 @@ final $typed_data.Uint8List authServiceDescriptor = $convert.base64Decode(
     'Bhc3N3b3JkUmVnaXN0cmF0aW9uUmVzcG9uc2USOQoGTG9nb3V0EhYuYXV0aC52MS5Mb2dvdXRS'
     'ZXF1ZXN0GhcuYXV0aC52MS5Mb2dvdXRSZXNwb25zZRJFCgpHZXRTZXNzaW9uEhouYXV0aC52MS'
     '5HZXRTZXNzaW9uUmVxdWVzdBobLmF1dGgudjEuR2V0U2Vzc2lvblJlc3BvbnNlEjkKBkhlYWx0'
-    'aBIWLmF1dGgudjEuSGVhbHRoUmVxdWVzdBoXLmF1dGgudjEuSGVhbHRoUmVzcG9uc2U=');
+    'aBIWLmF1dGgudjEuSGVhbHRoUmVxdWVzdBoXLmF1dGgudjEuSGVhbHRoUmVzcG9uc2USUQoOQ2'
+    'xhaW1HcmFudENvZGUSHi5hdXRoLnYxLkNsYWltR3JhbnRDb2RlUmVxdWVzdBofLmF1dGgudjEu'
+    'Q2xhaW1HcmFudENvZGVSZXNwb25zZQ==');
 

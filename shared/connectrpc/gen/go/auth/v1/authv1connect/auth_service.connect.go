@@ -45,6 +45,9 @@ const (
 	AuthServiceGetSessionProcedure = "/auth.v1.AuthService/GetSession"
 	// AuthServiceHealthProcedure is the fully-qualified name of the AuthService's Health RPC.
 	AuthServiceHealthProcedure = "/auth.v1.AuthService/Health"
+	// AuthServiceClaimGrantCodeProcedure is the fully-qualified name of the AuthService's
+	// ClaimGrantCode RPC.
+	AuthServiceClaimGrantCodeProcedure = "/auth.v1.AuthService/ClaimGrantCode"
 )
 
 // AuthServiceClient is a client for the auth.v1.AuthService service.
@@ -54,6 +57,7 @@ type AuthServiceClient interface {
 	Logout(context.Context, *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error)
 	GetSession(context.Context, *connect.Request[v1.GetSessionRequest]) (*connect.Response[v1.GetSessionResponse], error)
 	Health(context.Context, *connect.Request[v1.HealthRequest]) (*connect.Response[v1.HealthResponse], error)
+	ClaimGrantCode(context.Context, *connect.Request[v1.ClaimGrantCodeRequest]) (*connect.Response[v1.ClaimGrantCodeResponse], error)
 }
 
 // NewAuthServiceClient constructs a client for the auth.v1.AuthService service. By default, it uses
@@ -97,6 +101,12 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(authServiceMethods.ByName("Health")),
 			connect.WithClientOptions(opts...),
 		),
+		claimGrantCode: connect.NewClient[v1.ClaimGrantCodeRequest, v1.ClaimGrantCodeResponse](
+			httpClient,
+			baseURL+AuthServiceClaimGrantCodeProcedure,
+			connect.WithSchema(authServiceMethods.ByName("ClaimGrantCode")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -107,6 +117,7 @@ type authServiceClient struct {
 	logout               *connect.Client[v1.LogoutRequest, v1.LogoutResponse]
 	getSession           *connect.Client[v1.GetSessionRequest, v1.GetSessionResponse]
 	health               *connect.Client[v1.HealthRequest, v1.HealthResponse]
+	claimGrantCode       *connect.Client[v1.ClaimGrantCodeRequest, v1.ClaimGrantCodeResponse]
 }
 
 // PasswordLogin calls auth.v1.AuthService.PasswordLogin.
@@ -134,6 +145,11 @@ func (c *authServiceClient) Health(ctx context.Context, req *connect.Request[v1.
 	return c.health.CallUnary(ctx, req)
 }
 
+// ClaimGrantCode calls auth.v1.AuthService.ClaimGrantCode.
+func (c *authServiceClient) ClaimGrantCode(ctx context.Context, req *connect.Request[v1.ClaimGrantCodeRequest]) (*connect.Response[v1.ClaimGrantCodeResponse], error) {
+	return c.claimGrantCode.CallUnary(ctx, req)
+}
+
 // AuthServiceHandler is an implementation of the auth.v1.AuthService service.
 type AuthServiceHandler interface {
 	PasswordLogin(context.Context, *connect.Request[v1.PasswordLoginRequest]) (*connect.Response[v1.PasswordLoginResponse], error)
@@ -141,6 +157,7 @@ type AuthServiceHandler interface {
 	Logout(context.Context, *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error)
 	GetSession(context.Context, *connect.Request[v1.GetSessionRequest]) (*connect.Response[v1.GetSessionResponse], error)
 	Health(context.Context, *connect.Request[v1.HealthRequest]) (*connect.Response[v1.HealthResponse], error)
+	ClaimGrantCode(context.Context, *connect.Request[v1.ClaimGrantCodeRequest]) (*connect.Response[v1.ClaimGrantCodeResponse], error)
 }
 
 // NewAuthServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -180,6 +197,12 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(authServiceMethods.ByName("Health")),
 		connect.WithHandlerOptions(opts...),
 	)
+	authServiceClaimGrantCodeHandler := connect.NewUnaryHandler(
+		AuthServiceClaimGrantCodeProcedure,
+		svc.ClaimGrantCode,
+		connect.WithSchema(authServiceMethods.ByName("ClaimGrantCode")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/auth.v1.AuthService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AuthServicePasswordLoginProcedure:
@@ -192,6 +215,8 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 			authServiceGetSessionHandler.ServeHTTP(w, r)
 		case AuthServiceHealthProcedure:
 			authServiceHealthHandler.ServeHTTP(w, r)
+		case AuthServiceClaimGrantCodeProcedure:
+			authServiceClaimGrantCodeHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -219,4 +244,8 @@ func (UnimplementedAuthServiceHandler) GetSession(context.Context, *connect.Requ
 
 func (UnimplementedAuthServiceHandler) Health(context.Context, *connect.Request[v1.HealthRequest]) (*connect.Response[v1.HealthResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.Health is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) ClaimGrantCode(context.Context, *connect.Request[v1.ClaimGrantCodeRequest]) (*connect.Response[v1.ClaimGrantCodeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.ClaimGrantCode is not implemented"))
 }

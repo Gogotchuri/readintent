@@ -44,4 +44,11 @@ abstract final class AuthService {
     authv1auth_service.HealthRequest.new,
     authv1auth_service.HealthResponse.new,
   );
+
+  static const claimGrantCode = connect.Spec(
+    '/$name/ClaimGrantCode',
+    connect.StreamType.unary,
+    authv1auth_service.ClaimGrantCodeRequest.new,
+    authv1auth_service.ClaimGrantCodeResponse.new,
+  );
 }

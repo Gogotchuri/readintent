@@ -641,6 +641,86 @@ func (*HealthResponse) Descriptor() ([]byte, []int) {
 	return file_auth_v1_auth_service_proto_rawDescGZIP(), []int{12}
 }
 
+type ClaimGrantCodeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserCode      string                 `protobuf:"bytes,1,opt,name=user_code,json=userCode,proto3" json:"user_code,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ClaimGrantCodeRequest) Reset() {
+	*x = ClaimGrantCodeRequest{}
+	mi := &file_auth_v1_auth_service_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ClaimGrantCodeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ClaimGrantCodeRequest) ProtoMessage() {}
+
+func (x *ClaimGrantCodeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_v1_auth_service_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ClaimGrantCodeRequest.ProtoReflect.Descriptor instead.
+func (*ClaimGrantCodeRequest) Descriptor() ([]byte, []int) {
+	return file_auth_v1_auth_service_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *ClaimGrantCodeRequest) GetUserCode() string {
+	if x != nil {
+		return x.UserCode
+	}
+	return ""
+}
+
+type ClaimGrantCodeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ClaimGrantCodeResponse) Reset() {
+	*x = ClaimGrantCodeResponse{}
+	mi := &file_auth_v1_auth_service_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ClaimGrantCodeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ClaimGrantCodeResponse) ProtoMessage() {}
+
+func (x *ClaimGrantCodeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_v1_auth_service_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ClaimGrantCodeResponse.ProtoReflect.Descriptor instead.
+func (*ClaimGrantCodeResponse) Descriptor() ([]byte, []int) {
+	return file_auth_v1_auth_service_proto_rawDescGZIP(), []int{14}
+}
+
 var File_auth_v1_auth_service_proto protoreflect.FileDescriptor
 
 const file_auth_v1_auth_service_proto_rawDesc = "" +
@@ -686,14 +766,18 @@ const file_auth_v1_auth_service_proto_rawDesc = "" +
 	"\rLogoutRequest\"\x10\n" +
 	"\x0eLogoutResponse\"\x0f\n" +
 	"\rHealthRequest\"\x10\n" +
-	"\x0eHealthResponse2\xff\x02\n" +
+	"\x0eHealthResponse\"4\n" +
+	"\x15ClaimGrantCodeRequest\x12\x1b\n" +
+	"\tuser_code\x18\x01 \x01(\tR\buserCode\"\x18\n" +
+	"\x16ClaimGrantCodeResponse2\xd2\x03\n" +
 	"\vAuthService\x12N\n" +
 	"\rPasswordLogin\x12\x1d.auth.v1.PasswordLoginRequest\x1a\x1e.auth.v1.PasswordLoginResponse\x12c\n" +
 	"\x14PasswordRegistration\x12$.auth.v1.PasswordRegistrationRequest\x1a%.auth.v1.PasswordRegistrationResponse\x129\n" +
 	"\x06Logout\x12\x16.auth.v1.LogoutRequest\x1a\x17.auth.v1.LogoutResponse\x12E\n" +
 	"\n" +
 	"GetSession\x12\x1a.auth.v1.GetSessionRequest\x1a\x1b.auth.v1.GetSessionResponse\x129\n" +
-	"\x06Health\x12\x16.auth.v1.HealthRequest\x1a\x17.auth.v1.HealthResponseB?Z=github.com/gogotchuri/readintent/backend/proto/auth/v1;authv1b\x06proto3"
+	"\x06Health\x12\x16.auth.v1.HealthRequest\x1a\x17.auth.v1.HealthResponse\x12Q\n" +
+	"\x0eClaimGrantCode\x12\x1e.auth.v1.ClaimGrantCodeRequest\x1a\x1f.auth.v1.ClaimGrantCodeResponseB?Z=github.com/gogotchuri/readintent/backend/proto/auth/v1;authv1b\x06proto3"
 
 var (
 	file_auth_v1_auth_service_proto_rawDescOnce sync.Once
@@ -707,7 +791,7 @@ func file_auth_v1_auth_service_proto_rawDescGZIP() []byte {
 	return file_auth_v1_auth_service_proto_rawDescData
 }
 
-var file_auth_v1_auth_service_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_auth_v1_auth_service_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_auth_v1_auth_service_proto_goTypes = []any{
 	(*Identity)(nil),                     // 0: auth.v1.Identity
 	(*Session)(nil),                      // 1: auth.v1.Session
@@ -722,6 +806,8 @@ var file_auth_v1_auth_service_proto_goTypes = []any{
 	(*LogoutResponse)(nil),               // 10: auth.v1.LogoutResponse
 	(*HealthRequest)(nil),                // 11: auth.v1.HealthRequest
 	(*HealthResponse)(nil),               // 12: auth.v1.HealthResponse
+	(*ClaimGrantCodeRequest)(nil),        // 13: auth.v1.ClaimGrantCodeRequest
+	(*ClaimGrantCodeResponse)(nil),       // 14: auth.v1.ClaimGrantCodeResponse
 }
 var file_auth_v1_auth_service_proto_depIdxs = []int32{
 	0,  // 0: auth.v1.Session.identity:type_name -> auth.v1.Identity
@@ -734,13 +820,15 @@ var file_auth_v1_auth_service_proto_depIdxs = []int32{
 	9,  // 7: auth.v1.AuthService.Logout:input_type -> auth.v1.LogoutRequest
 	3,  // 8: auth.v1.AuthService.GetSession:input_type -> auth.v1.GetSessionRequest
 	11, // 9: auth.v1.AuthService.Health:input_type -> auth.v1.HealthRequest
-	6,  // 10: auth.v1.AuthService.PasswordLogin:output_type -> auth.v1.PasswordLoginResponse
-	8,  // 11: auth.v1.AuthService.PasswordRegistration:output_type -> auth.v1.PasswordRegistrationResponse
-	10, // 12: auth.v1.AuthService.Logout:output_type -> auth.v1.LogoutResponse
-	4,  // 13: auth.v1.AuthService.GetSession:output_type -> auth.v1.GetSessionResponse
-	12, // 14: auth.v1.AuthService.Health:output_type -> auth.v1.HealthResponse
-	10, // [10:15] is the sub-list for method output_type
-	5,  // [5:10] is the sub-list for method input_type
+	13, // 10: auth.v1.AuthService.ClaimGrantCode:input_type -> auth.v1.ClaimGrantCodeRequest
+	6,  // 11: auth.v1.AuthService.PasswordLogin:output_type -> auth.v1.PasswordLoginResponse
+	8,  // 12: auth.v1.AuthService.PasswordRegistration:output_type -> auth.v1.PasswordRegistrationResponse
+	10, // 13: auth.v1.AuthService.Logout:output_type -> auth.v1.LogoutResponse
+	4,  // 14: auth.v1.AuthService.GetSession:output_type -> auth.v1.GetSessionResponse
+	12, // 15: auth.v1.AuthService.Health:output_type -> auth.v1.HealthResponse
+	14, // 16: auth.v1.AuthService.ClaimGrantCode:output_type -> auth.v1.ClaimGrantCodeResponse
+	11, // [11:17] is the sub-list for method output_type
+	5,  // [5:11] is the sub-list for method input_type
 	5,  // [5:5] is the sub-list for extension type_name
 	5,  // [5:5] is the sub-list for extension extendee
 	0,  // [0:5] is the sub-list for field type_name
@@ -760,7 +848,7 @@ func file_auth_v1_auth_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_auth_v1_auth_service_proto_rawDesc), len(file_auth_v1_auth_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

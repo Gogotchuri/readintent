@@ -42,7 +42,23 @@ func (a *AuthServer) BindAuthServerToMux(mux *http.ServeMux) {
 	mux.Handle(path, handler)
 }
 
-//TODO claim grant code in auth contract
+// ClaimGrantCode allows an authenticated user to claim a grant code for extension pairing.
+func (a *AuthServer) ClaimGrantCode(ctx context.Context, req *connect.Request[authv1.ClaimGrantCodeRequest]) (*connect.Response[authv1.ClaimGrantCodeResponse], error) {
+	session := middlewares.SessionFromCtx(ctx)
+	if session == nil {
+		return nil, newConnectError(connect.CodeUnauthenticated, errors.New("no valid session"))
+	}
+
+	if a.grantClaimerService == nil {
+		return nil, newConnectError(connect.CodeUnimplemented, errors.New("grant code claiming is not available"))
+	}
+
+	if err := a.grantClaimerService.ClaimGrantCode(ctx, req.Msg.GetUserCode(), session.Identity.ID); err != nil {
+		return nil, newConnectError(connect.CodeInternal, fmt.Errorf("claiming grant code: %w", err))
+	}
+
+	return connect.NewResponse(&authv1.ClaimGrantCodeResponse{}), nil
+}
 
 // Health Returns health of the auth service
 func (a *AuthServer) Health(ctx context.Context, _ *connect.Request[authv1.HealthRequest]) (*connect.Response[authv1.HealthResponse], error) {
