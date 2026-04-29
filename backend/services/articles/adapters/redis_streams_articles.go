@@ -37,12 +37,16 @@ func NewArticlesHub(client *redis.Client, conf config.RedisStreams) *ArticlesHub
 	}
 }
 
-func (h *ArticlesHub) SubmitArticle(ctx context.Context, url string) error {
+func (h *ArticlesHub) SubmitArticle(ctx context.Context, url, html string) error {
+	values := map[string]interface{}{
+		"url": url,
+	}
+	if html != "" {
+		values["html"] = html
+	}
 	return h.client.XAdd(ctx, &redis.XAddArgs{
 		Stream: ScrapeInputStream,
-		Values: map[string]interface{}{
-			"url": url,
-		},
+		Values: values,
 	}).Err()
 }
 

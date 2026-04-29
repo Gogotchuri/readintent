@@ -21,5 +21,5 @@ type Repository interface {
 }
 
 type ArticleSubmitter interface {
-	SubmitArticle(ctx context.Context, url string) error
+	SubmitArticle(ctx context.Context, url, html string) error
 }
