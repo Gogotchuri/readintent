@@ -10,8 +10,6 @@ from config import Config
 
 logger = logging.getLogger(__name__)
 
-##TODO acknowledgement need to be issued after handling
-
 class EventHub:
 	def __init__(
 			self,
@@ -77,6 +75,7 @@ class EventHub:
 			logger.info(
 				f"Published result for event {event_id} to stream '{self.config.stream_output_event}'"
 			)
+			self.redis_client.xack(self.config.stream_input_event, self.config.consumer_group, event_id)
 		except Exception as e:
 			url = event_data["url"]
 			logger.error(f"Error processing event ({url}) {event_id}: {e}")
@@ -89,6 +88,7 @@ class EventHub:
 				logger.info(
 					f"Published error for event {event_id} to stream '{self.config.stream_output_event}'"
 				)
+				self.redis_client.xack(self.config.stream_input_event, self.config.consumer_group, event_id)
 			except Exception as publish_error:
 				logger.error(
 					f"Error publishing error for event {event_id}: {publish_error}"
