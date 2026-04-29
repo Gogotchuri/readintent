@@ -8,12 +8,17 @@ import (
 )
 
 type Config struct {
-	AuthServerPort      int            `env:"AUTHSERVER_PORT" default:"5050"`
-	ArticlesServerPort  int            `env:"ARTICLESERVER_PORT" default:"6060"`
-	ExtensionServerPort int            `env:"EXTENSIONSERVER_PORT" default:"6061"`
-	KratosURL           string         `env:"KRATOS_URL" default:"http://localhost:4433"`
+	Environment         string         `env:"ENVIRONMENT" default:"dev"`
+	AuthServerPort      int            `env:"AUTH_SERVER_PORT" default:"5050"`
+	ArticlesServerPort  int            `env:"ARTICLE_SERVER_PORT" default:"6060"`
+	ExtensionServerPort int            `env:"EXTENSION_SERVER_PORT" default:"6061"`
+	KratosPublicURL     string         `env:"KRATOS_PUBLIC_URL" default:"http://localhost:4433"`
 	DatabaseConfig      DatabaseConfig `env:"DATABASE_CONFIG"`
 	RedisStreams        RedisStreams   `env:"REDIS_STREAMS"`
+}
+
+func (c Config) IsDev() bool {
+	return c.Environment == "dev"
 }
 
 type RedisStreams struct {
