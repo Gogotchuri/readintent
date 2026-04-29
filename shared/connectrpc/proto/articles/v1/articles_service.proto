@@ -19,7 +19,7 @@ message PhonemizerData {
 }
 message ArticlePreview {
   int64 id = 1;
-  // failed, started_gathering, text_ready, ready
+  // failed, processing, text_ready, ready
   string status = 2;
   string title = 3;
   string author = 4;

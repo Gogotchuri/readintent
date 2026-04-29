@@ -262,7 +262,7 @@ class ArticlePreview extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   void clearId() => clearField(1);
 
-  /// failed, started_gathering, text_ready, ready
+  /// failed, processing, text_ready, ready
   @$pb.TagNumber(2)
   $core.String get status => $_getSZ(1);
   @$pb.TagNumber(2)
