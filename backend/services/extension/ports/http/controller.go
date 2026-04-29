@@ -3,6 +3,7 @@ package http
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
 )
@@ -68,10 +69,8 @@ func (es *ExtensionServer) handleSubmitArticle(w http.ResponseWriter, r *http.Re
 func writeJson(w http.ResponseWriter, status int, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	encoder := json.NewEncoder(w)
-	if err := encoder.Encode(data); err != nil {
-		http.Error(w, "failed to write response", http.StatusInternalServerError)
-		//TODO log error here
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		slog.Error("failed to encode JSON response", "error", err)
 	}
 }
 func writeError(w http.ResponseWriter, status int, err error) {

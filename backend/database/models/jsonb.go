@@ -14,9 +14,6 @@ type JSONB[T any] struct {
 }
 
 func NewJSONB[T any](data T) JSONB[T] {
-	if data == nil {
-		return JSONB[T]{}
-	}
 	return JSONB[T]{Data: data, Valid: true}
 }
 

@@ -2,6 +2,15 @@ package models
 
 import "time"
 
+type ArticleStatus string
+
+const (
+	ArticleStatusProcessing = "processing"
+	ArticleStatusReady      = "ready"
+	ArticleStatusTextReady  = "text-ready"
+	ArticleStatusFailed     = "failed"
+)
+
 type PhonemizerTokenMeta struct {
 	Text          string `json:"text"`
 	PhonemeLen    uint32 `json:"phoneme_len"`
@@ -17,7 +26,7 @@ type PhonemizerData struct {
 type Article struct {
 	Id            int64
 	Url           string
-	Status        string
+	Status        string // processing by default
 	Title         string
 	Author        string
 	PublishedDate string

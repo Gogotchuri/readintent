@@ -152,7 +152,7 @@ func (x *PhonemizerData) GetTokenMeta() []*PhonemizerTokenMeta {
 type ArticlePreview struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Id    int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	// failed, started_gathering, text_ready, ready
+	// failed, processing, text_ready, ready
 	Status     string   `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
 	Title      string   `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
 	Author     string   `protobuf:"bytes,4,opt,name=author,proto3" json:"author,omitempty"`

@@ -2,6 +2,8 @@ package repositories
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/gogotchuri/readintent/backend/database/models"
@@ -77,6 +79,9 @@ func (p PgArticlesRepository) GetArticleForUser(ctx context.Context, userID stri
 		JOIN user_articles ua ON ua.article_id = a.id
 		WHERE ua.user_id = $1 AND a.id = $2
 	`, userID, id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, articles.ErrArticleNotFound
+		}
 		return nil, err
 	}
 	return &article, nil
@@ -90,6 +95,9 @@ func (p PgArticlesRepository) GetArticleForUserWithURL(ctx context.Context, user
 		JOIN user_articles ua ON ua.article_id = a.id
 		WHERE ua.user_id = $1 AND a.url = $2
 	`, userID, url); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, articles.ErrArticleNotFound
+		}
 		return nil, err
 	}
 	return &article, nil
@@ -102,6 +110,9 @@ func (p PgArticlesRepository) GetArticleWithURL(ctx context.Context, url string)
 		FROM articles
 		WHERE url = $1
 	`, url); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, articles.ErrArticleNotFound
+		}
 		return nil, err
 	}
 	return &article, nil
@@ -114,10 +125,9 @@ func (p PgArticlesRepository) CreateInitialArticle(ctx context.Context, userID, 
 	}
 	var articleID int64
 	// Article doesn't exist, we need to create it first
-	// TODO status type and here initialized as processing
 	err = p.db.QueryRowxContext(ctx, `
-		INSERT INTO articles (url) VALUES ($1) RETURNING id
-	`, url).Scan(&articleID)
+		INSERT INTO articles (url, status) VALUES ($1, $2) RETURNING id
+	`, url, models.ArticleStatusProcessing).Scan(&articleID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create article with url %s: %w", url, err)
 	}
