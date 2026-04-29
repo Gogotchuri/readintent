@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"sync"
 
+	"github.com/gogotchuri/readintent/backend/config"
+	"github.com/gogotchuri/readintent/backend/database"
 	"github.com/gogotchuri/readintent/backend/services/auth"
 	"github.com/gogotchuri/readintent/backend/services/auth/adapters"
 	authconnectrpc "github.com/gogotchuri/readintent/backend/services/auth/ports/connectrpc"
@@ -51,4 +54,26 @@ func initializeAuthConnectRPCServer(wg *sync.WaitGroup) {
 	if err := server.ListenAndServe(); err != nil {
 		fmt.Printf("Server shutdown; reason: %w", err)
 	}
+}
+
+func loadConfig() config.Config {
+	if err := config.SetEnvFromFile(".env"); err != nil {
+		// We try to load the config from .env file, if it doesn't exist that is also fine
+		// By default we will parse config from the ENV
+		//TODO proper logging
+		fmt.Printf("No .env file found, loading config from environment variables: %v", err)
+	}
+	cfg, err := config.LoadConfigFromEnv()
+	if err != nil {
+		panic(fmt.Sprintf("failed to load config from env: %v", err))
+	}
+	return *cfg
+}
+
+func setupDB(cfg config.Config) *sqlx.DB {
+	db, err := database.NewDatabaseConnection(context.Background(), cfg.DatabaseConfig)
+	if err != nil {
+		panic(fmt.Sprintf("failed to connect to database: %v", err))
+	}
+	return db
 }

@@ -114,6 +114,7 @@ func (p PgArticlesRepository) CreateInitialArticle(ctx context.Context, userID, 
 	}
 	var articleID int64
 	// Article doesn't exist, we need to create it first
+	// TODO status type and here initialized as processing
 	err = p.db.QueryRowxContext(ctx, `
 		INSERT INTO articles (url) VALUES ($1) RETURNING id
 	`, url).Scan(&articleID)
@@ -145,8 +146,8 @@ func (p PgArticlesRepository) AddArticleForUser(ctx context.Context, userID stri
 
 func (p PgArticlesRepository) UpdateArticle(ctx context.Context, article models.Article) error {
 	_, err := p.db.NamedExecContext(ctx, `
-		UPDATE articles SET status = :status, title = :title, author = :author, date = :date, extracted_html = :extracted_html, 
-			pure_text = :pure_text, url = :url, categories = :categories, description = :description, image_url = :image_url, 
+		UPDATE articles SET status = :status, title = :title, author = :author, date = :date, extracted_html = :extracted_html,
+			pure_text = :pure_text, url = :url, categories = :categories, description = :description, image_url = :image_url,
 			phonemizer_data = :phonemizer_data, updated_at = NOW()
 		WHERE id = :id
 	`, &article)

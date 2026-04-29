@@ -8,10 +8,12 @@ import (
 )
 
 type Config struct {
-	AuthServerPort     int            `env:"AUTHSERVER_PORT" default:"5050"`
-	ArticlesServerPort int            `env:"ARTICLESERVER_PORT" default:"6060"`
-	DatabaseConfig     DatabaseConfig `env:"DATABASE_CONFIG"`
-	RedisStreams       RedisStreams   `env:"REDIS_STREAMS"`
+	AuthServerPort      int            `env:"AUTHSERVER_PORT" default:"5050"`
+	ArticlesServerPort  int            `env:"ARTICLESERVER_PORT" default:"6060"`
+	ExtensionServerPort int            `env:"EXTENSIONSERVER_PORT" default:"6061"`
+	KratosURL           string         `env:"KRATOS_URL" default:"http://localhost:4433"`
+	DatabaseConfig      DatabaseConfig `env:"DATABASE_CONFIG"`
+	RedisStreams        RedisStreams   `env:"REDIS_STREAMS"`
 }
 
 type RedisStreams struct {
