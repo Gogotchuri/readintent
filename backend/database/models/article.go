@@ -40,6 +40,13 @@ type Article struct {
 	PhonemizerData JSONB[PhonemizerData] `db:"phonemizer_data" json:"phonemizer_data"`
 	CreatedAt      time.Time             `db:"created_at" json:"created_at"`
 }
+
+func ArticleFromScrape(msg map[string]any) (Article, error) {
+	//TODO
+	return Article{}, nil
+
+}
+
 type ArticlePreview struct {
 	Id            int64      `db:"id" json:"id"`
 	Url           string     `db:"url" json:"url"`

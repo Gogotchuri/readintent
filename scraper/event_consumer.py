@@ -60,6 +60,8 @@ class EventHub:
 		url = event_data["url"]
 		if not url:
 			logger.error(f"Error processing event ({event_id}) {event_data}")
+			# In this case there has been a some kind of issue upstream and we should ditch the event, hence acknowledge it here
+			self.redis_client.xack(self.config.stream_input_event, self.config.consumer_group, event_id)
 			return
 
 		try:
@@ -83,7 +85,7 @@ class EventHub:
 				# Add error to the stream for the URL
 				self.redis_client.xadd(
 					self.config.stream_output_event,
-					{"error": json.dumps({"url": url, "error": str(e)})},
+					{"error": json.dumps({"url": url, "msg": str(e)})},
 				)
 				logger.info(
 					f"Published error for event {event_id} to stream '{self.config.stream_output_event}'"

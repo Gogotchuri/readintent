@@ -47,6 +47,8 @@ func main() {
 	// Articles service
 	articleRepo := articlesrepo.NewPgArticlesRepository(db)
 	articleService := articles.NewService(articleRepo, articlesHub)
+	articlesHub.AddListener(articlesadapters.ScrapeResultStream, articleService.HandleScrapeResult)
+	articlesHub.AddListener(articlesadapters.PhonemizerResultStream, articleService.HandlePhonemizerResult)
 
 	extService, extServer := initializeExtensionServiceAndServer(db, articleService)
 

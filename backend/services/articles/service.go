@@ -2,6 +2,7 @@ package articles
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -46,6 +47,38 @@ func (s Service) ParseArticle(ctx context.Context, userID, url, html string) err
 	if err := s.eventHub.SubmitArticle(ctx, url, html); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (s Service) HandleScrapeResult(ctx context.Context, msg map[string]any) error {
+	err, hasErr := msg["error"]
+	if hasErr {
+		type errorMsg struct {
+			URL string `json:"url"`
+			Msg string `json:"msg"`
+		}
+		var em errorMsg
+		err := json.Unmarshal([]byte(err.(string)), &em)
+		if err != nil {
+			return fmt.Errorf("unmarshaling error message: %w", err)
+		}
+		// We should update the article and set the failed status
+		article, err := s.articleRepo.GetArticleWithURL(ctx, em.URL)
+		if err != nil {
+			return fmt.Errorf("getting article with url %s: %w", em.URL, err)
+		}
+		article.Status = models.ArticleStatusFailed
+		if err := s.articleRepo.UpdateArticle(ctx, *article); err != nil {
+			return fmt.Errorf("updating article status to failed for url %s: %w", em.URL, err)
+		}
+		return nil
+	}
+	//TODO
+	return nil
+}
+
+func (s Service) HandlePhonemizerResult(ctx context.Context, msg map[string]any) error {
+	//TODO
 	return nil
 }
 

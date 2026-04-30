@@ -22,7 +22,7 @@ const (
 	PhonemizerResultStream = "phonemize:results"
 )
 
-type ListenerFunc func(msgValues map[string]any) error
+type ListenerFunc func(ctx context.Context, msgValues map[string]any) error
 
 type ArticlesHub struct {
 	client    *redis.Client
@@ -57,14 +57,14 @@ func (h *ArticlesHub) AddListener(eventStream string, listener ListenerFunc) {
 	h.listeners[eventStream] = listener
 }
 
-func (h *ArticlesHub) publishToListeners(eventStream string, messages []redis.XMessage) {
+func (h *ArticlesHub) publishToListeners(ctx context.Context, eventStream string, messages []redis.XMessage) {
 	listener, ok := h.listeners[eventStream]
 	if !ok {
 		slog.Warn(fmt.Sprintf("No listeners found for event stream %s", eventStream))
 		return
 	}
 	for _, msg := range messages {
-		if err := listener(msg.Values); err == nil {
+		if err := listener(ctx, msg.Values); err == nil {
 			slog.Info(fmt.Sprintf("Successfully processed message %s from stream %s", msg.ID, eventStream))
 			// We can acknowledge the processed message if the listener handled it
 			err = h.client.XAck(context.Background(), eventStream, h.conf.GroupName, msg.ID).Err()
@@ -102,9 +102,9 @@ func (h *ArticlesHub) Listen(ctx context.Context) error {
 			// Process the message based on the stream it came from
 			switch msg.Stream {
 			case ScrapeResultStream:
-				go h.publishToListeners(ScrapeResultStream, msg.Messages)
+				go h.publishToListeners(ctx, ScrapeResultStream, msg.Messages)
 			case PhonemizerResultStream:
-				go h.publishToListeners(PhonemizerResultStream, msg.Messages)
+				go h.publishToListeners(ctx, PhonemizerResultStream, msg.Messages)
 			default:
 				slog.Warn(fmt.Sprintf("Received message from unknown stream %s", msg.Stream))
 			}
