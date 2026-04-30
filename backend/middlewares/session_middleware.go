@@ -4,34 +4,43 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"connectrpc.com/connect"
 
 	"github.com/gogotchuri/readintent/backend/proto/auth/v1/authv1connect"
-	"github.com/gogotchuri/readintent/backend/services/auth"
 	authmodels "github.com/gogotchuri/readintent/backend/services/auth/models"
 )
 
 const tokenHeader = "X-Session-Token"
 const sessionKey = "X-Session"
 
-// AuthInterceptor struct is used to make the interceptor stateful and retain the auth.Service instance
-type AuthInterceptor struct {
-	service          *auth.Service
+type SessionGetter interface {
+	GetSession(ctx context.Context, token string) (*authmodels.Session, error)
+}
+
+// SessionInterceptor struct is used to make the interceptor stateful and retain the auth.Service instance
+type SessionInterceptor struct {
+	sg               SessionGetter
 	publicProcedures map[string]bool
 }
 
 // SessionFromCtx returns authenticated session object from context or returns nil if the session if unavailable
 func SessionFromCtx(ctx context.Context) *authmodels.Session {
 	session := ctx.Value(sessionKey)
-	return session.(*authmodels.Session)
+	sess, ok := session.(*authmodels.Session)
+	if !ok {
+		slog.Error(fmt.Sprintf("error retrieving session from context, expected type %T but got %T", &authmodels.Session{}, session))
+		return nil
+	}
+	return sess
 }
 
-// NewAuthInterceptor Creates a new state for AuthInterceptor with the auth service.
+// NewSessionInterceptor Creates a new state for SessionInterceptor with the auth service.
 // This interceptor is used to validate the session token and inject the Session model into the context for downstream usage
-func NewAuthInterceptor(service *auth.Service) *AuthInterceptor {
-	return &AuthInterceptor{
-		service: service,
+func NewSessionInterceptor(service SessionGetter) *SessionInterceptor {
+	return &SessionInterceptor{
+		sg: service,
 		publicProcedures: map[string]bool{
 			authv1connect.AuthServicePasswordLoginProcedure:        true,
 			authv1connect.AuthServicePasswordRegistrationProcedure: true,
@@ -40,7 +49,7 @@ func NewAuthInterceptor(service *auth.Service) *AuthInterceptor {
 	}
 }
 
-func (a *AuthInterceptor) NewUnaryInterceptor() connect.UnaryInterceptorFunc {
+func (a *SessionInterceptor) NewUnaryInterceptor() connect.UnaryInterceptorFunc {
 	return func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
 			// No need to apply the interceptor on a public procedure
@@ -53,7 +62,7 @@ func (a *AuthInterceptor) NewUnaryInterceptor() connect.UnaryInterceptorFunc {
 				return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("please provide the X-Session-Token header for authenticated routes"))
 			}
 
-			session, err := a.service.GetSession(ctx, sessionToken)
+			session, err := a.sg.GetSession(ctx, sessionToken)
 			if err != nil {
 				return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("unauthenticated: %w", err))
 			}

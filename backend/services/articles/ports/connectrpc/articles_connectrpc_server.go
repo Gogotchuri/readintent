@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"connectrpc.com/connect"
+	"connectrpc.com/validate"
 	"github.com/gogotchuri/readintent/backend/database/models"
 	"github.com/gogotchuri/readintent/backend/middlewares"
 	v1 "github.com/gogotchuri/readintent/backend/proto/articles/v1"
@@ -19,15 +20,20 @@ import (
 var _ articlesv1connect.ArticlesServiceHandler = &ArticlesServer{}
 
 type ArticlesServer struct {
-	service *articles.Service
+	service       *articles.Service
+	sessionGetter middlewares.SessionGetter
 }
 
-func NewArticlesServer(service *articles.Service) *ArticlesServer {
-	return &ArticlesServer{service: service}
+func NewArticlesServer(service *articles.Service, sessionGetter middlewares.SessionGetter) *ArticlesServer {
+	return &ArticlesServer{service: service, sessionGetter: sessionGetter}
 }
 
 func (a *ArticlesServer) BindArticlesServerToMux(mux *http.ServeMux) {
-	path, handler := articlesv1connect.NewArticlesServiceHandler(a)
+	interceptors := connect.WithInterceptors(
+		middlewares.NewSessionInterceptor(a.sessionGetter).NewUnaryInterceptor(),
+		validate.NewInterceptor(),
+	)
+	path, handler := articlesv1connect.NewArticlesServiceHandler(a, interceptors)
 	mux.Handle(path, handler)
 }
 

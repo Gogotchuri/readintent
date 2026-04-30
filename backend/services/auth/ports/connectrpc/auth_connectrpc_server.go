@@ -35,7 +35,7 @@ func NewAuthServer(service *auth.Service, grantClaimer AuthGrantClaimer) *AuthSe
 
 func (a *AuthServer) BindAuthServerToMux(mux *http.ServeMux) {
 	interceptors := connect.WithInterceptors(
-		middlewares.NewAuthInterceptor(a.service).NewUnaryInterceptor(),
+		middlewares.NewSessionInterceptor(a.service).NewUnaryInterceptor(),
 		validate.NewInterceptor(),
 	)
 	path, handler := authv1connect.NewAuthServiceHandler(a, interceptors)
