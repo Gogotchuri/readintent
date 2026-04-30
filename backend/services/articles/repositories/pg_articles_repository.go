@@ -28,7 +28,7 @@ func (p PgArticlesRepository) GetArticles(ctx context.Context, userID string, se
 	var nextPageToken string
 	var previews []models.ArticlePreview
 	query := `
-		SELECT a.id, a.url, a.status, a.title, a.author, a.date, a.categories, a.description, a.image_url, a.created_at
+		SELECT a.id, a.url, a.status, a.title, a.author, a.published_date, a.categories, a.description, a.image_url, a.created_at
 		FROM articles a
 		JOIN user_articles ua ON ua.article_id = a.id
 		WHERE ua.user_id = $1 AND (a.created_at < to_timestamp($2) OR (a.created_at = to_timestamp($2) AND a.id < $3))
@@ -74,7 +74,8 @@ func (p PgArticlesRepository) GetArticles(ctx context.Context, userID string, se
 func (p PgArticlesRepository) GetArticleForUser(ctx context.Context, userID string, id int64) (*models.Article, error) {
 	var article models.Article
 	if err := p.db.GetContext(ctx, &article, `
-		SELECT a.id, a.url, a.title, a.description, a.content, a.image_url, a.created_at, a.updated_at
+		SELECT a.id, a.url, a.status, a.title, a.author, a.published_date, a.extracted_html, a.pure_text,
+			a.categories, a.description, a.image_url, a.phonemizer_data, a.created_at
 		FROM articles a
 		JOIN user_articles ua ON ua.article_id = a.id
 		WHERE ua.user_id = $1 AND a.id = $2
@@ -90,7 +91,8 @@ func (p PgArticlesRepository) GetArticleForUser(ctx context.Context, userID stri
 func (p PgArticlesRepository) GetArticleForUserWithURL(ctx context.Context, userID, url string) (*models.Article, error) {
 	var article models.Article
 	if err := p.db.GetContext(ctx, &article, `
-		SELECT a.id, a.url, a.title, a.description, a.content, a.image_url, a.created_at, a.updated_at
+		SELECT a.id, a.url, a.status, a.title, a.author, a.published_date, a.extracted_html, a.pure_text,
+			a.categories, a.description, a.image_url, a.phonemizer_data, a.created_at
 		FROM articles a
 		JOIN user_articles ua ON ua.article_id = a.id
 		WHERE ua.user_id = $1 AND a.url = $2
@@ -106,7 +108,8 @@ func (p PgArticlesRepository) GetArticleForUserWithURL(ctx context.Context, user
 func (p PgArticlesRepository) GetArticleWithURL(ctx context.Context, url string) (*models.Article, error) {
 	var article models.Article
 	if err := p.db.GetContext(ctx, &article, `
-		SELECT id, url, title, description, content, image_url, created_at, updated_at
+		SELECT id, url, status, title, author, published_date, extracted_html, pure_text,
+			categories, description, image_url, phonemizer_data, created_at
 		FROM articles
 		WHERE url = $1
 	`, url); err != nil {
@@ -156,9 +159,9 @@ func (p PgArticlesRepository) AddArticleForUser(ctx context.Context, userID stri
 
 func (p PgArticlesRepository) UpdateArticle(ctx context.Context, article models.Article) error {
 	_, err := p.db.NamedExecContext(ctx, `
-		UPDATE articles SET status = :status, title = :title, author = :author, date = :date, extracted_html = :extracted_html,
-			pure_text = :pure_text, url = :url, categories = :categories, description = :description, image_url = :image_url,
-			phonemizer_data = :phonemizer_data, updated_at = NOW()
+		UPDATE articles SET status = :status, title = :title, author = :author, published_date = :published_date,
+			extracted_html = :extracted_html, pure_text = :pure_text, url = :url, categories = :categories,
+			description = :description, image_url = :image_url, phonemizer_data = :phonemizer_data, updated_at = NOW()
 		WHERE id = :id
 	`, &article)
 	if err != nil {

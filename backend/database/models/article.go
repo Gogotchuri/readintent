@@ -24,30 +24,29 @@ type PhonemizerData struct {
 	TokenMeta []PhonemizerTokenMeta `json:"token_meta"`
 }
 type Article struct {
-	Id            int64
-	Url           string
-	Status        string // processing by default
-	Title         string
-	Author        string
-	PublishedDate string
-	ExtractedHtml string
-	PureText      string
-	Categories    string
-	Description   string
-	ImageUrl      string
-	// This is nullable jsonb field
-	PhonemizerData JSONB[PhonemizerData]
-	CreatedAt      time.Time
+	Id             int64                 `db:"id"`
+	Url            string                `db:"url"`
+	Status         string                `db:"status"` // processing by default
+	Title          string                `db:"title"`
+	Author         string                `db:"author"`
+	PublishedDate  string                `db:"published_date"`
+	ExtractedHtml  string                `db:"extracted_html"`
+	PureText       string                `db:"pure_text"`
+	Categories     string                `db:"categories"`
+	Description    string                `db:"description"`
+	ImageUrl       string                `db:"image_url"`
+	PhonemizerData JSONB[PhonemizerData] `db:"phonemizer_data"`
+	CreatedAt      time.Time             `db:"created_at"`
 }
 type ArticlePreview struct {
-	Id            int64
-	Url           string
-	Status        string
-	Title         string
-	Author        string
-	PublishedDate string
-	Categories    string
-	Description   string
-	ImageUrl      string
-	CreatedAt     time.Time
+	Id            int64     `db:"id"`
+	Url           string    `db:"url"`
+	Status        string    `db:"status"`
+	Title         string    `db:"title"`
+	Author        string    `db:"author"`
+	PublishedDate string    `db:"published_date"`
+	Categories    string    `db:"categories"`
+	Description   string    `db:"description"`
+	ImageUrl      string    `db:"image_url"`
+	CreatedAt     time.Time `db:"created_at"`
 }
