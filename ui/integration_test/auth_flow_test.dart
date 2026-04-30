@@ -51,7 +51,6 @@ void main() {
         sessionStorageProvider.overrideWithValue(mockSessionStorage),
         authServiceProvider.overrideWith((ref) {
           return AuthClient(
-            getToken: mockSessionStorage.getToken,
             onUnauthorized: () => ref.read(authProvider.notifier).logout(),
             client: mockRPCClient,
           );

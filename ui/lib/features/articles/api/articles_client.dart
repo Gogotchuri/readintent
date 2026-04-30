@@ -1,0 +1,52 @@
+import "package:readintent_flutter/core/connect_transport.dart";
+import "package:readintent_flutter/features/articles/api/articles_client_exceptions.dart";
+import "package:readintent_flutter/features/articles/api/articles_service_client.dart";
+import "package:readintent_flutter/proto/articles/v1/articles_service.connect.client.dart";
+import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
+import "package:connectrpc/connect.dart";
+import "package:riverpod_annotation/riverpod_annotation.dart";
+
+part "articles_client.g.dart";
+
+class ArticlesClient {
+  final ArticlesServiceClientI _client;
+  ArticlesClient({required ArticlesServiceClientI client}) : _client = client;
+
+  Future<articles_pb.GetArticlesResponse> getArticles({int pageSize = 20, String? pageToken}) async {
+    try {
+      return await _client.getArticles(
+        articles_pb.GetArticlesRequest(pageSize: pageSize, pageToken: pageToken),
+      );
+    } on ConnectException catch (e) {
+      handleArticlesConnectException(e, "fetch articles");
+    } catch (e) {
+      throw ArticlesException("Failed to fetch articles: $e");
+    }
+  }
+
+  Future<void> parseArticle(String url) async {
+    try {
+      await _client.parseArticle(articles_pb.ParseArticleRequest(url: url));
+    } on ConnectException catch (e) {
+      handleArticlesConnectException(e, "parse article");
+    } catch (e) {
+      throw ArticlesException("Failed to parse article: $e");
+    }
+  }
+
+  Future<void> deleteArticle(String id) async {
+    try {
+      await _client.deleteArticle(articles_pb.DeleteArticleRequest(id: id));
+    } on ConnectException catch (e) {
+      handleArticlesConnectException(e, "delete article");
+    } catch (e) {
+      throw ArticlesException("Failed to delete article: $e");
+    }
+  }
+}
+
+@riverpod
+ArticlesClient articlesService(Ref ref) {
+  final transport = ref.read(connectTransportProvider);
+  return ArticlesClient(client: ConnectArticlesServiceClient(ArticlesServiceClient(transport)));
+}

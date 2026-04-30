@@ -23,7 +23,6 @@ void main() {
   setUp(() {
     mockClient = MockAuthServiceClientI();
     authClient = AuthClient(
-      getToken: () async => "mock-token",
       onUnauthorized: () async {},
       client: mockClient,
     );

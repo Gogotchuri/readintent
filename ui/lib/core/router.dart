@@ -61,6 +61,17 @@ GoRouter appRouter(Ref ref) {
       GoRoute(path: "/login", builder: (context, state) => const LoginScreen()),
       GoRoute(path: "/register", builder: (context, state) => const RegistrationScreen()),
       GoRoute(path: "/home", builder: (context, state) => const HomeScreen()),
+      GoRoute(
+        path: "/articles/:id",
+        builder: (context, state) {
+          final id = state.pathParameters["id"]!;
+          return Scaffold(
+            //TODO
+            appBar: AppBar(title: const Text("Article")),
+            body: Center(child: Text("Article Page TODO - Article ID: $id")),
+          );
+        },
+      ),
     ],
   );
 }

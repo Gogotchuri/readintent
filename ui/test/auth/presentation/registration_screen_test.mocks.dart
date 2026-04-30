@@ -39,14 +39,6 @@ class MockAuthClient extends _i1.Mock implements _i2.AuthClient {
   }
 
   @override
-  _i3.Future<String?> Function() get getToken =>
-      (super.noSuchMethod(
-            Invocation.getter(#getToken),
-            returnValue: () => _i3.Future<String?>.value(),
-          )
-          as _i3.Future<String?> Function());
-
-  @override
   _i3.Future<void> Function() get onUnauthorized =>
       (super.noSuchMethod(
             Invocation.getter(#onUnauthorized),
