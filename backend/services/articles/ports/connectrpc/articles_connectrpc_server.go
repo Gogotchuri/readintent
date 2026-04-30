@@ -124,18 +124,14 @@ func protoArticleFromArticle(article *models.Article) *v1.Article {
 	protoArticle := &v1.Article{
 		Id:            article.Id,
 		Status:        article.Status,
-		Title:         article.Title,
-		Author:        article.Author,
-		Date:          article.PublishedDate,
-		ExtractedHtml: article.ExtractedHtml,
-		PureText:      article.PureText,
+		Title:         article.Title.String(),
+		Author:        article.Author.String(),
+		Date:          article.PublishedDate.String(),
+		ExtractedHtml: article.ExtractedHtml.String(),
+		PureText:      article.PureText.String(),
+		Description:   article.Description.StringRef(),
+		Image:         article.ImageUrl.StringRef(),
 		Url:           article.Url,
-	}
-	if article.Description != "" {
-		protoArticle.Description = new(article.Description)
-	}
-	if article.ImageUrl != "" {
-		protoArticle.Image = new(article.ImageUrl)
 	}
 	return protoArticle
 }
@@ -144,20 +140,14 @@ func protoArticlePreviewsFromArticlePreviews(articles []models.ArticlePreview) [
 	var previews []*v1.ArticlePreview
 	for _, a := range articles {
 		preview := &v1.ArticlePreview{
-			Id:     a.Id,
-			Status: a.Status,
-			Title:  a.Title,
-			Author: a.Author,
-			Date:   a.PublishedDate,
-			Url:    a.Url,
-		}
-		if a.Description != "" {
-			desc := a.Description
-			preview.Description = &desc
-		}
-		if a.ImageUrl != "" {
-			img := a.ImageUrl
-			preview.Image = &img
+			Id:          a.Id,
+			Status:      a.Status,
+			Title:       a.Title.String(),
+			Author:      a.Author.String(),
+			Date:        a.PublishedDate.String(),
+			Description: a.Description.StringRef(),
+			Image:       a.ImageUrl.StringRef(),
+			Url:         a.Url,
 		}
 		previews = append(previews, preview)
 	}

@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type ArticleStatus string
 
@@ -24,29 +26,29 @@ type PhonemizerData struct {
 	TokenMeta []PhonemizerTokenMeta `json:"token_meta"`
 }
 type Article struct {
-	Id             int64                 `db:"id"`
-	Url            string                `db:"url"`
-	Status         string                `db:"status"` // processing by default
-	Title          string                `db:"title"`
-	Author         string                `db:"author"`
-	PublishedDate  string                `db:"published_date"`
-	ExtractedHtml  string                `db:"extracted_html"`
-	PureText       string                `db:"pure_text"`
-	Categories     string                `db:"categories"`
-	Description    string                `db:"description"`
-	ImageUrl       string                `db:"image_url"`
-	PhonemizerData JSONB[PhonemizerData] `db:"phonemizer_data"`
-	CreatedAt      time.Time             `db:"created_at"`
+	Id             int64                 `db:"id" json:"id"`
+	Url            string                `db:"url" json:"url"`
+	Status         string                `db:"status" json:"status"` // processing by default
+	Title          NullString            `db:"title" json:"title"`
+	Author         NullString            `db:"author" json:"author"`
+	PublishedDate  NullString            `db:"published_date" json:"published_date"`
+	ExtractedHtml  NullString            `db:"extracted_html" json:"extracted_html"`
+	PureText       NullString            `db:"pure_text" json:"pure_text"`
+	Categories     NullString            `db:"categories" json:"categories"`
+	Description    NullString            `db:"description" json:"description"`
+	ImageUrl       NullString            `db:"image_url" json:"image_url"`
+	PhonemizerData JSONB[PhonemizerData] `db:"phonemizer_data" json:"phonemizer_data"`
+	CreatedAt      time.Time             `db:"created_at" json:"created_at"`
 }
 type ArticlePreview struct {
-	Id            int64     `db:"id"`
-	Url           string    `db:"url"`
-	Status        string    `db:"status"`
-	Title         string    `db:"title"`
-	Author        string    `db:"author"`
-	PublishedDate string    `db:"published_date"`
-	Categories    string    `db:"categories"`
-	Description   string    `db:"description"`
-	ImageUrl      string    `db:"image_url"`
-	CreatedAt     time.Time `db:"created_at"`
+	Id            int64      `db:"id" json:"id"`
+	Url           string     `db:"url" json:"url"`
+	Status        string     `db:"status" json:"status"`
+	Title         NullString `db:"title" json:"title"`
+	Author        NullString `db:"author" json:"author"`
+	PublishedDate NullString `db:"published_date" json:"published_date"`
+	Categories    NullString `db:"categories" json:"categories"`
+	Description   NullString `db:"description" json:"description"`
+	ImageUrl      NullString `db:"image_url" json:"image_url"`
+	CreatedAt     time.Time  `db:"created_at" json:"created_at"`
 }

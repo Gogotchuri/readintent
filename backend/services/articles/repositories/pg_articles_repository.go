@@ -31,9 +31,9 @@ func (p PgArticlesRepository) GetArticles(ctx context.Context, userID string, se
 		SELECT a.id, a.url, a.status, a.title, a.author, a.published_date, a.categories, a.description, a.image_url, a.created_at
 		FROM articles a
 		JOIN user_articles ua ON ua.article_id = a.id
-		WHERE ua.user_id = $1 AND (a.created_at < to_timestamp($2) OR (a.created_at = to_timestamp($2) AND a.id < $3))
-			AND a.author LIKE '%' || $5 || '%'
-			AND a.title LIKE '%' || $6 || '%'
+		WHERE ua.user_id = $1 AND ($2 = 0 OR a.created_at < to_timestamp($2) OR (a.created_at = to_timestamp($2) AND a.id < $3))
+			AND COALESCE(a.author, '') LIKE '%' || $5 || '%'
+			AND COALESCE(a.title, '') LIKE '%' || $6 || '%'
 		ORDER BY a.created_at DESC, a.id DESC
 		LIMIT $4
 	`
@@ -55,8 +55,8 @@ func (p PgArticlesRepository) GetArticles(ctx context.Context, userID string, se
 		FROM articles a
 		JOIN user_articles ua ON ua.article_id = a.id
 		WHERE ua.user_id = $1
-			AND a.author LIKE '%' || $2 || '%'
-			AND a.title LIKE '%' || $3 || '%'
+			AND COALESCE(a.author, '') LIKE '%' || $2 || '%'
+			AND COALESCE(a.title, '') LIKE '%' || $3 || '%'
 	`
 	err = p.db.GetContext(ctx, &totalCount, countQuery, userID, searchQ.Author, searchQ.SearchQuery)
 	if err != nil {
