@@ -8,13 +8,11 @@ import (
 )
 
 type Config struct {
-	Environment         string         `env:"ENVIRONMENT" default:"dev"`
-	AuthServerPort      int            `env:"AUTH_SERVER_PORT" default:"5050"`
-	ArticlesServerPort  int            `env:"ARTICLE_SERVER_PORT" default:"6060"`
-	ExtensionServerPort int            `env:"EXTENSION_SERVER_PORT" default:"6061"`
-	KratosPublicURL     string         `env:"KRATOS_PUBLIC_URL" default:"http://localhost:4433"`
-	DatabaseConfig      DatabaseConfig `env:"DATABASE_CONFIG"`
-	RedisStreams        RedisStreams   `env:"REDIS_STREAMS"`
+	Environment     string         `env:"ENVIRONMENT" envDefault:"dev"`
+	Port            int            `env:"PORT" envDefault:"5050"`
+	KratosPublicURL string         `env:"KRATOS_PUBLIC_URL" envDefault:"http://localhost:4433"`
+	DatabaseConfig  DatabaseConfig `envPrefix:"DATABASE_CONFIG_"`
+	RedisStreams    RedisStreams   `envPrefix:"REDIS_"`
 }
 
 func (c Config) IsDev() bool {
@@ -22,22 +20,22 @@ func (c Config) IsDev() bool {
 }
 
 type RedisStreams struct {
-	Hostname string `env:"REDIS_HOSTNAME" default:"localhost"`
-	Port     int    `env:"REDIS_PORT" default:"6379"`
-	Password string `env:"REDIS_PASSWORD" default:""`
-	DB       int    `env:"REDIS_DB" default:"0"`
+	Hostname string `env:"HOSTNAME" envDefault:"localhost"`
+	Port     int    `env:"PORT" envDefault:"6379"`
+	Password string `env:"PASSWORD" envDefault:""`
+	DB       int    `env:"DB" envDefault:"0"`
 
-	GroupName    string `env:"REDIS_GROUP_NAME" default:""`
-	ConsumerName string `env:"REDIS_CONSUMER_NAME" default:""`
+	GroupName    string `env:"GROUP_NAME" envDefault:""`
+	ConsumerName string `env:"CONSUMER_NAME" envDefault:""`
 }
 
 type DatabaseConfig struct {
-	Hostname string `env:"HOSTNAME" default:"localhost"`
-	Port     int    `env:"PORT" default:"5432"`
-	Username string `env:"USERNAME" default:"postgres"`
-	Password string `env:"PASSWORD" default:"postgres"`
-	Database string `env:"DATABASE" default:"postgres"`
-	SSLMode  string `env:"SSLMODE" default:"disable"`
+	Hostname string `env:"HOSTNAME" envDefault:"localhost"`
+	Port     int    `env:"PORT" envDefault:"5432"`
+	Username string `env:"USERNAME" envDefault:"postgres"`
+	Password string `env:"PASSWORD" envDefault:"postgres"`
+	Database string `env:"DATABASE" envDefault:"postgres"`
+	SSLMode  string `env:"SSLMODE" envDefault:"disable"`
 }
 
 func (dc DatabaseConfig) Driver() string {

@@ -13,8 +13,7 @@ func TestLoadConfig(t *testing.T) {
 	// Then loads config from ENV
 	tmpDirt := t.TempDir()
 	expectedConfig := &Config{
-		AuthServerPort:     5051,
-		ArticlesServerPort: 6061,
+		Port: 5051,
 		DatabaseConfig: DatabaseConfig{
 			Hostname: "localhost",
 			Port:     5432,

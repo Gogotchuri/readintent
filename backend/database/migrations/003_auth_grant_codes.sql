@@ -1,6 +1,5 @@
 -- Authorization grant codes table
 -- +goose Up
-BEGIN;
 CREATE TABLE auth_grant_codes (
     device_code VARCHAR(255) PRIMARY KEY,
     user_code VARCHAR(255) NOT NULL UNIQUE,
@@ -9,9 +8,6 @@ CREATE TABLE auth_grant_codes (
     expires_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-COMMIT;
 
 -- +goose Down
-BEGIN;
 DROP TABLE auth_grant_codes;
-COMMIT;

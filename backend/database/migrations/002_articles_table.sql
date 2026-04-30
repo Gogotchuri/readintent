@@ -1,6 +1,5 @@
 -- Articles table
 -- +goose Up
-BEGIN;
 CREATE TABLE articles (
     id SERIAL PRIMARY KEY,
     url VARCHAR(255) NOT NULL UNIQUE,
@@ -17,11 +16,8 @@ CREATE TABLE articles (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-COMMIT;
 
 -- User Articles table (many-to-many relationship between users and articles)
--- +goose Up
-BEGIN;
 CREATE TABLE user_articles (
     user_id VARCHAR NOT NULL,
     article_id INT NOT NULL,
@@ -29,4 +25,7 @@ CREATE TABLE user_articles (
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
 );
-COMMIT;
+
+-- +goose Down
+DROP TABLE user_articles;
+DROP TABLE articles;
