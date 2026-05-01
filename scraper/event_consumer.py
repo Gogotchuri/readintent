@@ -11,6 +11,10 @@ from config import Config
 logger = logging.getLogger(__name__)
 
 class EventHub:
+    """
+    EventHub is handling the IO from redis stream events
+    This is basically a port calling ArticleExtractor
+    """
 	def __init__(
 			self,
 			conf: Config,
