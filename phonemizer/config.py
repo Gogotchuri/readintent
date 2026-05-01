@@ -14,10 +14,10 @@ class Config:
 
 def load_config() -> Config:
 	return Config(
-		redis_url=os.environ.get("REDIS_URL", Config.redis_url),
-		stream_input_event=os.environ.get("STREAM_INPUT", Config.stream_input_event),
-		stream_output_event=os.environ.get("STREAM_OUTPUT", Config.stream_output_event),
-		consumer_group=os.environ.get("CONSUMER_GROUP", Config.consumer_group),
-		consumer_name=os.environ.get("CONSUMER_NAME", Config.consumer_name),
-		block_ms=int(os.environ.get("BLOCK_MS", str(Config.block_ms))),
+		redis_url=os.environ.get("PHONEMZIZER_REDIS_URL", Config.redis_url),
+		stream_input_event=os.environ.get("PHONEMZIZER_STREAM_INPUT", Config.stream_input_event),
+		stream_output_event=os.environ.get("PHONEMZIZER_STREAM_OUTPUT", Config.stream_output_event),
+		consumer_group=os.environ.get("PHONEMZIZER_CONSUMER_GROUP", Config.consumer_group),
+		consumer_name=os.environ.get("PHONEMZIZER_CONSUMER_NAME", Config.consumer_name),
+		block_ms=int(os.environ.get("PHONEMZIZER_BLOCK_MS", str(Config.block_ms))),
 	)

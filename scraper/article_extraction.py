@@ -17,20 +17,19 @@ class ExtractorError(Exception):
 @dataclasses.dataclass
 class ExtractedArticle:
     """Dataclass to store the extracted article content"""
+    url: str
     title: str
     author: str
     date: str
     extracted_html: str
     pure_text: str
-    url: str
-    categories: Optional[list[str]]
+    categories: Optional[str]
     description: Optional[str]
     image: Optional[str]
 
 
 DEFAULT_EXTRACTOR_OPTIONS = Extractor(output_format="html", formatting=True, links=True, images=True, tables=True,
                                       comments=False, precision=False)
-
 
 class ArticleExtractor:
     def __init__(self) -> None:
@@ -141,6 +140,9 @@ class ArticleExtractor:
         if isinstance(formatted_html, ExtractorError):
             return formatted_html
 
+        categories = ""
+        if metadata.categories is not None:
+            categories = ",".join(metadata.categories)
 
         return ExtractedArticle(
             title=metadata.title or "",
