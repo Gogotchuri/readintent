@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/gogotchuri/readintent/backend/database/models"
 	iomodels "github.com/gogotchuri/readintent/backend/services/articles/models"
@@ -41,10 +42,11 @@ func (s Service) ParseArticle(ctx context.Context, userID, url, html string) err
 		return s.articleRepo.AddArticleForUser(ctx, userID, article.Id)
 	}
 	// Otherwise we will create an initial article and submit it for parsing down the line
-	if _, err = s.articleRepo.CreateInitialArticle(ctx, userID, url); err != nil {
+	newArticle, err := s.articleRepo.CreateInitialArticle(ctx, userID, url)
+	if err != nil {
 		return fmt.Errorf("creating initial article: %w", err)
 	}
-	if err := s.eventHub.SubmitArticle(ctx, url, html); err != nil {
+	if err := s.eventHub.SubmitArticle(ctx, newArticle.Id, url, html); err != nil {
 		return err
 	}
 	return nil
