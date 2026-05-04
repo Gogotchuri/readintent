@@ -34,7 +34,7 @@ def test_consumer_basic(redis_db, caplog):
 
     hub.ensure_group()
 
-    hub.redis_client.xadd(conf.stream_input_event, {"url": "http://example.com"})
+    hub.redis_client.xadd(conf.stream_input_event, {"article_id": "42", "url": "http://example.com"})
     with ThreadPoolExecutor(max_workers=2) as executor:
         hub._consume_single_event_batch(executor)
 
@@ -47,7 +47,9 @@ def test_consumer_basic(redis_db, caplog):
     batch = results.get(conf.stream_output_event, [])
     assert batch, "No events found in output stream"
     events = batch[0]
-    result_data = events[0][1].get("result")
+    event_fields = events[0][1]
+    assert event_fields.get("article_id") == "42", "article_id not passed through"
+    result_data = event_fields.get("result")
     assert result_data, "No result field found in output event"
     result_unmarshalled = json.loads(result_data)
     assert result_unmarshalled['extracted_html'] == "<p>hi</p>", "Extracted HTML does not match expected value"

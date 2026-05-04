@@ -9,6 +9,7 @@ import (
 
 type Repository interface {
 	GetArticles(ctx context.Context, userID string, searchQ iomodels.GetArticlesRequest) (*iomodels.GetArticlesResponse, error)
+	GetArticleByID(ctx context.Context, id int64) (*models.Article, error)
 	GetArticleForUser(ctx context.Context, userID string, id int64) (*models.Article, error)
 	GetArticleForUserWithURL(ctx context.Context, userID, url string) (*models.Article, error)
 	GetArticleWithURL(ctx context.Context, url string) (*models.Article, error)
@@ -21,5 +22,5 @@ type Repository interface {
 }
 
 type ArticleSubmitter interface {
-	SubmitArticle(ctx context.Context, url, html string) error
+	SubmitArticle(ctx context.Context, articleID int64, url, html string) error
 }

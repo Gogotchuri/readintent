@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Config:
-    """Config class with default options, overriden by the ENV"""
+	"""Config class with default options, overriden by the ENV"""
 	redis_url: str = "redis://localhost:6379/0"
 	stream_input_event: str = "scrape:jobs"
 	stream_output_event: str = "scrape:results"

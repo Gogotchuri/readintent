@@ -11,10 +11,10 @@ from config import Config
 logger = logging.getLogger(__name__)
 
 class EventHub:
-    """
-    EventHub is handling the IO from redis stream events
-    This is basically a port calling ArticleExtractor
-    """
+	"""
+	EventHub is handling the IO from redis stream events
+	This is basically a port calling ArticleExtractor
+	"""
 	def __init__(
 			self,
 			conf: Config,
@@ -61,6 +61,7 @@ class EventHub:
 
 	def process_event(self, event_id: str, event_data: dict):
 		"""Process a single event from the Redis stream"""
+		article_id = event_data.get("article_id", "")
 		url = event_data["url"]
 		if not url:
 			logger.error(f"Error processing event ({event_id}) {event_data}")
@@ -76,20 +77,18 @@ class EventHub:
 			# Publish the result to the output stream
 			self.redis_client.xadd(
 				self.config.stream_output_event,
-				{"result": json.dumps(article.__dict__)},
+				{"article_id": article_id, "result": json.dumps(article.__dict__)},
 			)
 			logger.info(
 				f"Published result for event {event_id} to stream '{self.config.stream_output_event}'"
 			)
 			self.redis_client.xack(self.config.stream_input_event, self.config.consumer_group, event_id)
 		except Exception as e:
-			url = event_data["url"]
 			logger.error(f"Error processing event ({url}) {event_id}: {e}")
 			try:
-				# Add error to the stream for the URL
 				self.redis_client.xadd(
 					self.config.stream_output_event,
-					{"error": json.dumps({"url": url, "msg": str(e)})},
+					{"article_id": article_id, "error": json.dumps({"msg": str(e)})},
 				)
 				logger.info(
 					f"Published error for event {event_id} to stream '{self.config.stream_output_event}'"

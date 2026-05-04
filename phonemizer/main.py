@@ -10,7 +10,9 @@ from tts.pipeline import PhonemizerPipeline
 def main():
     logging.basicConfig(level=logging.INFO)
     config = load_config()
+    # Initialize PhonemizerPipeline Service
     phonemizer = PhonemizerPipeline()
+    # Initialize the redis client and setup EventHub to pass event through PhonemizerPipeline service as they come
     redis_client = redis.Redis.from_url(config.redis_url, protocol=3, decode_responses=True)
     hub = EventHub(config, redis_client, phonemizer)
     hub.consume_events()

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strconv"
 	"strings"
 	"time"
 
@@ -37,9 +38,10 @@ func NewArticlesHub(client *redis.Client, conf config.RedisStreams) *ArticlesHub
 	}
 }
 
-func (h *ArticlesHub) SubmitArticle(ctx context.Context, url, html string) error {
+func (h *ArticlesHub) SubmitArticle(ctx context.Context, articleID int64, url, html string) error {
 	values := map[string]interface{}{
-		"url": url,
+		"article_id": strconv.FormatInt(articleID, 10),
+		"url":        url,
 	}
 	if html != "" {
 		values["html"] = html

@@ -57,6 +57,8 @@ class EventHub:
 
     def process_event(self, event_id: str, event_data: dict):
         """Process a single event from the Redis stream"""
+        article_id = event_data.get("article_id", "")
+        # TODO
         try:
             result_data = json.loads(event_data.get("result", '{}'))
             pure_text = result_data["pure_text"]
@@ -66,8 +68,10 @@ class EventHub:
             result = self.phonemizer_pipeline.generate_phonemes(pure_text)
             self.redis_client.xadd(
                 self.config.stream_output_event,
-                {"result": json.dumps([r.to_dict() for r in result])},
+                {"article_id": article_id, "result": json.dumps([r.to_dict() for r in result])},
             )
+            # Acknowledge the event
+            self.redis_client.xack(self.config.stream_input_event, self.config.consumer_group, event_id)
             logger.info(
                 f"Published phonemizer result for event {event_id} to stream '{self.config.stream_output_event}'"
             )
@@ -76,7 +80,7 @@ class EventHub:
             try:
                 self.redis_client.xadd(
                     self.config.stream_output_event,
-                    {"error": json.dumps({"event_id": event_id, "error": str(e)})},
+                    {"article_id": article_id, "error": json.dumps({"msg": str(e)})},
                 )
                 logger.info(
                     f"Published error for event {event_id} to stream '{self.config.stream_output_event}'"

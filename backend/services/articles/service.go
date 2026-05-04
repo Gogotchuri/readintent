@@ -51,25 +51,25 @@ func (s Service) ParseArticle(ctx context.Context, userID, url, html string) err
 }
 
 func (s Service) HandleScrapeResult(ctx context.Context, msg map[string]any) error {
-	err, hasErr := msg["error"]
-	if hasErr {
+	articleID, err := parseArticleID(msg)
+	if err != nil {
+		return err
+	}
+	if errStr, hasErr := msg["error"]; hasErr {
 		type errorMsg struct {
-			URL string `json:"url"`
 			Msg string `json:"msg"`
 		}
 		var em errorMsg
-		err := json.Unmarshal([]byte(err.(string)), &em)
-		if err != nil {
+		if err := json.Unmarshal([]byte(errStr.(string)), &em); err != nil {
 			return fmt.Errorf("unmarshaling error message: %w", err)
 		}
-		// We should update the article and set the failed status
-		article, err := s.articleRepo.GetArticleWithURL(ctx, em.URL)
+		article, err := s.articleRepo.GetArticleByID(ctx, articleID)
 		if err != nil {
-			return fmt.Errorf("getting article with url %s: %w", em.URL, err)
+			return fmt.Errorf("getting article with id %d: %w", articleID, err)
 		}
 		article.Status = models.ArticleStatusFailed
 		if err := s.articleRepo.UpdateArticle(ctx, *article); err != nil {
-			return fmt.Errorf("updating article status to failed for url %s: %w", em.URL, err)
+			return fmt.Errorf("updating article status to failed for id %d: %w", articleID, err)
 		}
 		return nil
 	}
@@ -80,6 +80,14 @@ func (s Service) HandleScrapeResult(ctx context.Context, msg map[string]any) err
 func (s Service) HandlePhonemizerResult(ctx context.Context, msg map[string]any) error {
 	//TODO
 	return nil
+}
+
+func parseArticleID(msg map[string]any) (int64, error) {
+	idStr, ok := msg["article_id"].(string)
+	if !ok || idStr == "" {
+		return 0, fmt.Errorf("missing or empty article_id in message")
+	}
+	return strconv.ParseInt(idStr, 10, 64)
 }
 
 func (s Service) GetArticles(ctx context.Context, userID string, searchQ iomodels.GetArticlesRequest) (*iomodels.GetArticlesResponse, error) {

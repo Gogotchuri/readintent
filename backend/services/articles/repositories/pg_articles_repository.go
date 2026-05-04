@@ -71,6 +71,22 @@ func (p PgArticlesRepository) GetArticles(ctx context.Context, userID string, se
 
 }
 
+func (p PgArticlesRepository) GetArticleByID(ctx context.Context, id int64) (*models.Article, error) {
+	var article models.Article
+	if err := p.db.GetContext(ctx, &article, `
+		SELECT id, url, status, title, author, published_date, extracted_html, pure_text,
+			categories, description, image_url, phonemizer_data, created_at
+		FROM articles
+		WHERE id = $1
+	`, id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, articles.ErrArticleNotFound
+		}
+		return nil, err
+	}
+	return &article, nil
+}
+
 func (p PgArticlesRepository) GetArticleForUser(ctx context.Context, userID string, id int64) (*models.Article, error) {
 	var article models.Article
 	if err := p.db.GetContext(ctx, &article, `

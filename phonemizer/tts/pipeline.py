@@ -12,6 +12,7 @@ class TokenMeta:
 
 @dataclasses.dataclass
 class PhonemizerResult:
+    """PhonemizerResult describing the array data type of the pipeline result"""
     graphemes: str
     phonemes: str
     token_ids: List[int]
@@ -27,11 +28,11 @@ class PhonemizerResult:
         }
 
 class PhonemizerPipeline:
-    def __init__(self):
+    def __init__(self, pipeline: KPipeline):
         # model=False = "quiet" mode — only does G2P, no model loaded
         self.pipeline = KPipeline(lang_code='a', model=False)
 
-    def generate_phonemes(self, text, voice='af_heart') -> List[PhonemizerResult]:
+    def generate_phonemes(self, text:str, voice='af_heart') -> List[PhonemizerResult]:
         final_result: List[PhonemizerResult] = []
         for result in self.pipeline(text, voice):
             token_ids = [VOCAB[c] for c in result.phonemes if c in VOCAB]

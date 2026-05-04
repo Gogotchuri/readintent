@@ -28,7 +28,7 @@ def test_consumer_basic(redis_db, caplog):
 
     hub.ensure_group()
 
-    hub.redis_client.xadd(conf.stream_input_event, {"result": json.dumps({"pure_text": "Hello world!"})})
+    hub.redis_client.xadd(conf.stream_input_event, {"article_id": "99", "result": json.dumps({"pure_text": "Hello world!"})})
     hub._consume_single_event_batch()
 
     # Make sure there were no errors
@@ -40,7 +40,9 @@ def test_consumer_basic(redis_db, caplog):
     batch = results.get(conf.stream_output_event, [])
     assert batch, "No events found in output stream"
     events = batch[0]
-    result_data = events[0][1].get("result")
+    event_fields = events[0][1]
+    assert event_fields.get("article_id") == "99", "article_id not passed through"
+    result_data = event_fields.get("result")
     assert result_data, "No result field found in output event"
     result_unmarshalled = json.loads(result_data)
     assert result_unmarshalled, "Result data is not valid JSON"
