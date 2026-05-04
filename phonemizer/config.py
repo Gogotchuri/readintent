@@ -10,6 +10,7 @@ class Config:
 	consumer_group: str = "phonemizer-group"
 	consumer_name: str = "phonemizer-1"
 	block_ms: int = 5000
+	max_retries: int = 3
 
 
 def load_config() -> Config:
@@ -20,4 +21,5 @@ def load_config() -> Config:
 		consumer_group=os.environ.get("PHONEMIZER_CONSUMER_GROUP", Config.consumer_group),
 		consumer_name=os.environ.get("PHONEMIZER_CONSUMER_NAME", Config.consumer_name),
 		block_ms=int(os.environ.get("PHONEMIZER_BLOCK_MS", str(Config.block_ms))),
+		max_retries=int(os.environ.get("PHONEMIZER_MAX_RETRIES", str(Config.max_retries))),
 	)

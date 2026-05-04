@@ -15,6 +15,7 @@ class Config:
 	browser_max_tabs: int = 4
 	browser_restart_after: int = 500
 	browser_timeout: float = 30.0
+	max_retries: int = 3
 
 
 def load_config() -> Config:
@@ -29,4 +30,5 @@ def load_config() -> Config:
 		browser_max_tabs=int(os.environ.get("SCRAPER_BROWSER_MAX_TABS", str(Config.browser_max_tabs))),
 		browser_restart_after=int(os.environ.get("SCRAPER_BROWSER_RESTART_AFTER", str(Config.browser_restart_after))),
 		browser_timeout=float(os.environ.get("SCRAPER_BROWSER_TIMEOUT", str(Config.browser_timeout))),
+		max_retries=int(os.environ.get("SCRAPER_MAX_RETRIES", str(Config.max_retries))),
 	)
