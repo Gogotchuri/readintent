@@ -113,9 +113,6 @@ class ArticleExtractor:
             if not metadata.title:
                 self._logger.warning("Metadata does not have a title")
                 return ExtractorError("Metadata does not have a title")
-            if not metadata.author:
-                self._logger.warning("Metadata does not have an author")
-                return ExtractorError("Metadata does not have an author")
             if not metadata.date:
                 self._logger.warning("Metadata does not have a date")
                 return ExtractorError("Metadata does not have a date")
