@@ -1,9 +1,15 @@
-from typing import Any, Generator
+from concurrent.futures import ThreadPoolExecutor
+from typing import Any, Generator, cast
+from unittest.mock import Mock
 
 import pytest
 import redis
 from redis import Redis
 from testcontainers.redis import RedisContainer
+
+from config import Config
+from event_consumer import EventHub
+
 
 @pytest.fixture(scope="session")
 def redis_container():
@@ -29,3 +35,59 @@ def redis_db(redis_client):
     redis_client.flushdb()
     yield redis_client
 
+
+class ScraperHubFixture:
+    def __init__(self, redis_client: Redis):
+        self.mock = Mock()
+        self.conf = Config(
+            stream_input_event="test:input",
+            stream_output_event="test:output",
+            consumer_group="test-group",
+            consumer_name="test-consumer",
+            # Set retry time to zero to test the retry loop easily
+            min_idle_time=0,
+        )
+        self.hub = EventHub(self.conf, redis_client, self.mock)
+        self.hub.ensure_group()
+
+    def send(self, **fields):
+        self.hub.redis_client.xadd(self.conf.stream_input_event, fields)
+
+    def consume(self):
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            self.hub._consume_single_event_batch(executor)
+
+    @property
+    def pending(self) -> int:
+        info = self.hub.redis_client.xpending(self.conf.stream_input_event, self.conf.consumer_group)
+        return info["pending"]
+
+    @property
+    def output(self) -> list[dict]:
+        results = cast(
+            dict,
+            self.hub.redis_client.xread({self.conf.stream_output_event: "0-0"}, count=100, block=1000),
+        )
+        if not results:
+            return []
+        batch = results.get(self.conf.stream_output_event, [])
+        if not batch:
+            return []
+        return [entry[1] for entry in batch[0]]
+
+    def run_retry_sweep(self):
+        self.hub._retry_pending_events()
+
+    def bump_delivery_count(self, n: int):
+        for _ in range(n):
+            self.hub.redis_client.xautoclaim(
+                name=self.conf.stream_input_event,
+                groupname=self.conf.consumer_group,
+                consumername=self.conf.consumer_name,
+                min_idle_time=0,
+                start_id="0-0",
+            )
+
+@pytest.fixture()
+def hub(redis_db) -> Generator[ScraperHubFixture, Any, None]:
+    yield ScraperHubFixture(redis_db)

@@ -1,55 +1,77 @@
 import json
-import logging
-from concurrent.futures import ThreadPoolExecutor
-from typing import cast
-from unittest.mock import Mock
 
-from article_extraction import ExtractedArticle
-from config import Config
-from event_consumer import EventHub
+from article_extraction import ExtractedArticle, ExtractorError
+from conftest import ScraperHubFixture
 
 
-def _make_config() -> Config:
-    return Config(
-        stream_input_event="test:input",
-        stream_output_event="test:output",
-        consumer_group="test-group",
-        consumer_name="test-consumer",
-    )
-
-def _make_hub(redis_db, extractor=None) -> tuple[EventHub, Config]:
-    conf = _make_config()
-    ext = extractor or Mock()
-    hub = EventHub(conf, redis_db, ext)
-    return hub, conf
-
-def test_consumer_basic(redis_db, caplog):
-    mock_extractor = Mock()
-    mock_extractor.extract.return_value = ExtractedArticle(
+def _article(**overrides) -> ExtractedArticle:
+    defaults = dict(
         title="Test", author="Author", date="2026-01-01",
         extracted_html="<p>hi</p>", pure_text="hi",
         url="https://example.com", categories=None, description=None, image=None,
     )
-    hub, conf = _make_hub(redis_db, mock_extractor)
+    defaults.update(overrides)
+    return ExtractedArticle(**defaults)
 
-    hub.ensure_group()
 
-    hub.redis_client.xadd(conf.stream_input_event, {"article_id": "42", "url": "http://example.com"})
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        hub._consume_single_event_batch(executor)
+def test_success_acks(hub: ScraperHubFixture):
+    hub.mock.extract.return_value = _article()
+    hub.send(article_id="42", url="http://example.com")
+    hub.consume()
+    assert hub.pending == 0
+    assert hub.output[0]["article_id"] == "42"
+    assert "result" in hub.output[0]
 
-    # Make sure there were no errors
-    assert [r for r in caplog.records if r.levelno >= logging.ERROR] == []
+# Events that lack essential fields should be discarded, as there is no point in retrying them
 
-    # Check there is a result returned
-    results = cast(dict, hub.redis_client.xread({conf.stream_output_event: "0-0"}, count=1, block=1000))
-    assert results, "No results found in output stream"
-    batch = results.get(conf.stream_output_event, [])
-    assert batch, "No events found in output stream"
-    events = batch[0]
-    event_fields = events[0][1]
-    assert event_fields.get("article_id") == "42", "article_id not passed through"
-    result_data = event_fields.get("result")
-    assert result_data, "No result field found in output event"
-    result_unmarshalled = json.loads(result_data)
-    assert result_unmarshalled['extracted_html'] == "<p>hi</p>", "Extracted HTML does not match expected value"
+def test_malformed_event_no_article_id(hub: ScraperHubFixture):
+    hub.send(url="http://example.com")
+    hub.consume()
+    assert hub.pending == 0
+    assert hub.output == []
+    # No error is expected here, we lacked the main identifier and have no reasoable way to correlate the event correctly
+
+
+def test_malformed_event_no_url(hub: ScraperHubFixture):
+    hub.send(article_id="42")
+    hub.consume()
+    assert hub.pending == 0
+    assert "missing url" in json.loads(hub.output[0]["error"])["msg"]
+
+
+def test_failure_leaves_pending(hub: ScraperHubFixture):
+    hub.mock.extract.side_effect = Exception("timeout")
+    hub.send(article_id="42", url="http://example.com")
+    hub.consume()
+    assert hub.pending == 1
+    assert hub.output == []
+
+
+def test_extractor_error_leaves_pending(hub: ScraperHubFixture):
+    hub.mock.extract.return_value = ExtractorError("not readerable")
+    hub.send(article_id="42", url="http://example.com")
+    hub.consume()
+    assert hub.pending == 1
+    assert hub.output == []
+
+
+def test_retry_sweep_retries_idle_message(hub: ScraperHubFixture):
+    # Fail on the first call, return article on second
+    hub.mock.extract.side_effect = [Exception("transient"), _article()]
+    hub.send(article_id="50", url="http://example.com")
+    hub.consume()
+    assert hub.pending == 1
+    hub.run_retry_sweep()
+    assert hub.pending == 0
+    assert hub.output[0]["article_id"] == "50"
+
+
+def test_retry_sweep_gives_up_at_max(hub: ScraperHubFixture):
+    hub.mock.extract.side_effect = Exception("persistent")
+    hub.conf.max_retries = 2
+    hub.send(article_id="60", url="http://example.com")
+    hub.consume()
+    hub.bump_delivery_count(2)
+    hub.run_retry_sweep()
+    assert hub.pending == 0
+    assert "max retries exceeded" in json.loads(hub.output[0]["error"])["msg"]

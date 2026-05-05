@@ -98,7 +98,7 @@ class ArticleExtractor:
         if html is None:
             return False
         try:
-            return is_probably_readerable(cast(HtmlElement, html))
+            return self._processor.is_probably_readerable(cast(HtmlElement, html))
         except Exception as e:
             self._logger.error(f"Error checking readability: {e}")
             return False

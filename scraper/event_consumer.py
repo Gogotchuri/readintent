@@ -1,5 +1,7 @@
 import json
 import logging
+import time
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Tuple, cast
 
@@ -10,6 +12,11 @@ from config import Config
 
 logger = logging.getLogger(__name__)
 
+## Here are the main rules for EventHub:
+# - The input event must have article_id and url and they must be non-empty, otherwise we remove the event early from processing and return error
+# - On processing failure, the event is left pending for retry by the background sweep
+# - The retry sweep uses XAUTOCLAIM to reclaim idle pending messages and retries them up to max_retries
+# - The primary identification of the event will always be article_id, the subscriber can ignore event not including the field
 class EventHub:
 	"""
 	EventHub is handling the IO from redis stream events
@@ -62,19 +69,28 @@ class EventHub:
 	def process_event(self, event_id: str, event_data: dict):
 		"""Process a single event from the Redis stream"""
 		article_id = event_data.get("article_id", "")
-		url = event_data["url"]
-		if not url:
-			logger.error(f"Error processing event ({event_id}) {event_data}")
-			# In this case there has been a some kind of issue upstream and we should ditch the event, hence acknowledge it here
+
+		# Missing article_id just ack and discard, there is no point in returning error, we lack the main identifier
+		if not article_id:
+			logger.error(f"Event {event_id} missing article_id, discarding: {event_data}")
 			self.redis_client.xack(self.config.stream_input_event, self.config.consumer_group, event_id)
 			return
 
+		url = event_data.get("url", "")
+		if not url:
+			logger.error(f"Event {event_id} missing url for article {article_id}")
+			self.redis_client.xack(self.config.stream_input_event, self.config.consumer_group, event_id)
+			self.redis_client.xadd(
+				self.config.stream_output_event,
+				{"article_id": article_id, "error": json.dumps({"msg": "missing url"})},
+			)
+			return
+
 		try:
-			# Parse the event data
 			article = self.article_extractor.extract(url)
 			if isinstance(article, ExtractorError):
 				raise article
-			# Publish the result to the output stream
+			# SUCCESS, publish result downstream and ack
 			self.redis_client.xadd(
 				self.config.stream_output_event,
 				{"article_id": article_id, "result": json.dumps(article.__dict__)},
@@ -84,20 +100,56 @@ class EventHub:
 			)
 			self.redis_client.xack(self.config.stream_input_event, self.config.consumer_group, event_id)
 		except Exception as e:
-			logger.error(f"Error processing event ({url}) {event_id}: {e}")
+			# This exception is no-op the pending loop will take care of this event in a minute
+			logger.error(f"Error processing event {event_id}: {e}")
+
+	def _retry_pending_events(self, executor=None):
+		"""Claim idle pending messages and retry or give up based on times_delivered."""
+		result = self.redis_client.xautoclaim(
+			name=self.config.stream_input_event,
+			groupname=self.config.consumer_group,
+			consumername=self.config.consumer_name,
+			min_idle_time=self.config.min_idle_time,
+			start_id="0-0",
+		)
+		if not result or not result[1]:
+			return
+
+		claimed_ids = [msg_id for msg_id, _ in result[1]]
+		pending_info = self.redis_client.xpending_range(
+			name=self.config.stream_input_event,
+			groupname=self.config.consumer_group,
+			min=claimed_ids[0], max=claimed_ids[-1], count=len(claimed_ids),
+		)
+		delivery_counts = {p["message_id"]: p["times_delivered"] for p in pending_info}
+
+		for msg_id, msg_data in result[1]:
+			if delivery_counts.get(msg_id, 0) >= self.config.max_retries:
+				# Give up — publish error downstream, ack
+				article_id = msg_data.get("article_id", "")
+				if article_id:
+					self.redis_client.xadd(
+						self.config.stream_output_event,
+						{"article_id": article_id, "error": json.dumps({"msg": "max retries exceeded"})},
+					)
+				self.redis_client.xack(self.config.stream_input_event, self.config.consumer_group, msg_id)
+				logger.warning(f"Gave up on event {msg_id} after max retries")
+				continue
+
+			# Under max retries — process again
+			if executor:
+				executor.submit(self.process_event, msg_id, msg_data)
+			else:
+				self.process_event(msg_id, msg_data)
+
+	def _retry_loop(self):
+		"""Background loop: every 60s, claim and retry idle pending messages."""
+		while True:
 			try:
-				self.redis_client.xadd(
-					self.config.stream_output_event,
-					{"article_id": article_id, "error": json.dumps({"msg": str(e)})},
-				)
-				logger.info(
-					f"Published error for event {event_id} to stream '{self.config.stream_output_event}'"
-				)
-				self.redis_client.xack(self.config.stream_input_event, self.config.consumer_group, event_id)
-			except Exception as publish_error:
-				logger.error(
-					f"Error publishing error for event {event_id}: {publish_error}"
-				)
+				self._retry_pending_events()
+			except Exception as e:
+				logger.error(f"Error in retry sweep: {e}")
+			time.sleep(60)
 
 	def ensure_group(self):
 		# Ensure the stream exists
@@ -119,10 +171,13 @@ class EventHub:
 
 	def consume_events(self):
 		"""Continuously consume events from the Redis stream and process them"""
-		# Ensure the stream exists
 		self.ensure_group()
 
-		# Start consuming events
+		# Start retry sweep as a concurrent background thread
+		retry_thread = threading.Thread(target=self._retry_loop, daemon=True)
+		retry_thread.start()
+
+		# Main loop: process new events only
 		with ThreadPoolExecutor(max_workers=self.config.max_workers) as executor:
 			while True:
 				self._consume_single_event_batch(executor)
