@@ -11,6 +11,7 @@ class Config:
 	consumer_name: str = "phonemizer-1"
 	block_ms: int = 5000
 	max_retries: int = 3
+	min_idle_time: int = 60000
 
 
 def load_config() -> Config:
@@ -22,4 +23,5 @@ def load_config() -> Config:
 		consumer_name=os.environ.get("PHONEMIZER_CONSUMER_NAME", Config.consumer_name),
 		block_ms=int(os.environ.get("PHONEMIZER_BLOCK_MS", str(Config.block_ms))),
 		max_retries=int(os.environ.get("PHONEMIZER_MAX_RETRIES", str(Config.max_retries))),
+		min_idle_time=int(os.environ.get("PHONEMIZER_MIN_IDLE_TIME", str(Config.min_idle_time))),
 	)

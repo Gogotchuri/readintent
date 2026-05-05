@@ -1,5 +1,7 @@
 import json
 import logging
+import time
+import threading
 from typing import List, Tuple, cast
 
 import redis
@@ -10,6 +12,11 @@ from tts.pipeline import PhonemizerPipeline
 logger = logging.getLogger(__name__)
 
 
+## Here are the main rules for EventHub:
+# - The input event must have a non-empty article_id and pure_text, otherwise we remove the event early from processing and return error
+# - On processing failure, the event is left pending for retry by the background sweep
+# - The retry sweep uses XAUTOCLAIM to reclaim idle pending messages and retries them up to max_retries
+# - The primary identification of the event will always be article_id, the subscriber can ignore event not including the field
 class EventHub:
     def __init__(
             self,
@@ -58,38 +65,88 @@ class EventHub:
     def process_event(self, event_id: str, event_data: dict):
         """Process a single event from the Redis stream"""
         article_id = event_data.get("article_id", "")
-        # TODO
+
+        # if the article_id is missing we can't correlate downstream, just ack(discard)
+        if not article_id:
+            logger.error(f"Event {event_id} missing article_id, discarding: {event_data}")
+            self.redis_client.xack(self.config.stream_input_event, self.config.consumer_group, event_id)
+            return
+
+        # Parse result JSON and check for pure_text, without it the event is invalid and we can produce phonemes for it
         try:
             result_data = json.loads(event_data.get("result", '{}'))
-            pure_text = result_data["pure_text"]
-            if not pure_text:
-                logger.error(f"The event doesn't contain the pure_text and can't be phonemized {event_id}")
-                raise ValueError("expected pure_text to be part of the result")
+            pure_text = result_data.get("pure_text", "")
+        except (json.JSONDecodeError, AttributeError):
+            pure_text = ""
+
+        if not pure_text:
+            logger.error(f"Event {event_id} missing pure_text for article {article_id}")
+            self.redis_client.xack(self.config.stream_input_event, self.config.consumer_group, event_id)
+            self.redis_client.xadd(
+                self.config.stream_output_event,
+                {"article_id": article_id, "error": json.dumps({"msg": "missing pure_text"})},
+            )
+            return
+
+        try:
             result = self.phonemizer_pipeline.generate_phonemes(pure_text)
+            # SUCCESS, publish result downstream and ack the event
             self.redis_client.xadd(
                 self.config.stream_output_event,
                 {"article_id": article_id, "result": json.dumps([r.to_dict() for r in result])},
             )
-            # Acknowledge the event
             self.redis_client.xack(self.config.stream_input_event, self.config.consumer_group, event_id)
             logger.info(
                 f"Published phonemizer result for event {event_id} to stream '{self.config.stream_output_event}'"
             )
         except Exception as e:
-            logger.error(f"Error parsing event data for event {event_id}: {e}")
-            try:
-                self.redis_client.xadd(
-                    self.config.stream_output_event,
-                    {"article_id": article_id, "error": json.dumps({"msg": str(e)})},
-                )
-                logger.info(
-                    f"Published error for event {event_id} to stream '{self.config.stream_output_event}'"
-                )
-            except Exception as publish_error:
-                logger.error(
-                    f"Error publishing error for event {event_id}: {publish_error}"
-                )
+            # This exception is no-op the pending loop will take care of this event in a minute
+            logger.error(f"Error processing event {event_id}: {e}")
+
+    def _retry_pending_events(self):
+        """Claim idle pending messages and retry or give up based on times_delivered."""
+        result = self.redis_client.xautoclaim(
+            name=self.config.stream_input_event,
+            groupname=self.config.consumer_group,
+            consumername=self.config.consumer_name,
+            min_idle_time=self.config.min_idle_time,
+            start_id="0-0",
+        )
+        if not result or not result[1]:
             return
+
+        claimed_ids = [msg_id for msg_id, _ in result[1]]
+        pending_info = self.redis_client.xpending_range(
+            name=self.config.stream_input_event,
+            groupname=self.config.consumer_group,
+            min=claimed_ids[0], max=claimed_ids[-1], count=len(claimed_ids),
+        )
+        delivery_counts = {p["message_id"]: p["times_delivered"] for p in pending_info}
+
+        for msg_id, msg_data in result[1]:
+            if delivery_counts.get(msg_id, 0) >= self.config.max_retries:
+                # Give up — publish error downstream, ack
+                article_id = msg_data.get("article_id", "")
+                if article_id:
+                    self.redis_client.xadd(
+                        self.config.stream_output_event,
+                        {"article_id": article_id, "error": json.dumps({"msg": "max retries exceeded"})},
+                    )
+                self.redis_client.xack(self.config.stream_input_event, self.config.consumer_group, msg_id)
+                logger.warning(f"Gave up on event {msg_id} after max retries")
+                continue
+
+            # Under max retries — process again
+            self.process_event(msg_id, msg_data)
+
+    def _retry_loop(self):
+        """Background loop: every 60s, claim and retry idle pending messages."""
+        while True:
+            try:
+                self._retry_pending_events()
+            except Exception as e:
+                logger.error(f"Error in retry sweep: {e}")
+            time.sleep(60)
 
     def ensure_group(self):
         # Ensure the stream exists
@@ -111,8 +168,11 @@ class EventHub:
 
     def consume_events(self):
         """Continuously consume events from the Redis stream and process them"""
-        # Ensure the stream exists
         self.ensure_group()
+
+        # Start retry sweep as a concurrent background thread
+        retry_thread = threading.Thread(target=self._retry_loop, daemon=True)
+        retry_thread.start()
 
         # Start consuming events
         while True:

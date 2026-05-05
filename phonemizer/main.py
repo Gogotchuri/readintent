@@ -1,6 +1,7 @@
 import logging
 
 import redis
+from kokoro import KPipeline
 
 from config import load_config
 from event_consumer import EventHub
@@ -11,7 +12,7 @@ def main():
     logging.basicConfig(level=logging.INFO)
     config = load_config()
     # Initialize PhonemizerPipeline Service
-    phonemizer = PhonemizerPipeline()
+    phonemizer = PhonemizerPipeline(KPipeline(lang_code='a', model=False))
     # Initialize the redis client and setup EventHub to pass event through PhonemizerPipeline service as they come
     redis_client = redis.Redis.from_url(config.redis_url, protocol=3, decode_responses=True)
     hub = EventHub(config, redis_client, phonemizer)
