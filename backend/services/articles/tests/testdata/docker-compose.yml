@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    environment:
+      - POSTGRES_USER=articles_test
+      - POSTGRES_PASSWORD=articles_test_secret
+      - POSTGRES_DB=articles_test_db
+    volumes:
+      - type: tmpfs
+        target: /var/lib/postgresql/data
+        tmpfs:
+          size: 1073741824 # 1GB
+          mode: 1777 # The most permissive mode to avoid permission issues
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "localhost", "-p", "5432", "-U", "articles_test"]
+      interval: 1s
+      timeout: 1s
+      retries: 10
+      start_period: 1s
