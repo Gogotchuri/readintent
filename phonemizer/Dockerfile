@@ -1,8 +1,8 @@
 FROM python:3.13-trixie
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends espeak-ng libsndfile1 \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    espeak-ng libsndfile1 \
     && rm -rf /var/lib/apt/lists/*
 
 ENV UV_NO_DEV=1
