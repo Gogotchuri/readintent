@@ -19,11 +19,11 @@ func NewJSONB[T any](data T) JSONB[T] {
 
 // Implementing Scan/Value interface
 
-func (j *JSONB[T]) Value() (driver.Value, error) {
+func (j JSONB[T]) Value() (driver.Value, error) {
 	if !j.Valid {
 		return nil, nil
 	}
-	return j.Data, nil
+	return json.Marshal(j.Data)
 }
 
 func (j *JSONB[T]) Scan(src any) error {
@@ -35,5 +35,9 @@ func (j *JSONB[T]) Scan(src any) error {
 		return fmt.Errorf("failed to scan JSONB: expected []byte, got %T", src)
 	}
 
-	return json.Unmarshal(b, &j.Data)
+	if err := json.Unmarshal(b, &j.Data); err != nil {
+		return err
+	}
+	j.Valid = true
+	return nil
 }
