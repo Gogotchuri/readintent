@@ -288,6 +288,80 @@ func TestService_HandleScrapeError(t *testing.T) {
 	}
 }
 
+func TestService_HandlePhonemizerResult(t *testing.T) {
+	const articleID int64 = 1
+	phonemizerJSON := `[{"graphemes":"hello","phonemes":"hello","token_ids":[1,2],"token_meta":[]}]`
+
+	var updatedArticle models.Article
+	updatedArticle.Id = articleID
+	repo := &mockRepository{
+		UpdateArticleFn: func(_ context.Context, article models.Article) error {
+			updatedArticle = article
+			return nil
+		},
+		GetArticleByIDFn: func(_ context.Context, id int64) (*models.Article, error) {
+			if id != articleID {
+				t.Fatalf("unexpected articleID: %d", id)
+			}
+			return &updatedArticle, nil
+		},
+	}
+
+	svc := NewService(repo, nil)
+	msg := map[string]any{
+		"article_id": "1",
+		"result":     phonemizerJSON,
+	}
+	err := svc.HandlePhonemizerResult(context.Background(), msg)
+	if err != nil {
+		t.Fatalf("HandlePhonemizerResult returned error: %v", err)
+	}
+	if updatedArticle.Status != models.ArticleStatusReady {
+		t.Errorf("expected status %s, got %s", models.ArticleStatusReady, updatedArticle.Status)
+	}
+	if !updatedArticle.PhonemizerData.Valid {
+		t.Fatal("expected PhonemizerData to be valid")
+	}
+	if len(updatedArticle.PhonemizerData.Data) != 1 {
+		t.Fatalf("expected 1 phonemizer entry, got %d", len(updatedArticle.PhonemizerData.Data))
+	}
+	if updatedArticle.PhonemizerData.Data[0].Graphemes != "hello" {
+		t.Errorf("expected graphemes 'hello', got %s", updatedArticle.PhonemizerData.Data[0].Graphemes)
+	}
+}
+
+func TestService_HandlePhonemizerResult_Error(t *testing.T) {
+	const articleID int64 = 1
+	existingArticle := &models.Article{Url: "https://example.com/article"}
+
+	var updatedArticle models.Article
+	repo := &mockRepository{
+		GetArticleByIDFn: func(_ context.Context, id int64) (*models.Article, error) {
+			if id != articleID {
+				t.Fatalf("unexpected articleID: %d", id)
+			}
+			return existingArticle, nil
+		},
+		UpdateArticleFn: func(_ context.Context, article models.Article) error {
+			updatedArticle = article
+			return nil
+		},
+	}
+
+	svc := NewService(repo, nil)
+	msg := map[string]any{
+		"article_id": "1",
+		"error":      `{"msg":"phonemizer failed"}`,
+	}
+	err := svc.HandlePhonemizerResult(context.Background(), msg)
+	if err != nil {
+		t.Fatalf("HandlePhonemizerResult with error returned error: %v", err)
+	}
+	if updatedArticle.Status != models.ArticleStatusFailed {
+		t.Errorf("expected status %s, got %s", models.ArticleStatusFailed, updatedArticle.Status)
+	}
+}
+
 // mockRepository implements Repository using function fields.
 type mockRepository struct {
 	GetArticlesFn              func(ctx context.Context, userID string, searchQ iomodels.GetArticlesRequest) (*iomodels.GetArticlesResponse, error)

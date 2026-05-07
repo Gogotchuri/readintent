@@ -93,7 +93,6 @@ func (s Service) HandleScrapeResult(ctx context.Context, msg map[string]any) err
 		return fmt.Errorf("parsing article from scrape result for article %d: %w", articleID, err)
 	}
 	art.Id = article.Id
-	art.CreatedAt = article.CreatedAt
 	if err := s.articleRepo.UpdateArticle(ctx, art); err != nil {
 		return fmt.Errorf("updating article with scrape result for id %d: %w", articleID, err)
 	}
