@@ -2,6 +2,7 @@ package articlemodels
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/gogotchuri/readintent/backend/database/models"
 )
@@ -20,21 +21,21 @@ type GetArticlesResponse struct {
 	TotalCount    int32
 }
 
-// ParsePageToken takes a page token in the format "unixTime:fromID" and returns the unix time and fromID components.
-func ParsePageToken(token string) (int64, int64) {
+// ParsePageToken decodes a "unixMicro:id" token into a cursor timestamp and ID.
+// Returns nil timestamp for an empty token (first page).
+func ParsePageToken(token string) (*time.Time, int64) {
 	if token == "" {
-		return 0, 0 // No token means start from the beginning
+		return nil, 0
 	}
-	var unixTime int64
-	var fromID int64
-	_, err := fmt.Sscanf(token, "%d:%d", &unixTime, &fromID)
-	if err != nil {
-		return 0, 0
+	var unixMicro, id int64
+	if _, err := fmt.Sscanf(token, "%d:%d", &unixMicro, &id); err != nil {
+		return nil, 0
 	}
-	return unixTime, fromID
+	t := time.UnixMicro(unixMicro)
+	return &t, id
 }
 
-// EncodePageToken encodes unixTime and fromID into a string in the format "unixTime:fromID".
-func EncodePageToken(unixTime int64, fromID int64) string {
-	return fmt.Sprintf("%d:%d", unixTime, fromID)
+// EncodePageToken encodes a cursor timestamp and ID into a "unixMicro:id" token.
+func EncodePageToken(t time.Time, id int64) string {
+	return fmt.Sprintf("%d:%d", t.UnixMicro(), id)
 }

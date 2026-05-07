@@ -23,7 +23,7 @@ func NewPgArticlesRepository(db *sqlx.DB) *PgArticlesRepository {
 }
 
 func (p PgArticlesRepository) GetArticles(ctx context.Context, userID string, searchQ iomodels.GetArticlesRequest) (*iomodels.GetArticlesResponse, error) {
-	afterUnixTime, fromID := iomodels.ParsePageToken(searchQ.PageToken)
+	cursorTime, cursorID := iomodels.ParsePageToken(searchQ.PageToken)
 	var totalCount int32
 	var nextPageToken string
 	var previews []models.ArticlePreview
@@ -31,13 +31,13 @@ func (p PgArticlesRepository) GetArticles(ctx context.Context, userID string, se
 		SELECT a.id, a.url, a.status, a.title, a.author, a.published_date, a.categories, a.description, a.image_url, a.created_at
 		FROM articles a
 		JOIN user_articles ua ON ua.article_id = a.id
-		WHERE ua.user_id = $1 AND ($2 = 0 OR a.created_at < to_timestamp($2) OR (a.created_at = to_timestamp($2) AND a.id < $3))
+		WHERE ua.user_id = $1 AND ($2::timestamptz IS NULL OR (a.created_at, a.id) <= ($2, $3))
 			AND COALESCE(a.author, '') LIKE '%' || $5 || '%'
 			AND COALESCE(a.title, '') LIKE '%' || $6 || '%'
 		ORDER BY a.created_at DESC, a.id DESC
 		LIMIT $4
 	`
-	err := p.db.SelectContext(ctx, &previews, query, userID, afterUnixTime, fromID, searchQ.PageSize+1, searchQ.Author, searchQ.SearchQuery)
+	err := p.db.SelectContext(ctx, &previews, query, userID, cursorTime, cursorID, searchQ.PageSize+1, searchQ.Author, searchQ.SearchQuery)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get articles for user %s: %w", userID, err)
 	}
@@ -45,8 +45,8 @@ func (p PgArticlesRepository) GetArticles(ctx context.Context, userID string, se
 	// We are only constructing the next page token when we have more articles remaining
 	if len(previews) > int(searchQ.PageSize) {
 		lastArticle := previews[len(previews)-1]
-		nextPageToken = iomodels.EncodePageToken(lastArticle.CreatedAt.Unix(), lastArticle.Id)
-		previews = previews[:len(previews)-1] // Remove the extra article used for pagination
+		nextPageToken = iomodels.EncodePageToken(lastArticle.CreatedAt, lastArticle.Id)
+		previews = previews[:searchQ.PageSize] // Remove the extra article used for pagination check
 	}
 
 	// Counting articles satisfying the condition
