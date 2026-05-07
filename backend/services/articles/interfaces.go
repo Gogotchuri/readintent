@@ -22,5 +22,6 @@ type Repository interface {
 }
 
 type ArticleSubmitter interface {
+	//TODO HTML handling isn't implemented in scraper
 	SubmitArticle(ctx context.Context, articleID int64, url, html string) error
 }
