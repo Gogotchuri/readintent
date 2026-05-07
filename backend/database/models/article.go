@@ -1,6 +1,8 @@
 package models
 
 import (
+	"encoding/json"
+	"errors"
 	"time"
 )
 
@@ -26,24 +28,32 @@ type PhonemizerData struct {
 	TokenMeta []PhonemizerTokenMeta `json:"token_meta"`
 }
 type Article struct {
-	Id             int64                 `db:"id" json:"id"`
-	Url            string                `db:"url" json:"url"`
-	Status         string                `db:"status" json:"status"` // processing by default
-	Title          NullString            `db:"title" json:"title"`
-	Author         NullString            `db:"author" json:"author"`
-	PublishedDate  NullString            `db:"published_date" json:"published_date"`
-	ExtractedHtml  NullString            `db:"extracted_html" json:"extracted_html"`
-	PureText       NullString            `db:"pure_text" json:"pure_text"`
-	Categories     NullString            `db:"categories" json:"categories"`
-	Description    NullString            `db:"description" json:"description"`
-	ImageUrl       NullString            `db:"image_url" json:"image_url"`
-	PhonemizerData JSONB[PhonemizerData] `db:"phonemizer_data" json:"phonemizer_data"`
-	CreatedAt      time.Time             `db:"created_at" json:"created_at"`
+	Id             int64                   `db:"id" json:"id"`
+	Url            string                  `db:"url" json:"url"`
+	Status         string                  `db:"status" json:"status"` // processing by default
+	Title          NullString              `db:"title" json:"title"`
+	Author         NullString              `db:"author" json:"author"`
+	PublishedDate  NullString              `db:"published_date" json:"published_date"`
+	ExtractedHtml  NullString              `db:"extracted_html" json:"extracted_html"`
+	PureText       NullString              `db:"pure_text" json:"pure_text"`
+	Categories     NullString              `db:"categories" json:"categories"`
+	Description    NullString              `db:"description" json:"description"`
+	ImageUrl       NullString              `db:"image_url" json:"image"`
+	PhonemizerData JSONB[[]PhonemizerData] `db:"phonemizer_data" json:"phonemizer_data"`
+	CreatedAt      time.Time               `db:"created_at" json:"created_at"`
 }
 
-func ArticleFromScrape(msg map[string]any) (Article, error) {
-	//TODO
-	return Article{}, nil
+func ArticleFromScrape(msg string) (Article, error) {
+	var article Article
+	if err := json.Unmarshal([]byte(msg), &article); err != nil {
+		return Article{}, err
+	}
+	if article.Url == "" {
+		return Article{}, errors.New("invalid article url")
+	}
+	// After scrape out result will be text ready with no phonemes
+	article.Status = ArticleStatusTextReady
+	return article, nil
 
 }
 
