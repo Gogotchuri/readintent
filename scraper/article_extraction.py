@@ -111,12 +111,17 @@ class ArticleExtractor:
 				self._origin_locks[origin] = threading.Lock()
 			return self._origin_locks[origin]
 
-	def _is_readerable(self, html: HtmlElement | str | None) -> bool:
+	def _is_readerable(self, html: HtmlElement | str | None, pure_text: str) -> bool:
 		"""Check if the HTML is probably readerable"""
 		if html is None:
 			return False
 		try:
-			return self._processor.is_probably_readerable(cast(HtmlElement, html))
+			if self._processor.is_probably_readerable(cast(HtmlElement, html)):
+				return True
+
+			if pure_text is not None and len(pure_text) > 300:
+				return True
+
 		except Exception as e:
 			self._logger.error(f"Error checking readability: {e}")
 			return False
@@ -189,17 +194,17 @@ class ArticleExtractor:
 		if isinstance(downloaded, ExtractorError):
 			return downloaded
 
-		if not self._is_readerable(downloaded):
+		pure_text = self._extract_pure_text(downloaded)
+		if isinstance(pure_text, ExtractorError):
+			return pure_text
+
+		if not self._is_readerable(downloaded, pure_text):
 			self._logger.warning(f"Content from {url} is not readerable")
 			return ExtractorError(f"Content from {url} is not readerable")
 
 		metadata = self._extract_metadata(url, downloaded)
 		if isinstance(metadata, ExtractorError):
 			return metadata
-
-		pure_text = self._extract_pure_text(downloaded)
-		if isinstance(pure_text, ExtractorError):
-			return pure_text
 
 		formatted_html = self._extract_formatted_html(downloaded)
 		if isinstance(formatted_html, ExtractorError):
