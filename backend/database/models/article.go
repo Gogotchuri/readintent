@@ -9,10 +9,11 @@ import (
 type ArticleStatus string
 
 const (
-	ArticleStatusProcessing = "processing"
-	ArticleStatusReady      = "ready"
-	ArticleStatusTextReady  = "text-ready"
-	ArticleStatusFailed     = "failed"
+	ArticleStatusProcessing    = "processing"
+	ArticleStatusReady         = "ready"
+	ArticleStatusTextReady     = "text-ready"
+	ArticleStatusPhonemesReady = "phonemes-ready"
+	ArticleStatusFailed        = "failed"
 )
 
 type PhonemizerTokenMeta struct {
@@ -41,6 +42,15 @@ type Article struct {
 	ImageUrl       NullString              `db:"image_url" json:"image"`
 	PhonemizerData JSONB[[]PhonemizerData] `db:"phonemizer_data" json:"phonemizer_data"`
 	CreatedAt      time.Time               `db:"created_at" json:"created_at"`
+}
+
+func (a *Article) GenerateDescriptionIfNone(l int) {
+	if a.Description.Valid {
+		return
+	}
+	if a.PureText.Valid && a.PureText.String() != "" {
+		a.Description = NewNullString(a.PureText.String()[:min(l, len(a.PureText.String()))])
+	}
 }
 
 func ArticleFromScrape(msg string) (Article, error) {
