@@ -346,7 +346,7 @@ class Article extends $pb.GeneratedMessage {
     $core.Iterable<$core.String>? categories,
     $core.String? description,
     $core.String? image,
-    PhonemizerData? phonemizerData,
+    $core.Iterable<PhonemizerData>? phonemizerData,
   }) {
     final $result = create();
     if (id != null) {
@@ -383,7 +383,7 @@ class Article extends $pb.GeneratedMessage {
       $result.image = image;
     }
     if (phonemizerData != null) {
-      $result.phonemizerData = phonemizerData;
+      $result.phonemizerData.addAll(phonemizerData);
     }
     return $result;
   }
@@ -403,7 +403,7 @@ class Article extends $pb.GeneratedMessage {
     ..pPS(9, _omitFieldNames ? '' : 'categories')
     ..aOS(10, _omitFieldNames ? '' : 'description')
     ..aOS(11, _omitFieldNames ? '' : 'image')
-    ..aOM<PhonemizerData>(12, _omitFieldNames ? '' : 'phonemizerData', subBuilder: PhonemizerData.create)
+    ..pc<PhonemizerData>(12, _omitFieldNames ? '' : 'phonemizerData', $pb.PbFieldType.PM, subBuilder: PhonemizerData.create)
     ..hasRequiredFields = false
   ;
 
@@ -523,15 +523,7 @@ class Article extends $pb.GeneratedMessage {
   void clearImage() => clearField(11);
 
   @$pb.TagNumber(12)
-  PhonemizerData get phonemizerData => $_getN(11);
-  @$pb.TagNumber(12)
-  set phonemizerData(PhonemizerData v) { setField(12, v); }
-  @$pb.TagNumber(12)
-  $core.bool hasPhonemizerData() => $_has(11);
-  @$pb.TagNumber(12)
-  void clearPhonemizerData() => clearField(12);
-  @$pb.TagNumber(12)
-  PhonemizerData ensurePhonemizerData() => $_ensure(11);
+  $core.List<PhonemizerData> get phonemizerData => $_getList(11);
 }
 
 class GetArticlesRequest extends $pb.GeneratedMessage {

@@ -46,7 +46,7 @@ message Article {
   repeated string categories = 9;
   optional string description = 10;
   optional string image = 11;
-  optional PhonemizerData phonemizer_data = 12;
+  repeated PhonemizerData phonemizer_data = 12;
 }
 
 message GetArticlesRequest {

@@ -90,12 +90,11 @@ const Article$json = {
     {'1': 'categories', '3': 9, '4': 3, '5': 9, '10': 'categories'},
     {'1': 'description', '3': 10, '4': 1, '5': 9, '9': 0, '10': 'description', '17': true},
     {'1': 'image', '3': 11, '4': 1, '5': 9, '9': 1, '10': 'image', '17': true},
-    {'1': 'phonemizer_data', '3': 12, '4': 1, '5': 11, '6': '.articles.v1.PhonemizerData', '9': 2, '10': 'phonemizerData', '17': true},
+    {'1': 'phonemizer_data', '3': 12, '4': 3, '5': 11, '6': '.articles.v1.PhonemizerData', '10': 'phonemizerData'},
   ],
   '8': [
     {'1': '_description'},
     {'1': '_image'},
-    {'1': '_phonemizer_data'},
   ],
 };
 
@@ -106,9 +105,9 @@ final $typed_data.Uint8List articleDescriptor = $convert.base64Decode(
     'ZGF0ZRIlCg5leHRyYWN0ZWRfaHRtbBgGIAEoCVINZXh0cmFjdGVkSHRtbBIbCglwdXJlX3RleH'
     'QYByABKAlSCHB1cmVUZXh0EhAKA3VybBgIIAEoCVIDdXJsEh4KCmNhdGVnb3JpZXMYCSADKAlS'
     'CmNhdGVnb3JpZXMSJQoLZGVzY3JpcHRpb24YCiABKAlIAFILZGVzY3JpcHRpb26IAQESGQoFaW'
-    '1hZ2UYCyABKAlIAVIFaW1hZ2WIAQESSQoPcGhvbmVtaXplcl9kYXRhGAwgASgLMhsuYXJ0aWNs'
-    'ZXMudjEuUGhvbmVtaXplckRhdGFIAlIOcGhvbmVtaXplckRhdGGIAQFCDgoMX2Rlc2NyaXB0aW'
-    '9uQggKBl9pbWFnZUISChBfcGhvbmVtaXplcl9kYXRh');
+    '1hZ2UYCyABKAlIAVIFaW1hZ2WIAQESRAoPcGhvbmVtaXplcl9kYXRhGAwgAygLMhsuYXJ0aWNs'
+    'ZXMudjEuUGhvbmVtaXplckRhdGFSDnBob25lbWl6ZXJEYXRhQg4KDF9kZXNjcmlwdGlvbkIICg'
+    'ZfaW1hZ2U=');
 
 @$core.Deprecated('Use getArticlesRequestDescriptor instead')
 const GetArticlesRequest$json = {

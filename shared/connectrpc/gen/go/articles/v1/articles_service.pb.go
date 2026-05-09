@@ -265,17 +265,17 @@ type Article struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Id    int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	// failed, started_gathering, text_ready, ready
-	Status         string          `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
-	Title          string          `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
-	Author         string          `protobuf:"bytes,4,opt,name=author,proto3" json:"author,omitempty"`
-	Date           string          `protobuf:"bytes,5,opt,name=date,proto3" json:"date,omitempty"`
-	ExtractedHtml  string          `protobuf:"bytes,6,opt,name=extracted_html,json=extractedHtml,proto3" json:"extracted_html,omitempty"`
-	PureText       string          `protobuf:"bytes,7,opt,name=pure_text,json=pureText,proto3" json:"pure_text,omitempty"`
-	Url            string          `protobuf:"bytes,8,opt,name=url,proto3" json:"url,omitempty"`
-	Categories     []string        `protobuf:"bytes,9,rep,name=categories,proto3" json:"categories,omitempty"`
-	Description    *string         `protobuf:"bytes,10,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	Image          *string         `protobuf:"bytes,11,opt,name=image,proto3,oneof" json:"image,omitempty"`
-	PhonemizerData *PhonemizerData `protobuf:"bytes,12,opt,name=phonemizer_data,json=phonemizerData,proto3,oneof" json:"phonemizer_data,omitempty"`
+	Status         string            `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	Title          string            `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	Author         string            `protobuf:"bytes,4,opt,name=author,proto3" json:"author,omitempty"`
+	Date           string            `protobuf:"bytes,5,opt,name=date,proto3" json:"date,omitempty"`
+	ExtractedHtml  string            `protobuf:"bytes,6,opt,name=extracted_html,json=extractedHtml,proto3" json:"extracted_html,omitempty"`
+	PureText       string            `protobuf:"bytes,7,opt,name=pure_text,json=pureText,proto3" json:"pure_text,omitempty"`
+	Url            string            `protobuf:"bytes,8,opt,name=url,proto3" json:"url,omitempty"`
+	Categories     []string          `protobuf:"bytes,9,rep,name=categories,proto3" json:"categories,omitempty"`
+	Description    *string           `protobuf:"bytes,10,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	Image          *string           `protobuf:"bytes,11,opt,name=image,proto3,oneof" json:"image,omitempty"`
+	PhonemizerData []*PhonemizerData `protobuf:"bytes,12,rep,name=phonemizer_data,json=phonemizerData,proto3" json:"phonemizer_data,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -387,7 +387,7 @@ func (x *Article) GetImage() string {
 	return ""
 }
 
-func (x *Article) GetPhonemizerData() *PhonemizerData {
+func (x *Article) GetPhonemizerData() []*PhonemizerData {
 	if x != nil {
 		return x.PhonemizerData
 	}
@@ -810,7 +810,7 @@ const file_articles_v1_articles_service_proto_rawDesc = "" +
 	"\vdescription\x18\b \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x19\n" +
 	"\x05image\x18\t \x01(\tH\x01R\x05image\x88\x01\x01B\x0e\n" +
 	"\f_descriptionB\b\n" +
-	"\x06_image\"\xa4\x03\n" +
+	"\x06_image\"\x8b\x03\n" +
 	"\aArticle\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\x12\x14\n" +
@@ -825,11 +825,10 @@ const file_articles_v1_articles_service_proto_rawDesc = "" +
 	"categories\x12%\n" +
 	"\vdescription\x18\n" +
 	" \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x19\n" +
-	"\x05image\x18\v \x01(\tH\x01R\x05image\x88\x01\x01\x12I\n" +
-	"\x0fphonemizer_data\x18\f \x01(\v2\x1b.articles.v1.PhonemizerDataH\x02R\x0ephonemizerData\x88\x01\x01B\x0e\n" +
+	"\x05image\x18\v \x01(\tH\x01R\x05image\x88\x01\x01\x12D\n" +
+	"\x0fphonemizer_data\x18\f \x03(\v2\x1b.articles.v1.PhonemizerDataR\x0ephonemizerDataB\x0e\n" +
 	"\f_descriptionB\b\n" +
-	"\x06_imageB\x12\n" +
-	"\x10_phonemizer_data\"\xd1\x01\n" +
+	"\x06_image\"\xd1\x01\n" +
 	"\x12GetArticlesRequest\x12\x1b\n" +
 	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
