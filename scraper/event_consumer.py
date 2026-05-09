@@ -35,7 +35,7 @@ class EventHub:
 	def _consume_single_event_batch(self, executor: ThreadPoolExecutor) -> None:
 		"""Consume a single batch of events from the Redis stream and process them"""
 		try:
-			print("Waiting for events...")
+			logger.debug("Waiting for events...")
 			batched_events = cast(
 				dict[str, List[List[Tuple[str, dict]]]],
 				self.redis_client.xreadgroup(
@@ -48,14 +48,14 @@ class EventHub:
 			)
 
 			if not batched_events:
-				print("No events received")
+				logger.debug("No events received")
 				return
 
 			# We will only need the specific event stream
 			# AFAIK, this should never return the other entries given the way we call xreadgroup
 			event_list = batched_events.get(self.config.stream_input_event, [])
 			if not event_list:
-				print("No events received for stream")
+				logger.debug("No events received for stream")
 				return
 
 			# The event list is a list of list of tuples. The outer list is redundant given our call structure
@@ -172,6 +172,7 @@ class EventHub:
 	def consume_events(self):
 		"""Continuously consume events from the Redis stream and process them"""
 		self.ensure_group()
+		logger.info("event consumer started")
 
 		# Start retry sweep as a concurrent background thread
 		retry_thread = threading.Thread(target=self._retry_loop, daemon=True)
