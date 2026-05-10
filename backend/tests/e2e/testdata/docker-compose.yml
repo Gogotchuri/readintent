@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports: ["${POSTGRES_PORT}:5432"]
+    environment:
+      POSTGRES_USER: e2e_test
+      POSTGRES_PASSWORD: e2e_test_secret
+      POSTGRES_DB: e2e_test_db
+    volumes:
+      - type: tmpfs
+        target: /var/lib/postgresql/data
+        tmpfs: { size: 1073741824, mode: 1777 }
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "localhost", "-U", "e2e_test", "-d", "e2e_test_db"]
+      interval: 1s
+      timeout: 1s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports: ["${REDIS_PORT}:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 1s
+      retries: 10
+
+  test-server:
+    image: nginx:alpine
+    volumes:
+      - ./html:/usr/share/nginx/html:ro
+
+  scraper:
+    build:
+      context: ../../../../scraper
+      dockerfile: Dockerfile
+    restart: on-failure:5
+    depends_on:
+      redis: { condition: service_healthy }
+      test-server: { condition: service_started }
+    environment:
+      SCRAPER_REDIS_URL: redis://redis:6379/0
+      SCRAPER_STREAM_INPUT: scrape:jobs
+      SCRAPER_STREAM_OUTPUT: scrape:results
+      SCRAPER_CONSUMER_GROUP: scraper-group
+      SCRAPER_CONSUMER_NAME: scraper-test-1
+
+  phonemizer:
+    build:
+      context: ../../../../phonemizer
+      dockerfile: Dockerfile
+    restart: on-failure:5
+    depends_on:
+      redis: { condition: service_healthy }
+    environment:
+      PHONEMIZER_REDIS_URL: redis://redis:6379/0
+      PHONEMIZER_STREAM_INPUT: scrape:results
+      PHONEMIZER_STREAM_OUTPUT: phonemize:results
+      PHONEMIZER_CONSUMER_GROUP: phonemizer-group
+      PHONEMIZER_CONSUMER_NAME: phonemizer-test-1
