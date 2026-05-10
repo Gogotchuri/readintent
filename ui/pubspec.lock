@@ -373,6 +373,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.17.2"
+  fnv:
+    dependency: "direct main"
+    description:
+      name: fnv
+      sha256: "16f38420288aabaa0caea771a2940e774fa44962a8cb0a544edea009d01e4961"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   freezed_annotation:
     dependency: transitive
     description:
@@ -728,7 +736,7 @@ packages:
     source: hosted
     version: "2.2.1"
   path_provider_platform_interface:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: path_provider_platform_interface
       sha256: "88f5779f72ba699763fa3a3b06aa4bf6de76c8e5de842cf6f29e2e06476c2334"
