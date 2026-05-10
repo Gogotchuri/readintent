@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
+import "package:go_router/go_router.dart";
 import "package:readintent_flutter/features/articles/presentation/add_article_dialog.dart";
 import "package:readintent_flutter/features/articles/providers/articles_provider.dart";
 import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
@@ -192,9 +193,7 @@ class _ArticleTile extends StatelessWidget {
               ),
             )
           : null,
-      onTap: () {
-        // TODO: /articles/${article.id};
-      },
+      onTap: () => context.push("/articles/${article.id}"),
     );
   }
 }

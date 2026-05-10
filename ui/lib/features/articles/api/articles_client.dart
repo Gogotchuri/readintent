@@ -34,6 +34,19 @@ class ArticlesClient {
     }
   }
 
+  Future<articles_pb.Article> getArticle(String id) async {
+    try {
+      final response = await _client.getArticle(
+        articles_pb.GetArticleRequest(id: id),
+      );
+      return response.article;
+    } on ConnectException catch (e) {
+      handleArticlesConnectException(e, "fetch article");
+    } catch (e) {
+      throw ArticlesException("Failed to fetch article: $e");
+    }
+  }
+
   Future<void> deleteArticle(String id) async {
     try {
       await _client.deleteArticle(articles_pb.DeleteArticleRequest(id: id));
