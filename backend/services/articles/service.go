@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strconv"
 
 	"github.com/gogotchuri/readintent/backend/database/models"
@@ -93,6 +94,17 @@ func (s Service) HandleScrapeResult(ctx context.Context, msg map[string]any) err
 		return fmt.Errorf("parsing article from scrape result for article %d: %w", articleID, err)
 	}
 	art.Id = article.Id
+	// Just in case this has arrived first
+	art.PhonemizerData = article.PhonemizerData
+	if art.PhonemizerData.Valid {
+		art.Status = models.ArticleStatusReady
+	} else {
+		art.Status = models.ArticleStatusTextReady
+	}
+	// Generate 300 len description if there is none
+	art.GenerateDescriptionIfNone(300)
+
+	slog.Info(fmt.Sprintf("Updating article %d with scrape result, status set to %s", articleID, art.Status))
 	if err := s.articleRepo.UpdateArticle(ctx, art); err != nil {
 		return fmt.Errorf("updating article with scrape result for id %d: %w", articleID, err)
 	}
@@ -120,7 +132,13 @@ func (s Service) HandlePhonemizerResult(ctx context.Context, msg map[string]any)
 		return fmt.Errorf("getting article with id %d: %w", articleID, err)
 	}
 	article.PhonemizerData = models.NewJSONB(phonemizerData)
-	article.Status = models.ArticleStatusReady
+	article.Status = models.ArticleStatusPhonemesReady
+	// Check if the article has already arrived, there is a chance it didn't
+	// If we have successfully extracted html too we mark the article as ready
+	if article.ExtractedHtml.Valid {
+		article.Status = models.ArticleStatusReady
+	}
+	slog.Info(fmt.Sprintf("Updating article %d with phonemizer data, status set to %s", articleID, article.Status))
 	if err := s.articleRepo.UpdateArticle(ctx, *article); err != nil {
 		return fmt.Errorf("updating article with phonemizer data for id %d: %w", articleID, err)
 	}

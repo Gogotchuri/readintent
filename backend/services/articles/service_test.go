@@ -316,8 +316,8 @@ func TestService_HandlePhonemizerResult(t *testing.T) {
 	if err != nil {
 		t.Fatalf("HandlePhonemizerResult returned error: %v", err)
 	}
-	if updatedArticle.Status != models.ArticleStatusReady {
-		t.Errorf("expected status %s, got %s", models.ArticleStatusReady, updatedArticle.Status)
+	if updatedArticle.Status != models.ArticleStatusPhonemesReady {
+		t.Errorf("expected status %s, got %s", models.ArticleStatusPhonemesReady, updatedArticle.Status)
 	}
 	if !updatedArticle.PhonemizerData.Valid {
 		t.Fatal("expected PhonemizerData to be valid")

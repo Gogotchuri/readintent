@@ -96,8 +96,9 @@ func (h *ArticlesHub) Listen(ctx context.Context) error {
 			if errors.Is(err, redis.Nil) {
 				continue // No messages, continue listening
 			}
-			// Log the error and continue listening
+			// Log the error and continue listening after waiting or a second
 			slog.Error(fmt.Sprintf("error reading from scrape result stream: %v", err))
+			time.Sleep(1 * time.Second)
 			continue
 		}
 		for _, msg := range res {
