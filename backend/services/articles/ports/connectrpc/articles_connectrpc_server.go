@@ -121,19 +121,44 @@ func (a *ArticlesServer) DeleteArticle(ctx context.Context, req *connect.Request
 }
 
 func protoArticleFromArticle(article *models.Article) *v1.Article {
+	var phonemes []*v1.PhonemizerData
+	if article.PhonemizerData.Valid {
+		phonemes = make([]*v1.PhonemizerData, len(article.PhonemizerData.Data))
+		for _, pd := range article.PhonemizerData.Data {
+			phonemes = append(phonemes, protoPhonemesFromPhonemizerData(pd))
+		}
+	}
 	protoArticle := &v1.Article{
-		Id:            article.Id,
-		Status:        article.Status,
-		Title:         article.Title.String(),
-		Author:        article.Author.String(),
-		Date:          article.PublishedDate.String(),
-		ExtractedHtml: article.ExtractedHtml.String(),
-		PureText:      article.PureText.String(),
-		Description:   article.Description.StringRef(),
-		Image:         article.ImageUrl.StringRef(),
-		Url:           article.Url,
+		Id:             article.Id,
+		Status:         article.Status,
+		Title:          article.Title.String(),
+		Author:         article.Author.String(),
+		Date:           article.PublishedDate.String(),
+		ExtractedHtml:  article.ExtractedHtml.String(),
+		PureText:       article.PureText.String(),
+		Description:    article.Description.StringRef(),
+		Image:          article.ImageUrl.StringRef(),
+		Url:            article.Url,
+		PhonemizerData: phonemes,
 	}
 	return protoArticle
+}
+
+func protoPhonemesFromPhonemizerData(pd models.PhonemizerData) *v1.PhonemizerData {
+	tokenMeta := make([]*v1.PhonemizerTokenMeta, len(pd.TokenMeta))
+	for i, tm := range pd.TokenMeta {
+		tokenMeta[i] = &v1.PhonemizerTokenMeta{
+			Text:          tm.Text,
+			PhonemeLen:    tm.PhonemeLen,
+			HasWhitespace: tm.HasWhitespace,
+		}
+	}
+	return &v1.PhonemizerData{
+		Graphemes: pd.Graphemes,
+		Phonemes:  pd.Phonemes,
+		TokenIds:  pd.TokenIds,
+		TokenMeta: tokenMeta,
+	}
 }
 
 func protoArticlePreviewsFromArticlePreviews(articles []models.ArticlePreview) []*v1.ArticlePreview {
