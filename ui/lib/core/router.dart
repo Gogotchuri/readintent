@@ -4,6 +4,7 @@ import "package:readintent_flutter/features/auth/presentation/login_screen.dart"
 import "package:readintent_flutter/features/auth/presentation/registration_screen.dart";
 import "package:readintent_flutter/features/auth/presentation/splash_screen.dart";
 import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
+import "package:readintent_flutter/features/articles/presentation/article_detail_screen.dart";
 import "package:readintent_flutter/features/articles/presentation/home.dart";
 import "package:readintent_flutter/models/auth_state.dart";
 import "package:riverpod_annotation/riverpod_annotation.dart";
@@ -65,11 +66,7 @@ GoRouter appRouter(Ref ref) {
         path: "/articles/:id",
         builder: (context, state) {
           final id = state.pathParameters["id"]!;
-          return Scaffold(
-            //TODO
-            appBar: AppBar(title: const Text("Article")),
-            body: Center(child: Text("Article Page TODO - Article ID: $id")),
-          );
+          return ArticleDetailScreen(articleId: id);
         },
       ),
     ],
