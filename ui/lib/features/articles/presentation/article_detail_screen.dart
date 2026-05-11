@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart";
+import "package:readintent_flutter/features/articles/presentation/article_player_widget.dart";
 import "package:readintent_flutter/features/articles/providers/article_detail_provider.dart";
 import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
 
@@ -50,7 +51,7 @@ class ArticleDetailScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            const _AudioPlayerPlaceholder(),
+            if (article.phonemizerData.isNotEmpty) ArticlePlayerWidget(article: article),
           ],
         ),
       ),
@@ -114,39 +115,6 @@ class _ArticleHeader extends StatelessWidget {
           // TODO categories
         ],
       ],
-    );
-  }
-}
-
-class _AudioPlayerPlaceholder extends StatelessWidget {
-  const _AudioPlayerPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        border: Border(top: BorderSide(color: Colors.grey[300]!)),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          const IconButton(onPressed: null, icon: Icon(Icons.play_arrow)),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const LinearProgressIndicator(value: 0),
-                const SizedBox(height: 4),
-                Text(
-                  "Audio player - TODO",
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.grey[600]),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
