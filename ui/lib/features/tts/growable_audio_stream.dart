@@ -30,6 +30,7 @@ class GrowableAudioStream extends StreamAudioSource {
     final int16Bytes = _float32ToInt16Bytes(samples);
     _pcmBuilder.add(int16Bytes);
     _pcmLength += int16Bytes.length;
+    _patchWavSizes(_pcmLength);
     if (!_updateController.isClosed) {
       _updateController.add(null);
     }
@@ -137,6 +138,15 @@ class GrowableAudioStream extends StreamAudioSource {
     bd.setUint32(4, 0x7FFFFFFF, Endian.little); // RIFF chunk size
     bd.setUint32(40, 0x7FFFFFFF, Endian.little); // data chunk size
     return Uint8List.sublistView(bytes, 0, _headerSize);
+  }
+
+  /// Patch the WAV header sizes to reflect the current PCM length.
+  /// This allows just_audio to know how much audio is currently buffered and when the stream ends.
+  void _patchWavSizes(int pcmLength) {
+    final bd = ByteData.sublistView(_streamingHeader);
+    final riffSize = pcmLength + _headerSize - 8; // RIFF chunk size excludes the first 8 bytes
+    bd.setUint32(4, riffSize.clamp(0, 0x7FFFFFFF), Endian.little);
+    bd.setUint32(40, pcmLength.clamp(0, 0x7FFFFFFF), Endian.little);
   }
 
   // Convert Float32 samples to Int16 bytes for WAV encoding.

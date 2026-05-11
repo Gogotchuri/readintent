@@ -28,8 +28,9 @@ class TTSPipeline {
       await sessionOpts.appendDefaultProviders();
       session = OrtSession.fromFile(File(modelPath), sessionOpts);
       sessionOpts.release();
+      //TODO certain models might fail to work on some devices, we need to detect such failures and fallback
     } catch (e) {
-      // Manual fallback just in case (//TODO need to handle another failure case + Find the place to replace models if the device doesn't support the chosen one)
+      // Manual fallback just in case (//TODO need to handle another failure casre)
       final sessionOpts = OrtSessionOptions();
       // Sets parallelism equal to the processor cores when running on CPU
       sessionOpts.setIntraOpNumThreads(Platform.numberOfProcessors);
@@ -50,7 +51,7 @@ class TTSPipeline {
     final styleVector = _voiceStyles.getStyleVector(style, seqLen);
     final styleTensor = OrtValueTensor.createTensorWithDataList(styleVector, [1, 256]);
 
-    final speedTensor = OrtValueTensor.createTensorWithDataList([1.0], [1]);
+    final speedTensor = OrtValueTensor.createTensorWithDataList(Float32List.fromList([1.0]), [1]);
 
     final inputs = {"input_ids": tokenTensor, "style": styleTensor, "speed": speedTensor};
 

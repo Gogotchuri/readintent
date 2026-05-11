@@ -51,15 +51,23 @@ class VoiceStyles {
 
   // Given a directory path, load all voice files and create a VoiceStyles instance
   // If the directory contains files that don't match any known VoiceStyle, they will be skipped
-  static Future<VoiceStyles> loadVoiceStyles(String voicesDir) async {
+  static Future<VoiceStyles> loadVoiceStyles(String voicePath) async {
+    //Remove last file identifier if included in the path, we need the directory to load all voice files
+    final pathSegments = voicePath.split("/");
+    if (pathSegments.isNotEmpty) {
+      pathSegments.removeLast();
+    }
+    final voicesDir = Directory(pathSegments.join("/"));
+    if (!await voicesDir.exists()) {
+      throw ArgumentError("Voice styles directory not found: $voicePath");
+    }
     final voiceData = await _loadVoiceFiles(voicesDir);
     return VoiceStyles._(voiceData);
   }
 
-  static Future<Map<VoiceStyle, Uint8List>> _loadVoiceFiles(String voicesDir) async {
+  static Future<Map<VoiceStyle, Uint8List>> _loadVoiceFiles(Directory voicesDir) async {
     final Map<VoiceStyle, Uint8List> voiceData = {};
-    final dir = Directory(voicesDir);
-    await for (final entity in dir.list()) {
+    await for (final entity in voicesDir.list()) {
       if (entity is File && entity.path.endsWith(".bin")) {
         final voiceKey = entity.uri.pathSegments.last.split(".").first;
 
