@@ -50,16 +50,15 @@ void main() {
       expect(output[3], closeTo(-1.0, 0.001));
     });
 
-    test("request returns sourceLength only when ended", () async {
-      final stream = GrowableAudioStream();
-      stream.addSamples(Float32List(480));
+    test("chunkToWavBytes produces a valid standalone WAV", () {
+      final samples = Float32List.fromList([0.5, -0.5, 1.0, -1.0]);
+      final wavBytes = GrowableAudioStream.chunkToWavBytes(samples);
 
-      final midResponse = await stream.request(0, 44);
-      expect(midResponse.sourceLength, isNull); // not ended yet
-
-      stream.endStream();
-      final endResponse = await stream.request(0, 44);
-      expect(endResponse.sourceLength, isNotNull);
+      final parsed = Wav.read(wavBytes);
+      expect(parsed.samplesPerSecond, 24000);
+      expect(parsed.channels.length, 1);
+      expect(parsed.channels[0].length, 4);
+      expect(parsed.channels[0][0], closeTo(0.5, 0.001));
     });
 
     test("isEnded reflects endStream call", () {
@@ -95,22 +94,13 @@ void main() {
       expect(parsed.channels[0].length, 24000);
     });
 
-    test("request returns PCM data after header", () async {
-      final stream = GrowableAudioStream();
-      // Add known data
-      final samples = Float32List.fromList([0.5]);
-      stream.addSamples(samples);
-      stream.endStream();
+    test("chunkToWavBytes clamps out-of-range values", () {
+      final samples = Float32List.fromList([2.0, -2.0]);
+      final wavBytes = GrowableAudioStream.chunkToWavBytes(samples);
 
-      // Total should be header (44) + 2 bytes (one 16-bit sample)
-      final response = await stream.request(0, 46);
-      expect(response.contentLength, 46);
-
-      // Read the full response
-      final bytes = await response.stream.first;
-      expect(bytes.length, 46);
-      // First 4 bytes should be "RIFF"
-      expect(String.fromCharCodes(bytes.sublist(0, 4)), "RIFF");
+      final parsed = Wav.read(wavBytes);
+      expect(parsed.channels[0][0], closeTo(1.0, 0.001));
+      expect(parsed.channels[0][1], closeTo(-1.0, 0.001));
     });
   });
 }

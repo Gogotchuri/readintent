@@ -7,7 +7,7 @@ import "package:riverpod_annotation/riverpod_annotation.dart";
 
 part "connect_transport.g.dart";
 
-const String connectBaseUrl = "http://localhost:5050"; //TODO: Move to config
+const String connectBaseUrl = "http://192.168.100.4:5050"; //TODO: Move to config
 const String tokenHeaderKey = "X-Session-Token";
 
 Interceptor _createAuthInterceptor(SessionStorage sessionStorage) {

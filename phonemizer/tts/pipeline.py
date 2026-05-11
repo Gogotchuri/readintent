@@ -35,7 +35,8 @@ class PhonemizerPipeline:
     def generate_phonemes(self, text:str, voice='af_heart') -> List[PhonemizerResult]:
         final_result: List[PhonemizerResult] = []
         for result in self.pipeline(text, voice):
-            token_ids = [VOCAB[c] for c in result.phonemes if c in VOCAB]
+            # Add paddings to token_ids
+            token_ids = [0] + [VOCAB[c] for c in result.phonemes if c in VOCAB] + [0]
 
             # Build per-word metadata so the Flutter side can reconstruct
             # word-level timestamps from the model's pred_dur output.

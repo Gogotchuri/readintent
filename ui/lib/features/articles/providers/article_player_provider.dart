@@ -1,7 +1,9 @@
 import "dart:async";
+import "dart:io";
 
 import "package:just_audio_background/just_audio_background.dart";
 import "package:just_audio/just_audio.dart";
+import "package:path_provider/path_provider.dart";
 import "package:riverpod_annotation/riverpod_annotation.dart";
 
 import "package:readintent_flutter/features/tts/audio_cache.dart";
@@ -63,6 +65,7 @@ class ArticlePlayer extends _$ArticlePlayer {
   StreamSubscription? _playerStateSub;
   StreamSubscription? _bufferedSub;
   TTSPipeline? _pipeline;
+  Directory? _chunkDir;
   bool _generating = false;
 
   @override
@@ -77,6 +80,8 @@ class ArticlePlayer extends _$ArticlePlayer {
     _bufferedSub?.cancel();
     _liveStream?.dispose();
     _liveStream = null;
+    _chunkDir?.delete(recursive: true).catchError((_) => _chunkDir!);
+    _chunkDir = null;
   }
 
   MediaItem _buildMediaItem(articles_pb.Article article) {
@@ -90,7 +95,7 @@ class ArticlePlayer extends _$ArticlePlayer {
 
   Future<void> play({
     required articles_pb.Article article,
-    VoiceStyle voice = VoiceStyle.af,
+    VoiceStyle voice = VoiceStyle.afSky,
     double speed = 1.0,
   }) async {
     if (_generating) return;
@@ -138,6 +143,9 @@ class ArticlePlayer extends _$ArticlePlayer {
     required String cacheKey,
   }) async {
     _generating = true;
+    final tempDir = await getTemporaryDirectory();
+    _chunkDir = Directory("${tempDir.path}/readintent_tts_$articleId");
+    await _chunkDir!.create(recursive: true);
 
     try {
       // Ensure model + voice assets
@@ -154,12 +162,11 @@ class ArticlePlayer extends _$ArticlePlayer {
       final estimatedMs = (totalTokens * 6.0 / speed).round();
       state = state.copyWith(estimatedDuration: Duration(milliseconds: estimatedMs));
 
-      // Generate first chunk before setting audio source so MPV receives
-      // a WAV header followed by actual PCM data (otherwise it fails to
-      // recognize the format from a header-only response).
+      // Generate first chunk
       final firstResult = await _pipeline!.runInference(chunks.first, voice);
 
-      _liveStream = GrowableAudioStream(_buildMediaItem(article));
+      // Accumulate audio data for duration tracking and final cache WAV
+      _liveStream = GrowableAudioStream();
       _liveStream!.addSamples(firstResult.audio);
       _bufferedSub = _liveStream!.bufferedDurationStream.listen((d) {
         state = state.copyWith(bufferedDuration: d);
@@ -170,26 +177,28 @@ class ArticlePlayer extends _$ArticlePlayer {
       final estimatedTotalMs = (firstChunkDurationMs * totalTokens / chunks.first.tokenIds.length).round();
       state = state.copyWith(estimatedDuration: Duration(milliseconds: estimatedTotalMs));
 
-      await _player.setAudioSource(_liveStream!);
+      // Write first chunk as a standalone WAV file
+      final firstFile = File("${_chunkDir!.path}/chunk_0.wav");
+      await firstFile.writeAsBytes(GrowableAudioStream.chunkToWavBytes(firstResult.audio));
+
+      // Set up playlist with first chunk and start playback
+      final mediaItem = _buildMediaItem(article);
+      await _player.setAudioSources([
+        AudioSource.file(firstFile.path, tag: mediaItem),
+      ]);
       state = state.copyWith(isLoading: false);
       await _player.play();
 
-      // Run remaining chunks
-      Duration lastSaveTime = Duration.zero;
-      const saveInterval = Duration(seconds: 30);
-
-      for (final chunk in chunks.skip(1)) {
+      // Generate remaining chunks, append to playlist dynamically
+      for (int i = 1; i < chunks.length; i++) {
         if (_liveStream == null) break; // disposed during generation
 
-        final result = await _pipeline!.runInference(chunk, voice);
+        final result = await _pipeline!.runInference(chunks[i], voice);
         _liveStream!.addSamples(result.audio);
 
-        // Incremental save every ~30 seconds of buffered audio
-        final currentBuffered = _liveStream!.bufferedDuration;
-        if (currentBuffered - lastSaveTime >= saveInterval) {
-          lastSaveTime = currentBuffered;
-          unawaited(_saveSnapshot(cacheKey));
-        }
+        final chunkFile = File("${_chunkDir!.path}/chunk_$i.wav");
+        await chunkFile.writeAsBytes(GrowableAudioStream.chunkToWavBytes(result.audio));
+        await _player.addAudioSource(AudioSource.file(chunkFile.path, tag: mediaItem));
       }
 
       // Generation complete
@@ -198,23 +207,14 @@ class ArticlePlayer extends _$ArticlePlayer {
       final actualDuration = _liveStream!.bufferedDuration;
       state = state.copyWith(ttsComplete: true, estimatedDuration: actualDuration);
 
-      // Final cache write
+      // Save concatenated WAV to cache, then clean up chunk files
       final wavBytes = _liveStream!.toWavBytes();
       unawaited(_cache.save(cacheKey, wavBytes));
+      unawaited(_chunkDir!.delete(recursive: true).then((_) => _chunkDir = null));
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     } finally {
       _generating = false;
-    }
-  }
-
-  Future<void> _saveSnapshot(String cacheKey) async {
-    try {
-      if (_liveStream == null) return;
-      final wavBytes = _liveStream!.toWavBytes();
-      await _cache.save(cacheKey, wavBytes);
-    } catch (_) {
-      // Non-critical — final save will overwrite
     }
   }
 
