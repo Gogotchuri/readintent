@@ -22,7 +22,7 @@ class GrowableAudioStream extends StreamAudioSource {
   bool _ended = false;
   int _pcmLength = 0;
 
-  GrowableAudioStream() : super(tag: "kokoro-live");
+  GrowableAudioStream(dynamic tag) : super(tag: tag ?? "kokoro-live");
 
   /// Add new Float32 audio samples (mono, 24kHz).
   void addSamples(Float32List samples) {

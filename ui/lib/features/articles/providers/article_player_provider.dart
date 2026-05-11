@@ -1,5 +1,6 @@
 import "dart:async";
 
+import "package:just_audio_background/just_audio_background.dart";
 import "package:just_audio/just_audio.dart";
 import "package:riverpod_annotation/riverpod_annotation.dart";
 
@@ -9,7 +10,6 @@ import "package:readintent_flutter/features/tts/model_downloader.dart";
 import "package:readintent_flutter/features/tts/phoneme.dart";
 import "package:readintent_flutter/features/tts/pipeline.dart";
 import "package:readintent_flutter/features/tts/voice_style.dart";
-import "package:readintent_flutter/main.dart" show audioHandler;
 import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
 
 part "article_player_provider.g.dart";
@@ -57,14 +57,13 @@ class ArticlePlayerState {
 @riverpod
 class ArticlePlayer extends _$ArticlePlayer {
   final AudioCache _cache = AudioCache();
+  final AudioPlayer _player = AudioPlayer();
   GrowableAudioStream? _liveStream;
   StreamSubscription? _positionSub;
   StreamSubscription? _playerStateSub;
   StreamSubscription? _bufferedSub;
   TTSPipeline? _pipeline;
   bool _generating = false;
-
-  AudioPlayer get _player => audioHandler.player;
 
   @override
   ArticlePlayerState build(String articleId) {
@@ -80,6 +79,15 @@ class ArticlePlayer extends _$ArticlePlayer {
     _liveStream = null;
   }
 
+  MediaItem _buildMediaItem(articles_pb.Article article) {
+    return MediaItem(
+      id: article.title,
+      title: article.title,
+      artist: article.author.isNotEmpty ? article.author : null,
+      album: "ReadIntent",
+    );
+  }
+
   Future<void> play({
     required articles_pb.Article article,
     VoiceStyle voice = VoiceStyle.af,
@@ -91,12 +99,6 @@ class ArticlePlayer extends _$ArticlePlayer {
     _wirePlayerListeners();
 
     state = const ArticlePlayerState(isLoading: true);
-
-    // Set lock screen metadata
-    audioHandler.setArticleMetadata(
-      title: article.title,
-      author: article.author.isNotEmpty ? article.author : null,
-    );
 
     // Build cache key using concatenated graphemes as article text
     final articleText = article.pureText;
@@ -110,7 +112,7 @@ class ArticlePlayer extends _$ArticlePlayer {
     // Try cache first
     final cachedFile = await _cache.load(key);
     if (cachedFile != null) {
-      await _playFromFile(cachedFile.path);
+      await _playFromFile(cachedFile.path, article);
       return;
     }
 
@@ -118,8 +120,8 @@ class ArticlePlayer extends _$ArticlePlayer {
     await _generateAndPlay(article: article, voice: voice, speed: speed, cacheKey: key);
   }
 
-  Future<void> _playFromFile(String path) async {
-    final duration = await _player.setFilePath(path);
+  Future<void> _playFromFile(String path, articles_pb.Article article) async {
+    final duration = await _player.setAudioSource(AudioSource.file(path, tag: _buildMediaItem(article)));
     state = state.copyWith(
       isLoading: false,
       ttsComplete: true,
@@ -157,7 +159,7 @@ class ArticlePlayer extends _$ArticlePlayer {
       // recognize the format from a header-only response).
       final firstResult = await _pipeline!.runInference(chunks.first, voice);
 
-      _liveStream = GrowableAudioStream();
+      _liveStream = GrowableAudioStream(_buildMediaItem(article));
       _liveStream!.addSamples(firstResult.audio);
       _bufferedSub = _liveStream!.bufferedDurationStream.listen((d) {
         state = state.copyWith(bufferedDuration: d);
