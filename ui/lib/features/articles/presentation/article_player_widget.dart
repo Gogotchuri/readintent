@@ -103,7 +103,7 @@ class ArticlePlayerWidget extends ConsumerWidget {
                 ?.copyWith(color: Colors.grey[500]),
           ),
         Text(
-          _formatDuration(state.estimatedDuration ?? Duration.zero),
+          _formatEndTime(state),
           style: Theme.of(context).textTheme.labelSmall,
         ),
       ],
@@ -159,6 +159,12 @@ class ArticlePlayerWidget extends ConsumerWidget {
         state.isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
       ),
     );
+  }
+
+  static String _formatEndTime(ArticlePlayerState state) {
+    if (state.estimatedDuration == null) return "--:--";
+    final formatted = _formatDuration(state.estimatedDuration!);
+    return state.ttsComplete ? formatted : "~$formatted";
   }
 
   static String _formatDuration(Duration d) {
