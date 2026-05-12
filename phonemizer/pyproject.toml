@@ -1,7 +1,7 @@
 [project]
-name = "scraper"
+name = "phonemizer"
 version = "0.1.0"
-description = "Article Scraper"
+description = "Article Phonemizer"
 readme = "README.md"
 authors = [
     { name = "Ilia Gogotchuri", email = "ilia.gogotchuri0@gmail.com" }
