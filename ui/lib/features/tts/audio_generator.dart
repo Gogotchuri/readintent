@@ -3,7 +3,6 @@ import "dart:io";
 
 import "package:readintent_flutter/features/tts/audio_cache.dart";
 import "package:readintent_flutter/features/tts/growing_audio_file.dart";
-import "package:readintent_flutter/features/tts/model_downloader.dart";
 import "package:readintent_flutter/features/tts/phoneme.dart";
 import "package:readintent_flutter/features/tts/pipeline.dart";
 import "package:readintent_flutter/features/tts/voice_style.dart";
@@ -47,6 +46,7 @@ class AudioGenerator {
   late final String cacheKey;
   final AudioCache cache;
 
+  final PipelineFactory _pipelineFactory;
   TTSPipeline? _pipeline;
   GrowingAudioFile? _audioFile;
   bool _disposed = false;
@@ -54,7 +54,13 @@ class AudioGenerator {
   final StreamController<TTSSessionState> _stateController = StreamController<TTSSessionState>.broadcast();
   TTSSessionState _state = const TTSSessionState();
 
-  AudioGenerator({required this.article, required this.voice, required this.speed, required this.cache}) {
+  AudioGenerator({
+    required this.article,
+    required this.voice,
+    required this.speed,
+    required this.cache,
+    PipelineFactory? pipelineFactory,
+  }) : _pipelineFactory = pipelineFactory ?? defaultPipelineFactory {
     cacheKey = cache.cacheKey(
       articleId: article.id.toString(),
       articleText: article.pureText,
@@ -164,8 +170,7 @@ class AudioGenerator {
   }
 
   Future<void> _ensurePipeline() async {
-    final assetPaths = await KokoroDownloader.ensureAssets(modelType: ModelType.q4, voiceStyle: voice);
-    _pipeline ??= await TTSPipeline.create(assetPaths);
+    _pipeline ??= await _pipelineFactory(voice);
   }
 
   void _updateEstimation(int processedTokens, int totalTokens) {
