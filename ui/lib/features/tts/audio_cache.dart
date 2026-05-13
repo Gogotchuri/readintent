@@ -7,7 +7,7 @@ import "package:path_provider/path_provider.dart";
 
 class AudioCache {
   // We will store generated audio files up-to 500Mb in total.
-  // If we exce ed this, we will evict the least recently accessed files until we are under the limit again.
+  // If we exceed this, we will evict the least recently accessed files until we are under the limit again.
   static const int _maxCacheBytes = 500 * 1024 * 1024; // 500MB
   Directory? _cacheDir;
 
@@ -37,7 +37,7 @@ class AudioCache {
   /// Load cached audio file for a key, or return null if not found.
   Future<File?> load(String key) async {
     final dir = await _getDir();
-    final file = File("${dir.path}/$key.wav");
+    final file = File("${dir.path}/$key.mp3");
     if (await file.exists()) {
       // Update last accessed time for LRU eviction
       await file.setLastAccessed(DateTime.now());
@@ -49,23 +49,39 @@ class AudioCache {
   /// Get the file path for a key
   Future<String> pathForKey(String key) async {
     final dir = await _getDir();
-    return "${dir.path}/$key.wav";
+    return "${dir.path}/$key.mp3";
   }
 
-  /// Save WAV bytes to cache (used for both incremental and final writes).
-  Future<File> save(String key, Uint8List wavBytes) async {
+  /// Save bytes to cache.
+  Future<File> save(String key, Uint8List bytes) async {
     final dir = await _getDir();
-    final file = File("${dir.path}/$key.wav");
-    await file.writeAsBytes(wavBytes);
+    final file = File("${dir.path}/$key.mp3");
+    await file.writeAsBytes(bytes);
     await _evictIfNeeded();
     return file;
+  }
+
+  /// Move/copy an existing file into the cache directory.
+  Future<File> saveFile(String key, File source) async {
+    final dir = await _getDir();
+    final dest = File("${dir.path}/$key.mp3");
+    try {
+      // Try rename (move) first — fast, no copy needed
+      await source.rename(dest.path);
+    } on FileSystemException {
+      // Cross-device move: fall back to copy + delete
+      await source.copy(dest.path);
+      await source.delete();
+    }
+    await _evictIfNeeded();
+    return dest;
   }
 
   /// Evict least recently accessed files until total cache size is under the limit.
   Future<void> _evictIfNeeded() async {
     final dir = await _getDir();
     // Get all cached files and their total size
-    final files = dir.listSync().whereType<File>().where((f) => f.path.endsWith(".wav")).toList();
+    final files = dir.listSync().whereType<File>().where((f) => f.path.endsWith(".mp3")).toList();
     // Run reducer to sum file sizes
     int total = files.fold(0, (sum, f) => sum + f.lengthSync());
     if (total <= _maxCacheBytes) return;

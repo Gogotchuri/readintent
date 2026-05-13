@@ -51,7 +51,7 @@ class TTSPipeline {
     final styleVector = _voiceStyles.getStyleVector(style, seqLen);
     final styleTensor = OrtValueTensor.createTensorWithDataList(styleVector, [1, 256]);
 
-    final speedTensor = OrtValueTensor.createTensorWithDataList(Float32List.fromList([1.0]), [1]);
+    final speedTensor = OrtValueTensor.createTensorWithDataList(Float32List.fromList([1.2]), [1]);
 
     final inputs = {"input_ids": tokenTensor, "style": styleTensor, "speed": speedTensor};
 

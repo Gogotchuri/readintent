@@ -1,106 +1,83 @@
 import "dart:typed_data";
 
 import "package:flutter_test/flutter_test.dart";
-import "package:wav/wav.dart";
-import "package:readintent_flutter/features/tts/growable_audio_stream.dart";
+import "package:readintent_flutter/features/tts/growing_audio_file.dart";
 
 void main() {
   group("GrowableAudioStream", () {
     test("starts with zero buffered duration", () {
-      final stream = GrowableAudioStream();
+      final stream = GrowingAudioFile();
       expect(stream.bufferedDuration, Duration.zero);
     });
 
     test("bufferedDuration increases as samples are added", () {
-      final stream = GrowableAudioStream();
+      final stream = GrowingAudioFile();
       // 24000 samples = 1 second at 24kHz
       stream.addSamples(Float32List(24000));
       expect(stream.bufferedDuration.inMilliseconds, 1000);
     });
 
-    test("toWavBytes produces a valid WAV file readable by the wav package", () {
-      final stream = GrowableAudioStream();
-      // Add 1 second of silence
-      stream.addSamples(Float32List(24000));
-      stream.endStream();
-
-      final wavBytes = stream.toWavBytes();
-
-      // The wav package should be able to read it back
-      final parsed = Wav.read(wavBytes);
-      expect(parsed.samplesPerSecond, 24000);
-      expect(parsed.channels.length, 1);
-      expect(parsed.channels[0].length, 24000);
-    });
-
-    test("toWavBytes preserves audio data correctly", () {
-      final stream = GrowableAudioStream();
-      final samples = Float32List.fromList([0.5, -0.5, 1.0, -1.0]);
-      stream.addSamples(samples);
-      stream.endStream();
-
-      final wavBytes = stream.toWavBytes();
-      final parsed = Wav.read(wavBytes);
-      final output = parsed.channels[0];
-
-      // 16-bit quantization introduces small rounding
-      expect(output[0], closeTo(0.5, 0.001));
-      expect(output[1], closeTo(-0.5, 0.001));
-      expect(output[2], closeTo(1.0, 0.001));
-      expect(output[3], closeTo(-1.0, 0.001));
-    });
-
-    test("chunkToWavBytes produces a valid standalone WAV", () {
-      final samples = Float32List.fromList([0.5, -0.5, 1.0, -1.0]);
-      final wavBytes = GrowableAudioStream.chunkToWavBytes(samples);
-
-      final parsed = Wav.read(wavBytes);
-      expect(parsed.samplesPerSecond, 24000);
-      expect(parsed.channels.length, 1);
-      expect(parsed.channels[0].length, 4);
-      expect(parsed.channels[0][0], closeTo(0.5, 0.001));
-    });
-
     test("isEnded reflects endStream call", () {
-      final stream = GrowableAudioStream();
+      final stream = GrowingAudioFile();
       expect(stream.isEnded, false);
       stream.endStream();
       expect(stream.isEnded, true);
     });
 
-    test("float32 values outside [-1, 1] are clamped", () {
-      final stream = GrowableAudioStream();
-      final samples = Float32List.fromList([2.0, -2.0]);
-      stream.addSamples(samples);
-      stream.endStream();
-
-      final wavBytes = stream.toWavBytes();
-      final parsed = Wav.read(wavBytes);
-
-      // Clamped values should read back as ±1.0 (within 16-bit precision)
-      expect(parsed.channels[0][0], closeTo(1.0, 0.001));
-      expect(parsed.channels[0][1], closeTo(-1.0, 0.001));
-    });
-
-    test("double addSamples returns correctly", () {
-      final stream = GrowableAudioStream();
+    test("double addSamples returns correct duration", () {
+      final stream = GrowingAudioFile();
       stream.addSamples(Float32List(12000)); // 0.5s
       stream.addSamples(Float32List(12000)); // 0.5s
       expect(stream.bufferedDuration.inMilliseconds, 1000);
-
-      stream.endStream();
-      final wavBytes = stream.toWavBytes();
-      final parsed = Wav.read(wavBytes);
-      expect(parsed.channels[0].length, 24000);
     });
 
-    test("chunkToWavBytes clamps out-of-range values", () {
-      final samples = Float32List.fromList([2.0, -2.0]);
-      final wavBytes = GrowableAudioStream.chunkToWavBytes(samples);
+    test("encodeSamples produces valid MP3 frames", () async {
+      final stream = GrowingAudioFile();
+      final samples = Float32List(24000); // 1 second of silence
+      stream.addSamples(samples);
 
-      final parsed = Wav.read(wavBytes);
-      expect(parsed.channels[0][0], closeTo(1.0, 0.001));
-      expect(parsed.channels[0][1], closeTo(-1.0, 0.001));
+      final mp3Bytes = await stream.encodeSamples(samples);
+      expect(mp3Bytes.isNotEmpty, true);
+      // MP3 frame sync word: first 11 bits are all 1s (0xFF followed by 0xE0+ mask)
+      expect(mp3Bytes[0], 0xFF);
+      expect(mp3Bytes[1] & 0xE0, 0xE0);
+
+      await stream.dispose();
+    });
+
+    test("incremental encoding produces valid concatenated MP3", () async {
+      final stream = GrowingAudioFile();
+      final chunk1 = Float32List(12000); // 0.5s
+      final chunk2 = Float32List(12000); // 0.5s
+      stream.addSamples(chunk1);
+      stream.addSamples(chunk2);
+
+      final bytes1 = await stream.encodeSamples(chunk1);
+      final bytes2 = await stream.encodeSamples(chunk2);
+      final flushed = await stream.flushEncoder();
+
+      final totalLength = bytes1.length + bytes2.length + flushed.length;
+      expect(totalLength, greaterThan(0));
+
+      // First bytes should be valid MP3 frame header
+      expect(bytes1[0], 0xFF);
+      expect(bytes1[1] & 0xE0, 0xE0);
+
+      await stream.dispose();
+    });
+
+    test("flushEncoder returns bytes (possibly empty) without error", () async {
+      final stream = GrowingAudioFile();
+      final samples = Float32List(24000);
+      stream.addSamples(samples);
+      await stream.encodeSamples(samples);
+      stream.endStream();
+
+      final flushed = await stream.flushEncoder();
+      // Flush should return a Uint8List (may be empty if all frames were already emitted)
+      expect(flushed, isA<Uint8List>());
+
+      await stream.dispose();
     });
   });
 }

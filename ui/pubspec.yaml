@@ -46,6 +46,7 @@ dependencies:
 
   # TTS dependencies
   dio: ^5.9.2  
+  flutter_lame: ^1.0.2
   wav: ^1.5.0
   just_audio: ^0.10.5
   path: ^1.9.1
@@ -55,7 +56,7 @@ dependencies:
   media_kit_libs_linux: ^1.2.1
   onnxruntime_v2: ^1.23.2+2
   fnv: ^1.0.1
-  just_audio_background: ^0.0.1-beta.17
+  audio_service: ^0.18.18
 
 dev_dependencies:
   flutter_test:

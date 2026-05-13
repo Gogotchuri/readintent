@@ -43,18 +43,12 @@ class ArticlePlayerWidget extends ConsumerWidget {
     );
   }
 
-  Widget _buildProgressSlider(
-    BuildContext context,
-    ArticlePlayerState state,
-    ArticlePlayer controller,
-  ) {
+  Widget _buildProgressSlider(BuildContext context, ArticlePlayerState state, ArticlePlayer controller) {
     final totalMs = (state.estimatedDuration ?? Duration.zero).inMilliseconds;
     final positionMs = state.position.inMilliseconds;
     final bufferedMs = state.bufferedDuration.inMilliseconds;
-    final progress =
-        totalMs > 0 ? (positionMs / totalMs).clamp(0.0, 1.0) : 0.0;
-    final bufferedProgress =
-        totalMs > 0 ? (bufferedMs / totalMs).clamp(0.0, 1.0) : 0.0;
+    final progress = totalMs > 0 ? (positionMs / totalMs).clamp(0.0, 1.0) : 0.0;
+    final bufferedProgress = totalMs > 0 ? (bufferedMs / totalMs).clamp(0.0, 1.0) : 0.0;
 
     return Stack(
       alignment: Alignment.center,
@@ -77,8 +71,7 @@ class ArticlePlayerWidget extends ConsumerWidget {
           child: Slider(
             value: progress,
             onChanged: totalMs > 0
-                ? (v) => controller
-                    .seekTo(Duration(milliseconds: (v * totalMs).round()))
+                ? (v) => controller.seekTo(Duration(milliseconds: (v * totalMs).round()))
                 : null,
           ),
         ),
@@ -90,44 +83,33 @@ class ArticlePlayerWidget extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          _formatDuration(state.position),
-          style: Theme.of(context).textTheme.labelSmall,
-        ),
+        Text(_formatDuration(state.position), style: Theme.of(context).textTheme.labelSmall),
         if (!state.ttsComplete && state.bufferedDuration > Duration.zero)
           Text(
             "Generating...",
-            style: Theme.of(context)
-                .textTheme
-                .labelSmall
-                ?.copyWith(color: Colors.grey[500]),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.grey[500]),
           ),
-        Text(
-          _formatEndTime(state),
-          style: Theme.of(context).textTheme.labelSmall,
-        ),
+        Text(_formatEndTime(state), style: Theme.of(context).textTheme.labelSmall),
       ],
     );
   }
 
-  Widget _buildControls(
-    BuildContext context,
-    ArticlePlayerState state,
-    ArticlePlayer controller,
-  ) {
+  Widget _buildControls(BuildContext context, ArticlePlayerState state, ArticlePlayer controller) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         IconButton(
-          onPressed:
-              state.position > Duration.zero ? controller.jumpBackward : null,
+          onPressed: state.position > Duration.zero ? controller.jumpBackward : null,
           icon: const Icon(Icons.replay_10),
         ),
         const SizedBox(width: 8),
         _buildPlayButton(state, controller),
         const SizedBox(width: 8),
         IconButton(
-          onPressed: controller.jumpForward,
+          onPressed:
+              state.ttsComplete || state.position + const Duration(seconds: 15) <= state.bufferedDuration
+              ? controller.jumpForward
+              : null,
           icon: const Icon(Icons.forward_10),
         ),
       ],
@@ -138,26 +120,17 @@ class ArticlePlayerWidget extends ConsumerWidget {
     if (state.isLoading) {
       return const Padding(
         padding: EdgeInsets.all(12),
-        child: SizedBox(
-          width: 28,
-          height: 28,
-          child: CircularProgressIndicator(strokeWidth: 2.5),
-        ),
+        child: SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2.5)),
       );
     }
 
-    final neverPlayed = !state.isPlaying &&
-        state.position == Duration.zero &&
-        state.bufferedDuration == Duration.zero;
+    final neverPlayed =
+        !state.isPlaying && state.position == Duration.zero && state.bufferedDuration == Duration.zero;
 
     return IconButton(
       iconSize: 40,
-      onPressed: neverPlayed
-          ? () => controller.play(article: article)
-          : controller.togglePlayPause,
-      icon: Icon(
-        state.isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
-      ),
+      onPressed: neverPlayed ? () => controller.play(article: article) : controller.togglePlayPause,
+      icon: Icon(state.isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled),
     );
   }
 
