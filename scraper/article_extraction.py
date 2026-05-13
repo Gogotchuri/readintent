@@ -163,6 +163,9 @@ class ArticleExtractor:
 			if not extracted:
 				self._logger.warning("Failed to extract formatted HTML")
 				return ExtractorError("Failed to extract formatted HTML")
+			# We also need to replace <graphic> elements with imgs if present, not supported with UI
+			# We will take the offchance that this will replace the intended text
+			extracted = extracted.replace('<graphic', '<img').replace('</graphic>', '</img>')
 			return extracted.strip()
 		except Exception as e:
 			self._logger.error(f"Error extracting formatted HTML: {e}")

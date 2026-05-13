@@ -1,11 +1,11 @@
 import "dart:async";
 import "dart:typed_data";
 
-import "package:wav/wav.dart";
+import "package:flutter_lame/flutter_lame.dart";
 
 /// Accumulates PCM audio samples during TTS generation.
-/// Tracks buffered duration and produces a final WAV file for caching.
-class GrowableAudioStream {
+/// Encodes to MP3 incrementally via LAME for append-only file writes.
+class GrowingAudioFile {
   static const int sampleRate = 24000; // Default sample rate for Kokoro TTS
   static const int _bytesPerSecond = sampleRate * 2; // 16-bit mono
 
@@ -13,6 +13,8 @@ class GrowableAudioStream {
   final StreamController<void> _updateController = StreamController<void>.broadcast();
   bool _ended = false;
   int _pcmLength = 0;
+
+  final LameMp3Encoder _encoder = LameMp3Encoder(numChannels: 1, sampleRate: sampleRate, bitRate: 64);
 
   /// Add new Float32 audio samples (mono, 24kHz).
   void addSamples(Float32List samples) {
@@ -39,32 +41,22 @@ class GrowableAudioStream {
 
   bool get isEnded => _ended;
 
-  /// Convert a single chunk of Float32 samples to a complete WAV file.
-  static Uint8List chunkToWavBytes(Float32List samples) {
+  /// Encode a Float32List chunk to MP3 bytes using the instance encoder.
+  /// Maintains LAME's bit reservoir across calls for correct encoding.
+  Future<Uint8List> encodeSamples(Float32List samples) async {
     final float64 = Float64List(samples.length);
     for (int i = 0; i < samples.length; i++) {
       float64[i] = samples[i].clamp(-1.0, 1.0).toDouble();
     }
-    final wav = Wav([float64], sampleRate, WavFormat.pcm16bit);
-    return Uint8List.fromList(wav.write());
+    return _encoder.encodeDouble(leftChannel: float64);
   }
 
-  /// Get accumulated audio as a complete WAV file (for caching).
-  Uint8List toWavBytes() {
-    final totalSamples = _rawChunks.fold<int>(0, (sum, c) => sum + c.length);
-    final float64 = Float64List(totalSamples);
-    int offset = 0;
-    for (final chunk in _rawChunks) {
-      for (int i = 0; i < chunk.length; i++) {
-        float64[offset + i] = chunk[i].clamp(-1.0, 1.0).toDouble();
-      }
-      offset += chunk.length;
-    }
-    final wav = Wav([float64], sampleRate, WavFormat.pcm16bit);
-    return Uint8List.fromList(wav.write());
+  Future<Uint8List> flushEncoder() async {
+    return _encoder.flush();
   }
 
   Future<void> dispose() async {
+    await _encoder.close();
     await _updateController.close();
   }
 }

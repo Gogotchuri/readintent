@@ -58,7 +58,7 @@ final class ArticlePlayerProvider
   }
 }
 
-String _$articlePlayerHash() => r'944c654b6aeb75bfb3c3e5631a045c55607acfe4';
+String _$articlePlayerHash() => r'9f8091acaba575ee2b5885582e64bc5f2200cc49';
 
 final class ArticlePlayerFamily extends $Family
     with

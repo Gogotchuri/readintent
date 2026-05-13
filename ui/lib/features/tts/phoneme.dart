@@ -30,45 +30,10 @@ class WordTimestamp {
   String toString() => '"$word" ${start.toStringAsFixed(3)}s - ${end.toStringAsFixed(3)}s';
 }
 
-class AudioStream extends StreamAudioSource {
-  final Uint8List _audioBytes;
-
-  AudioStream(this._audioBytes);
-
-  @override
-  Future<StreamAudioResponse> request([int? start, int? end]) async {
-    start ??= 0;
-    end ??= _audioBytes.length;
-    final contentLen = end - start;
-    final stream = Stream.value(Uint8List.sublistView(_audioBytes, start, end));
-    return StreamAudioResponse(
-      sourceLength: _audioBytes.length,
-      contentLength: contentLen,
-      offset: start,
-      stream: stream,
-      contentType: "audio/wav",
-    );
-  }
-}
-
 class KokoroResult {
   final Float32List audio;
   final List<WordTimestamp> timestamps;
   final String graphemes;
 
   const KokoroResult({required this.audio, required this.timestamps, required this.graphemes});
-
-  Wav getWavAudio() {
-    return Wav(
-      [Float64List.fromList(audio.map((e) => e.toDouble()).toList())],
-      24000, // Default sample rate for Kokoro
-    );
-  }
-
-  // TODO this will work for a single chunk, but we need to handle multiple chunks and combine their timestamps and audio properly
-  AudioStream getAudioStream() {
-    final wav = getWavAudio();
-    final wavBytes = Uint8List.fromList(wav.write());
-    return AudioStream(wavBytes);
-  }
 }
