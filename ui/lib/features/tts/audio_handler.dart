@@ -2,22 +2,44 @@ import "package:audio_service/audio_service.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:just_audio/just_audio.dart";
 
-final audioHandlerProvider = Provider<AppAudioHandler>((ref) {
+final audioHandlerProvider = Provider<AudioHandlerInterface>((ref) {
   throw UnimplementedError("audioHandlerProvider must be overridden in main");
 });
+
+abstract class AudioHandlerInterface {
+  Future<Duration?> setSource(String filePath, {MediaItem? tag});
+  Future<void> play();
+  Future<void> pause();
+  Future<void> stop();
+  Future<void> seek(Duration position);
+  Future<void> updateMediaItem(MediaItem mediaItem);
+
+  Stream<Duration> get positionStream;
+  Stream<PlayerState> get playerStateStream;
+  bool get isPlaying;
+  Duration get currentPosition;
+}
 
 // This is a simple wrapper around just_audio's AudioPlayer to integrate with audio_service
 // It exposes methods to set the audio source and control playback, and broadcasts state changes to audio_service
 // Allows for background audio playback and integration with system media controls
-class AppAudioHandler extends BaseAudioHandler with SeekHandler {
+class AppAudioHandler extends BaseAudioHandler with SeekHandler implements AudioHandlerInterface {
   final AudioPlayer _player = AudioPlayer();
 
   AppAudioHandler() {
     _player.playerStateStream.listen((_) => _broadcastState());
   }
 
-  AudioPlayer get player => _player;
+  @override
+  Stream<Duration> get positionStream => _player.positionStream;
+  @override
+  Stream<PlayerState> get playerStateStream => _player.playerStateStream;
+  @override
+  bool get isPlaying => _player.playing;
+  @override
+  Duration get currentPosition => _player.position;
 
+  @override
   Future<Duration?> setSource(String filePath, {MediaItem? tag}) async {
     if (tag != null) {
       mediaItem.add(tag);

@@ -2,11 +2,11 @@ import "dart:async";
 
 import "package:audio_service/audio_service.dart";
 import "package:just_audio/just_audio.dart";
+import "package:readintent_flutter/features/tts/pipeline.dart";
 import "package:riverpod_annotation/riverpod_annotation.dart";
 
 import "package:readintent_flutter/features/tts/audio_cache.dart";
 import "package:readintent_flutter/features/tts/audio_handler.dart";
-import "package:readintent_flutter/features/tts/phoneme.dart";
 import "package:readintent_flutter/features/tts/audio_generator.dart";
 import "package:readintent_flutter/features/tts/voice_style.dart";
 import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
@@ -56,7 +56,9 @@ class ArticlePlayerState {
 @riverpod
 class ArticlePlayer extends _$ArticlePlayer {
   final AudioCache _cache = AudioCache();
-  late final AppAudioHandler _handler;
+  // Interface to the audio handler for controlling playback and receiving player state updates
+  late final AudioHandlerInterface _handler;
+  late final PipelineFactory _pipelineFactory;
   AudioGenerator? _session;
   StreamSubscription? _sessionStateSub;
   StreamSubscription? _positionSub;
@@ -71,6 +73,7 @@ class ArticlePlayer extends _$ArticlePlayer {
   @override
   ArticlePlayerState build(String articleId) {
     _handler = ref.read(audioHandlerProvider);
+    _pipelineFactory = ref.read(pipelineFactoryProvider);
     ref.onDispose(_cleanup);
     return const ArticlePlayerState();
   }
@@ -113,7 +116,7 @@ class ArticlePlayer extends _$ArticlePlayer {
     state = const ArticlePlayerState(isLoading: true);
 
     try {
-      _session = AudioGenerator(article: article, voice: voice, speed: speed, cache: _cache);
+      _session = AudioGenerator(article: article, voice: voice, speed: speed, cache: _cache, pipelineFactory: _pipelineFactory);
 
       // Check cache first, if we have completely generated audio available, skip straight to playback
       final cachedPath = await _session!.checkCacheForComplete();
@@ -206,14 +209,14 @@ class ArticlePlayer extends _$ArticlePlayer {
 
     _reloading = true;
     try {
-      final wasPlaying = _handler.player.playing;
-      final savedPosition = _handler.player.position;
+      final wasPlaying = _handler.isPlaying;
+      final savedPosition = _handler.currentPosition;
       await _loadPlayerSource();
       await _handler.seek(savedPosition);
       if (wasPlaying) await _handler.play();
     } finally {
       _reloading = false;
-      state = state.copyWith(isPlaying: _handler.player.playing);
+      state = state.copyWith(isPlaying: _handler.isPlaying);
     }
   }
 
@@ -221,7 +224,7 @@ class ArticlePlayer extends _$ArticlePlayer {
     if (_reloading || _session?.filePath == null) return;
     _reloading = true;
     try {
-      final pos = _handler.player.position;
+      final pos = _handler.currentPosition;
       await _loadPlayerSource();
       await _handler.seek(pos);
       await _handler.play();
@@ -234,7 +237,7 @@ class ArticlePlayer extends _$ArticlePlayer {
   // --- Player listeners ---
 
   void _wirePlayerListeners() {
-    _positionSub = _handler.player.positionStream.listen((p) {
+    _positionSub = _handler.positionStream.listen((p) {
       if (_reloading) return;
       state = state.copyWith(position: p);
       // Trigger reload when nearing end of loaded audio
@@ -246,7 +249,7 @@ class ArticlePlayer extends _$ArticlePlayer {
       }
     });
 
-    _playerStateSub = _handler.player.playerStateStream.listen((s) {
+    _playerStateSub = _handler.playerStateStream.listen((s) {
       if (_reloading) return;
       if (!_playerStarted) return;
 
@@ -274,7 +277,7 @@ class ArticlePlayer extends _$ArticlePlayer {
   Future<void> resume() async => _handler.play();
 
   Future<void> togglePlayPause() async {
-    if (_handler.player.playing) {
+    if (_handler.isPlaying) {
       await pause();
     } else {
       await resume();

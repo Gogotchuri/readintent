@@ -1,10 +1,20 @@
 import "dart:io";
 import "dart:typed_data";
 
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:onnxruntime_v2/onnxruntime_v2.dart";
 import "package:readintent_flutter/features/tts/model_downloader.dart";
 import "package:readintent_flutter/features/tts/phoneme.dart";
 import "package:readintent_flutter/features/tts/voice_style.dart";
+
+typedef PipelineFactory = Future<TTSPipeline> Function(VoiceStyle voiceStyle);
+
+Future<TTSPipeline> defaultPipelineFactory(VoiceStyle voiceStyle) async {
+  final assetPaths = await KokoroDownloader.ensureAssets(modelType: ModelType.q4, voiceStyle: voiceStyle);
+  return TTSPipeline.create(assetPaths);
+}
+
+final pipelineFactoryProvider = Provider<PipelineFactory>((ref) => defaultPipelineFactory);
 
 class TTSPipeline {
   final OrtSession _session;
