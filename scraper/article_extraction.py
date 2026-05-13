@@ -8,6 +8,8 @@ import trafilatura
 from trafilatura.readability_lxml import is_probably_readerable, HtmlElement
 from trafilatura.settings import Extractor, Document
 
+from article_transformer import ArticleTransformer
+
 
 class ExtractorError(Exception):
 	"""Custom exception for article extraction errors"""
@@ -193,11 +195,21 @@ class ArticleExtractor:
 		We are downloading, making sure the article is readable and extracting:
 			Metadata, Pure Text and Formatted HTML in that order.
 		"""
+		act = ArticleTransformer()
 		downloaded = self._download_content(url)
 		if isinstance(downloaded, ExtractorError):
 			return downloaded
+		# Strip all pre and code elements from downloaded content
+		downloaded_no_code = act.return_html_with_replaced_code_sections(downloaded)
+		formatted_html = self._extract_formatted_html(downloaded_no_code)
+		if isinstance(formatted_html, ExtractorError):
+			return formatted_html
+		# Before we alter the formatted html we can transform it in form we want for TTS
+		html_for_pure_text = act.transform_bare_extracted_html_for_pure(formatted_html)
+		# Replacing the placeholders with the actual code sections and graphic tags with img tags
+		formatted_html = act.transform_extracted_html(formatted_html)
 
-		pure_text = self._extract_pure_text(downloaded)
+		pure_text = self._extract_pure_text(html_for_pure_text)
 		if isinstance(pure_text, ExtractorError):
 			return pure_text
 
@@ -208,10 +220,6 @@ class ArticleExtractor:
 		metadata = self._extract_metadata(url, downloaded)
 		if isinstance(metadata, ExtractorError):
 			return metadata
-
-		formatted_html = self._extract_formatted_html(downloaded)
-		if isinstance(formatted_html, ExtractorError):
-			return formatted_html
 
 		categories = ""
 		if metadata.categories is not None:
