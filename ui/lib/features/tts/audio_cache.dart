@@ -57,7 +57,7 @@ class AudioCache {
     final dir = await _getDir();
     final file = File("${dir.path}/$key.mp3");
     await file.writeAsBytes(bytes);
-    await _evictIfNeeded();
+    await evictIfNeeded();
     return file;
   }
 
@@ -73,12 +73,12 @@ class AudioCache {
       await source.copy(dest.path);
       await source.delete();
     }
-    await _evictIfNeeded();
+    await evictIfNeeded();
     return dest;
   }
 
   /// Evict least recently accessed files until total cache size is under the limit.
-  Future<void> _evictIfNeeded() async {
+  Future<void> evictIfNeeded() async {
     final dir = await _getDir();
     // Get all cached files and their total size
     final files = dir.listSync().whereType<File>().where((f) => f.path.endsWith(".mp3")).toList();
@@ -91,6 +91,11 @@ class AudioCache {
     for (final f in files) {
       if (total <= _maxCacheBytes) break;
       total -= f.lengthSync();
+      // Also delete companion .meta file if it exists
+      final metaFile = File("${f.path}.meta");
+      if (metaFile.existsSync()) {
+        await metaFile.delete();
+      }
       await f.delete();
     }
   }
