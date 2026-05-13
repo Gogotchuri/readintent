@@ -1,3 +1,4 @@
+import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart";
@@ -75,12 +76,12 @@ class _ArticleHeader extends StatelessWidget {
         if (article.image.isNotEmpty) ...[
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              article.image,
+            child: CachedNetworkImage(
+              imageUrl: article.image,
               width: double.infinity,
               height: 200,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
+              errorWidget: (_, __, ___) => Container(
                 width: double.infinity,
                 height: 200,
                 color: Colors.grey[200],
