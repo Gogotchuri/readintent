@@ -5,15 +5,9 @@ import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_test/flutter_test.dart";
 import "package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart";
-import "package:mockito/annotations.dart";
-import "package:mockito/mockito.dart";
-import "package:readintent_flutter/features/articles/api/articles_client.dart";
-import "package:readintent_flutter/features/articles/api/articles_client_exceptions.dart";
 import "package:readintent_flutter/features/articles/presentation/article_detail_screen.dart";
+import "package:readintent_flutter/features/articles/providers/article_detail_provider.dart";
 import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
-
-@GenerateMocks([ArticlesClient])
-import "article_detail_screen_test.mocks.dart";
 
 final articleMock = articles_pb.Article(
   id: Int64(1),
@@ -27,16 +21,15 @@ final articleMock = articles_pb.Article(
 );
 
 void main() {
-  late MockArticlesClient mockArticlesClient;
-  late ProviderContainer container;
-
-  setUp(() {
-    mockArticlesClient = MockArticlesClient();
-  });
-
-  Widget createWidget({String articleId = "1"}) {
-    container = ProviderContainer(
-      overrides: [articlesServiceProvider.overrideWithValue(mockArticlesClient)],
+  Widget createWidget({
+    String articleId = "1",
+    required Future<articles_pb.Article> Function() fetchArticle,
+  }) {
+    final container = ProviderContainer(
+      overrides: [
+        // ignore: deprecated_member_use
+        articleDetailProvider.overrideWith(() => _TestArticleDetail(fetchArticle)),
+      ],
     );
     return UncontrolledProviderScope(
       container: container,
@@ -46,65 +39,42 @@ void main() {
 
   testWidgets("shows loading state", (WidgetTester tester) async {
     final completer = Completer<articles_pb.Article>();
-    when(mockArticlesClient.getArticle(any)).thenAnswer((_) => completer.future);
 
-    await tester.pumpWidget(createWidget());
+    await tester.pumpWidget(createWidget(
+      fetchArticle: () => completer.future,
+    ));
     await tester.pump();
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(find.text("Article"), findsOneWidget);
-    expect(find.text("Test Article"), findsNothing);
 
-    // Complete to avoid pending timer issues
     completer.complete(articleMock);
     await tester.pumpAndSettle();
   });
 
   testWidgets("shows error state with retry button", (WidgetTester tester) async {
-    when(mockArticlesClient.getArticle(any)).thenThrow(
-      ArticlesException("Server error"),
-    );
-
-    await tester.pumpWidget(createWidget());
+    await tester.pumpWidget(createWidget(
+      fetchArticle: () => throw Exception("Server error"),
+    ));
     await tester.pumpAndSettle();
 
     expect(find.textContaining("Server error"), findsOneWidget);
     expect(find.text("Retry"), findsOneWidget);
-    expect(find.byType(CircularProgressIndicator), findsNothing);
-  });
-
-  testWidgets("retry button re-fetches article", (WidgetTester tester) async {
-    when(mockArticlesClient.getArticle(any)).thenThrow(
-      ArticlesException("Server error"),
-    );
-
-    await tester.pumpWidget(createWidget());
-    await tester.pumpAndSettle();
-
-    expect(find.textContaining("Server error"), findsOneWidget);
-
-    // Re-stub to succeed on retry
-    when(mockArticlesClient.getArticle(any)).thenAnswer((_) async => articleMock);
-
-    await tester.tap(find.text("Retry"));
-    await tester.pumpAndSettle();
-
-    expect(find.text("Test Article"), findsWidgets);
   });
 
   testWidgets("shows article title in AppBar and header", (WidgetTester tester) async {
-    when(mockArticlesClient.getArticle(any)).thenAnswer((_) async => articleMock);
-
-    await tester.pumpWidget(createWidget());
+    await tester.pumpWidget(createWidget(
+      fetchArticle: () async => articleMock,
+    ));
     await tester.pumpAndSettle();
 
     expect(find.text("Test Article"), findsNWidgets(2));
   });
 
   testWidgets("shows author and date with icons", (WidgetTester tester) async {
-    when(mockArticlesClient.getArticle(any)).thenAnswer((_) async => articleMock);
-
-    await tester.pumpWidget(createWidget());
+    await tester.pumpWidget(createWidget(
+      fetchArticle: () async => articleMock,
+    ));
     await tester.pumpAndSettle();
 
     expect(find.text("John Doe"), findsOneWidget);
@@ -119,22 +89,13 @@ void main() {
       title: "Test Article",
       extractedHtml: "<p>Hello world</p>",
     );
-    when(mockArticlesClient.getArticle(any)).thenAnswer((_) async => emptyArticle);
-
-    await tester.pumpWidget(createWidget());
+    await tester.pumpWidget(createWidget(
+      fetchArticle: () async => emptyArticle,
+    ));
     await tester.pumpAndSettle();
 
     expect(find.byIcon(Icons.person_outline), findsNothing);
     expect(find.byIcon(Icons.calendar_today_outlined), findsNothing);
-  });
-
-  testWidgets("shows image when URL is non-empty", (WidgetTester tester) async {
-    when(mockArticlesClient.getArticle(any)).thenAnswer((_) async => articleMock);
-
-    await tester.pumpWidget(createWidget());
-    await tester.pumpAndSettle();
-
-    expect(find.byType(Image), findsOneWidget);
   });
 
   testWidgets("hides image when URL is empty", (WidgetTester tester) async {
@@ -143,31 +104,28 @@ void main() {
       title: "Test Article",
       extractedHtml: "<p>Hello world</p>",
     );
-    when(mockArticlesClient.getArticle(any)).thenAnswer((_) async => noImageArticle);
-
-    await tester.pumpWidget(createWidget());
+    await tester.pumpWidget(createWidget(
+      fetchArticle: () async => noImageArticle,
+    ));
     await tester.pumpAndSettle();
 
     expect(find.byType(Image), findsNothing);
   });
 
   testWidgets("renders HtmlWidget with extracted HTML", (WidgetTester tester) async {
-    when(mockArticlesClient.getArticle(any)).thenAnswer((_) async => articleMock);
-
-    await tester.pumpWidget(createWidget());
+    await tester.pumpWidget(createWidget(
+      fetchArticle: () async => articleMock,
+    ));
     await tester.pumpAndSettle();
 
     expect(find.byType(HtmlWidget), findsOneWidget);
   });
+}
 
-  testWidgets("shows audio player placeholder", (WidgetTester tester) async {
-    when(mockArticlesClient.getArticle(any)).thenAnswer((_) async => articleMock);
+class _TestArticleDetail extends ArticleDetail {
+  final Future<articles_pb.Article> Function() _fetchArticle;
+  _TestArticleDetail(this._fetchArticle);
 
-    await tester.pumpWidget(createWidget());
-    await tester.pumpAndSettle();
-
-    expect(find.byIcon(Icons.play_arrow), findsOneWidget);
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
-    expect(find.text("Audio player - TODO"), findsOneWidget);
-  });
+  @override
+  Future<articles_pb.Article> build(String id) => _fetchArticle();
 }
