@@ -131,15 +131,6 @@ class AppDatabase extends _$AppDatabase {
       ),
     );
   }
-
-  Future<int> pendingOpsCount() async {
-    final count = countAll();
-    final query = selectOnly(pendingOperations)
-      ..where(pendingOperations.status.equals("pending"))
-      ..addColumns([count]);
-    final row = await query.getSingle();
-    return row.read(count)!;
-  }
 }
 
 QueryExecutor _openDatabase() {

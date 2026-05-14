@@ -9,19 +9,11 @@ part of 'article_detail_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(articleDetail)
+@ProviderFor(ArticleDetail)
 final articleDetailProvider = ArticleDetailFamily._();
 
 final class ArticleDetailProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<articles_pb.Article>,
-          articles_pb.Article,
-          FutureOr<articles_pb.Article>
-        >
-    with
-        $FutureModifier<articles_pb.Article>,
-        $FutureProvider<articles_pb.Article> {
+    extends $AsyncNotifierProvider<ArticleDetail, articles_pb.Article> {
   ArticleDetailProvider._({
     required ArticleDetailFamily super.from,
     required String super.argument,
@@ -45,15 +37,7 @@ final class ArticleDetailProvider
 
   @$internal
   @override
-  $FutureProviderElement<articles_pb.Article> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<articles_pb.Article> create(Ref ref) {
-    final argument = this.argument as String;
-    return articleDetail(ref, argument);
-  }
+  ArticleDetail create() => ArticleDetail();
 
   @override
   bool operator ==(Object other) {
@@ -66,10 +50,17 @@ final class ArticleDetailProvider
   }
 }
 
-String _$articleDetailHash() => r'7919b80fcfb25e13550f44a7af31dfe8017dc42b';
+String _$articleDetailHash() => r'298e3ab79690dc3a4b717dd1aa2d674877e158c2';
 
 final class ArticleDetailFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<articles_pb.Article>, String> {
+    with
+        $ClassFamilyOverride<
+          ArticleDetail,
+          AsyncValue<articles_pb.Article>,
+          articles_pb.Article,
+          FutureOr<articles_pb.Article>,
+          String
+        > {
   ArticleDetailFamily._()
     : super(
         retry: null,
@@ -84,4 +75,26 @@ final class ArticleDetailFamily extends $Family
 
   @override
   String toString() => r'articleDetailProvider';
+}
+
+abstract class _$ArticleDetail extends $AsyncNotifier<articles_pb.Article> {
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
+
+  FutureOr<articles_pb.Article> build(String id);
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref =
+        this.ref as $Ref<AsyncValue<articles_pb.Article>, articles_pb.Article>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<articles_pb.Article>, articles_pb.Article>,
+              AsyncValue<articles_pb.Article>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, () => build(_$args));
+  }
 }

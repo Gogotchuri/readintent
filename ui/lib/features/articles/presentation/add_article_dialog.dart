@@ -21,9 +21,16 @@ class _AddArticleDialogState extends ConsumerState<AddArticleDialog> {
     if (!_formKey.currentState!.validate()) return;
     setState(() { _isSubmitting = true; _error = null; });
     try {
-      await ref.read(articlesProvider.notifier).parseArticle(
+      final result = await ref.read(articlesProvider.notifier).parseArticle(
         _urlController.text.trim());
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) {
+        Navigator.of(context).pop();
+        if (result.queued) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Article will be added when you're back online")),
+          );
+        }
+      }
     } catch (e) {
       if (mounted) setState(() { _error = e.toString(); _isSubmitting = false; });
     }
