@@ -43,7 +43,7 @@ final class AuthProvider extends $NotifierProvider<Auth, AuthState> {
   }
 }
 
-String _$authHash() => r'790f1181141b963f2f90a0b47d5f81296712e493';
+String _$authHash() => r'41477974e7c3d0a9ba829e3134959d0fb911606b';
 
 /// AuthProvider is the main provider for authentication state management
 
