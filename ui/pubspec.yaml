@@ -45,7 +45,12 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # Offline-first
+  drift: ^2.22.1
+  sqlite3_flutter_libs: ^0.5.28
+  connectivity_plus: ^6.1.1
   cached_network_image: ^3.4.1
+  fixnum: ^1.1.0
+  sqlite3: ^2.9.0
 
   # TTS dependencies
   dio: ^5.9.2
