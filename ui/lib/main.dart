@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 import "package:just_audio_media_kit/just_audio_media_kit.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:readintent_flutter/core/router.dart";
+import "package:readintent_flutter/features/articles/repository/pending_operations.dart";
 import "package:readintent_flutter/features/tts/audio_handler.dart";
 
 Future<void> main() async {
@@ -31,6 +32,9 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Activate the pending operations watcher so it processes queued ops on reconnect
+    ref.watch(pendingOperationsWatcherProvider);
+
     final router = ref.watch(appRouterProvider);
     return MaterialApp.router(
       routerConfig: router,
