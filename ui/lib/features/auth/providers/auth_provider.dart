@@ -1,3 +1,4 @@
+import "package:readintent_flutter/core/connectivity.dart";
 import "package:readintent_flutter/core/session_storage.dart";
 import "package:readintent_flutter/features/auth/api/auth_client.dart";
 import "package:readintent_flutter/features/auth/api/auth_client_exceptions.dart";
@@ -11,6 +12,8 @@ part "auth_provider.g.dart";
 class Auth extends _$Auth {
   late final AuthClient _authClient;
   late final SessionStorage _sessionStorage;
+  // Keeps track of whether we've validated the session with the server at least once since the provider was initialized
+  bool _sessionValidated = false;
 
   @override
   AuthState build() {
@@ -18,23 +21,61 @@ class Auth extends _$Auth {
     state = const AuthInitial();
     _authClient = ref.read(authServiceProvider);
     _sessionStorage = ref.read(sessionStorageProvider);
-    // Start _restoreSession on provider initialization, which will alter the state as needed
+    // Validate the session if we got back online and the session is not validated
+    ref.listen(isOnlineProvider, (previous, isOnlineNow) {
+      if (state is! AuthAuthenticated) {
+        return;
+      }
+      if (isOnlineNow && !_sessionValidated) {
+        _validateSession();
+      }
+    });
+    // We attempt to restore the session on provider initialization, which will update the state accordingly
     _restoreSession();
     return state;
   }
 
   /// _restoreSession checks if we have a valid session token and user,
   /// if we do we set the state to authenticated, otherwise unauthenticated
+  /// If we're offline but have a token, we optimistically set the state to authenticated with cached user data,
+  /// and mark the session as not validated until we can validate it with the server.
+  /// This is assumed to be called ONLY during the provider initialization.
   Future<void> _restoreSession() async {
     final token = await _sessionStorage.getToken();
     if (token == null) {
       state = const AuthUnauthenticated();
       return;
     }
+
+    final isOnline = ref.read(isOnlineProvider);
+    if (isOnline) {
+      // If we're online, we validate the session with the server to ensure it's still valid
+      return _validateSession();
+    }
+    // Since _restoreSession is called only during initialization, this will not interrup disconnected users with a valid session
+    _sessionValidated = false; // We haven't validated the session with the server yet
+    // If we're offline but have a token, we can optimistically set the state to authenticated with cached user data
+    final cachedUser = await _sessionStorage.getUser();
+    if (cachedUser != null) {
+      state = AuthAuthenticated(sessionToken: token, user: cachedUser);
+    } else {
+      // If we don't have cached user data, we can't be sure about authentication status, so clear token and set unauthenticated
+      await _sessionStorage.clearSession();
+      state = const AuthUnauthenticated();
+    }
+  }
+
+  /// _validateSession validates the session against the server, used to check if the session is still valid once we get back online
+  /// This method throws exceptions if there's no internet connection
+  Future<void> _validateSession() async {
     try {
       final session = await _authClient.getSession();
+      _sessionValidated = true; // Session validation succeeded
       state = AuthAuthenticated(sessionToken: session.sessionToken, user: session.user);
     } catch (e) {
+      _sessionValidated = false; // Session validation failed
+      // Clear session and set unauthenticated if validation fails
+      await _sessionStorage.clearSession();
       state = const AuthUnauthenticated();
     }
   }
@@ -48,7 +89,7 @@ class Auth extends _$Auth {
       final session = await _authClient.passwordLogin(email, password);
       await _sessionStorage.saveToken(session.sessionToken);
       await _sessionStorage.saveUser(session.user);
-
+      _sessionValidated = true;
       state = AuthAuthenticated(sessionToken: session.sessionToken, user: session.user);
     } on ValidationException catch (e) {
       state = AuthError(message: e.message, fieldErrors: e.fieldErrors);
@@ -65,6 +106,7 @@ class Auth extends _$Auth {
       await _sessionStorage.saveToken(session.sessionToken);
       await _sessionStorage.saveUser(session.user);
 
+      _sessionValidated = true;
       state = AuthAuthenticated(sessionToken: session.sessionToken, user: session.user);
     } on ValidationException catch (e) {
       state = AuthError(message: e.message, fieldErrors: e.fieldErrors);
@@ -85,6 +127,7 @@ class Auth extends _$Auth {
       // We can ignore logout errors and proceed to clear session and set unauthenticated state
     } finally {
       await _sessionStorage.clearSession();
+      _sessionValidated = false;
       state = const AuthUnauthenticated();
     }
   }

@@ -43,6 +43,7 @@ void main() {
     when(mockSessionStorage.saveToken(any)).thenAnswer((_) async {});
     when(mockSessionStorage.getUser()).thenAnswer((_) async => null);
     when(mockSessionStorage.saveUser(any)).thenAnswer((_) async {});
+    when(mockSessionStorage.clearSession()).thenAnswer((_) async {});
   });
 
   Widget createApp() {
@@ -87,7 +88,6 @@ void main() {
     testWidgets("invalid session goes to login screen", (WidgetTester tester) async {
       when(mockRPCClient.getSession(any)).thenThrow(Exception("Invalid session"));
       when(mockSessionStorage.getToken()).thenAnswer((_) async => "invalid-session-token");
-
       await tester.pumpWidget(createApp());
       await tester.pumpAndSettle();
 
