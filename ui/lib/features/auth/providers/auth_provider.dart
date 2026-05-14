@@ -47,7 +47,7 @@ class Auth extends _$Auth {
       return;
     }
 
-    final isOnline = ref.read(isOnlineProvider);
+    final isOnline = await ref.read(connectivityMonitorProvider.future);
     if (isOnline) {
       // If we're online, we validate the session with the server to ensure it's still valid
       return _validateSession();

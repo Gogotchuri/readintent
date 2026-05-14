@@ -91,7 +91,8 @@ final pendingOperationsProcessorProvider = Provider<PendingOperationsProcessor>(
 
 /// Watches connectivity and triggers queue processing when coming online.
 final pendingOperationsWatcherProvider = Provider<void>((ref) {
-  final isOnline = ref.watch(isOnlineProvider);
+  // Be pessimistic and assume we have no connection by default
+  final isOnline = ref.watch(connectivityMonitorProvider).whenData((v) => v).value ?? false;
   if (isOnline) {
     final processor = ref.read(pendingOperationsProcessorProvider);
     ref.onDispose(() => processor.dispose());
