@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
+import "package:readintent_flutter/core/connectivity.dart";
 import "package:readintent_flutter/features/articles/presentation/articles_screen.dart";
 import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
 
@@ -57,11 +58,37 @@ class _ShellLayoutState extends ConsumerState<ShellLayout> {
             ],
           ),
           const VerticalDivider(thickness: 1, width: 1),
-          Expanded(child: _buildBody()),
+          Expanded(
+            child: Column(
+              children: [
+                Consumer(
+                  builder: (context, ref, _) {
+                    final isOnline = ref.watch(isOnlineProvider);
+                    if (isOnline) return const SizedBox.shrink();
+                    return Container(
+                      width: double.infinity,
+                      color: Colors.orange[700],
+                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.cloud_off, size: 16, color: Colors.white),
+                          SizedBox(width: 8),
+                          Text("You're offline", style: TextStyle(color: Colors.white, fontSize: 13)),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                Expanded(child: _buildBody()),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
+
   Widget _buildBody() {
     switch (_selectedIndex) {
       case 0:
