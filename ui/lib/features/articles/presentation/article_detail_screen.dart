@@ -119,3 +119,48 @@ class _ArticleHeader extends StatelessWidget {
     );
   }
 }
+//TODO
+// import 'package:flutter/material.dart';
+// import 'package:flutter_highlight/flutter_highlight.dart';
+// import 'package:flutter_highlight/themes/github.dart'; // Choose a theme
+// import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+
+// class CodeHighlightingHtml extends StatelessWidget {
+//   final String htmlContent = '''
+//     <p>Check out this code:</p>
+//     <pre><code class="language-dart">void main() {
+//   print('Hello, Flutter!');
+// }</code></pre>
+//   ''';
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: Text("Code Highlighting")),
+//       body: SingleChildScrollView(
+//         child: HtmlWidget(
+//           htmlContent,
+//           customWidgetBuilder: (element) {
+//             // Identify <pre> tags (or <code> tags)
+//             if (element.localName == 'pre') {
+//               // Extract the raw text code from the HTML element
+//               final String code = element.text;
+
+//               // Return a high-performance highlight widget
+//               return Container(
+//                 padding: EdgeInsets.all(8),
+//                 child: HighlightView(
+//                   code,
+//                   language: 'dart', // Set language
+//                   theme: githubTheme, // Set theme
+//                   textStyle: TextStyle(fontFamily: 'monospace'),
+//                 ),
+//               );
+//             }
+//             return null; // Render other tags normally
+//           },
+//         ),
+//       ),
+//     );
+//   }
+// }

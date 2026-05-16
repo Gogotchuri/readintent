@@ -84,7 +84,7 @@ void main() {
       final path1 = await cache.pathForKey(key);
       final path2 = await cache.pathForKey(key);
       expect(path1, path2);
-      expect(path1, endsWith("$key.wav"));
+      expect(path1, endsWith("$key.mp3"));
     });
   });
 }
