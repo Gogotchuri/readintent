@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"connectrpc.com/connect"
 	"connectrpc.com/validate"
@@ -118,6 +119,24 @@ func (a *ArticlesServer) DeleteArticle(ctx context.Context, req *connect.Request
 	}
 
 	return connect.NewResponse(&v1.DeleteArticleResponse{}), nil
+}
+
+func (a *ArticlesServer) CheckForUpdates(ctx context.Context, req *connect.Request[v1.CheckForUpdatesRequest]) (*connect.Response[v1.CheckForUpdatesResponse], error) {
+	session := middlewares.SessionFromCtx(ctx)
+	if session == nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("no valid session"))
+	}
+
+	since := time.Unix(req.Msg.GetLastCheckedAt(), 0)
+	hasUpdates, serverTime, err := a.service.CheckForUpdates(ctx, session.Identity.ID, since)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("checking for updates: %w", err))
+	}
+
+	return connect.NewResponse(&v1.CheckForUpdatesResponse{
+		HasUpdates:      hasUpdates,
+		ServerTimestamp: serverTime.Unix(),
+	}), nil
 }
 
 func protoArticleFromArticle(article *models.Article) *v1.Article {

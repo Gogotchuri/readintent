@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"strconv"
+	"time"
 
 	"github.com/gogotchuri/readintent/backend/database/models"
 	iomodels "github.com/gogotchuri/readintent/backend/services/articles/models"
@@ -155,6 +156,14 @@ func (s Service) GetArticle(ctx context.Context, userID string, id int64) (*mode
 
 func (s Service) DeleteArticle(ctx context.Context, userID string, id int64) error {
 	return s.articleRepo.DeleteArticle(ctx, userID, id)
+}
+
+func (s Service) CheckForUpdates(ctx context.Context, userID string, since time.Time) (bool, time.Time, error) {
+	hasUpdates, err := s.articleRepo.HasUpdatedArticles(ctx, userID, since)
+	if err != nil {
+		return false, time.Time{}, err
+	}
+	return hasUpdates, time.Now(), nil
 }
 
 func parseArticleID(msg map[string]any) (int64, error) {
