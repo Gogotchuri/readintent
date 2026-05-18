@@ -80,9 +80,20 @@ message DeleteArticleRequest { string id = 1; }
 
 message DeleteArticleResponse {}
 
+message CheckForUpdatesRequest {
+  int64 last_checked_at = 1;
+}
+
+message CheckForUpdatesResponse {
+  bool has_updates = 1;
+  // Current server time - use this as next last_checked_at
+  int64 server_timestamp = 2;
+}
+
 service ArticlesService {
   rpc ParseArticle(ParseArticleRequest) returns (ParseArticleResponse);
   rpc GetArticles(GetArticlesRequest) returns (GetArticlesResponse);
   rpc GetArticle(GetArticleRequest) returns (GetArticleResponse);
   rpc DeleteArticle(DeleteArticleRequest) returns (DeleteArticleResponse);
+  rpc CheckForUpdates(CheckForUpdatesRequest) returns (CheckForUpdatesResponse);
 }
