@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gogotchuri/readintent/backend/database/models"
 	iomodels "github.com/gogotchuri/readintent/backend/services/articles/models"
@@ -373,6 +374,7 @@ type mockRepository struct {
 	AddArticleForUserFn        func(ctx context.Context, userID string, articleID int64) error
 	UpdateArticleFn            func(ctx context.Context, article models.Article) error
 	DeleteArticleFn            func(ctx context.Context, userID string, id int64) error
+	HasUpdatedArticlesFn       func(ctx context.Context, userID string, since time.Time) (bool, error)
 }
 
 func (m *mockRepository) GetArticles(ctx context.Context, userID string, searchQ iomodels.GetArticlesRequest) (*iomodels.GetArticlesResponse, error) {
@@ -401,6 +403,12 @@ func (m *mockRepository) UpdateArticle(ctx context.Context, article models.Artic
 }
 func (m *mockRepository) DeleteArticle(ctx context.Context, userID string, id int64) error {
 	return m.DeleteArticleFn(ctx, userID, id)
+}
+func (m *mockRepository) HasUpdatedArticles(ctx context.Context, userID string, since time.Time) (bool, error) {
+	if m.HasUpdatedArticlesFn != nil {
+		return m.HasUpdatedArticlesFn(ctx, userID, since)
+	}
+	return false, nil
 }
 
 // mockSubmitter implements ArticleSubmitter using function fields.

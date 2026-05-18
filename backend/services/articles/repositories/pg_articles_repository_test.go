@@ -532,6 +532,80 @@ func TestGetArticlesPagination(t *testing.T) {
 	})
 }
 
+// dbNow returns the current time from PG
+func dbNow(t *testing.T, db *sqlx.DB) time.Time {
+	t.Helper()
+	var now time.Time
+	if err := db.Get(&now, "SELECT NOW()"); err != nil {
+		t.Fatalf("getting DB time: %v", err)
+	}
+	return now
+}
+
+func TestHasUpdatedArticles(t *testing.T) {
+	db := startPostgres(t)
+	repo := NewPgArticlesRepository(db)
+	ctx := t.Context()
+
+	const userID = "repo-test-user"
+	const url = "https://example.com/update-check-test"
+
+	// No articles yet — should return false
+	has, err := repo.HasUpdatedArticles(ctx, userID, dbNow(t, db).Add(-1*time.Hour))
+	if err != nil {
+		t.Fatalf("HasUpdatedArticles failed: %v", err)
+	}
+	if has {
+		t.Error("expected no updates when there are no articles")
+	}
+
+	// Get DB time before creating article
+	beforeCreate := dbNow(t, db).Add(-1 * time.Second)
+	created, err := repo.CreateInitialArticle(ctx, userID, url)
+	if err != nil {
+		t.Fatalf("CreateInitialArticle failed: %v", err)
+	}
+
+	// Check with timestamp before creation — should find updates
+	has, err = repo.HasUpdatedArticles(ctx, userID, beforeCreate)
+	if err != nil {
+		t.Fatalf("HasUpdatedArticles failed: %v", err)
+	}
+	if !has {
+		t.Error("expected updates after article creation")
+	}
+
+	// Check with timestamp in the future — should find no updates
+	has, err = repo.HasUpdatedArticles(ctx, userID, dbNow(t, db).Add(1*time.Hour))
+	if err != nil {
+		t.Fatalf("HasUpdatedArticles failed: %v", err)
+	}
+	if has {
+		t.Error("expected no updates with future timestamp")
+	}
+
+	// Update the article — updated_at should change via UpdateArticle's SET updated_at = NOW()
+	article, err := repo.GetArticleByID(ctx, created.Id)
+	if err != nil {
+		t.Fatalf("GetArticleByID failed: %v", err)
+	}
+	beforeUpdate := dbNow(t, db).Add(-1 * time.Second)
+	article.Status = models.ArticleStatusReady
+	article.Title = models.NewNullString("Updated")
+	if err := repo.UpdateArticle(ctx, *article); err != nil {
+		t.Fatalf("UpdateArticle failed: %v", err)
+	}
+
+	// Should detect the update
+	has, err = repo.HasUpdatedArticles(ctx, userID, beforeUpdate)
+	if err != nil {
+		t.Fatalf("HasUpdatedArticles failed: %v", err)
+	}
+	if !has {
+		t.Error("expected updates after article status change")
+	}
+}
+
 func TestCreateInitialArticle_DuplicateURL(t *testing.T) {
 	db := startPostgres(t)
 	repo := NewPgArticlesRepository(db)

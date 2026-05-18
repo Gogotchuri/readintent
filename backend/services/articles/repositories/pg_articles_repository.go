@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/gogotchuri/readintent/backend/database/models"
 	"github.com/gogotchuri/readintent/backend/services/articles"
@@ -195,4 +196,19 @@ func (p PgArticlesRepository) DeleteArticle(ctx context.Context, userID string, 
 		return fmt.Errorf("failed to delete user-article relation for user %s and article %d: %w", userID, id, err)
 	}
 	return nil
+}
+
+func (p PgArticlesRepository) HasUpdatedArticles(ctx context.Context, userID string, since time.Time) (bool, error) {
+	var exists bool
+	err := p.db.GetContext(ctx, &exists, `
+		SELECT EXISTS(
+			SELECT 1 FROM articles a
+			JOIN user_articles ua ON ua.article_id = a.id
+			WHERE ua.user_id = $1 AND a.updated_at > $2
+		)
+	`, userID, since)
+	if err != nil {
+		return false, fmt.Errorf("failed to check for updated articles for user %s: %w", userID, err)
+	}
+	return exists, nil
 }

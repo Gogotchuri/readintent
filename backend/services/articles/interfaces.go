@@ -2,6 +2,7 @@ package articles
 
 import (
 	"context"
+	"time"
 
 	"github.com/gogotchuri/readintent/backend/database/models"
 	iomodels "github.com/gogotchuri/readintent/backend/services/articles/models"
@@ -19,6 +20,8 @@ type Repository interface {
 	UpdateArticle(ctx context.Context, article models.Article) error
 
 	DeleteArticle(ctx context.Context, userID string, id int64) error
+
+	HasUpdatedArticles(ctx context.Context, userID string, since time.Time) (bool, error)
 }
 
 type ArticleSubmitter interface {
