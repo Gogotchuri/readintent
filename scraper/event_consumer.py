@@ -1,7 +1,7 @@
 import json
 import logging
-import time
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Tuple, cast
 
@@ -10,7 +10,6 @@ import redis
 from article_extraction import ArticleExtractor, ExtractorError
 from config import Config
 
-logger = logging.getLogger(__name__)
 
 ## Here are the main rules for EventHub:
 # - The input event must have article_id and url and they must be non-empty, otherwise we remove the event early from processing and return error
@@ -22,6 +21,7 @@ class EventHub:
 	EventHub is handling the IO from redis stream events
 	This is basically a port calling ArticleExtractor
 	"""
+	_logger = logging.getLogger(__name__)
 	def __init__(
 			self,
 			conf: Config,
@@ -35,7 +35,7 @@ class EventHub:
 	def _consume_single_event_batch(self, executor: ThreadPoolExecutor) -> None:
 		"""Consume a single batch of events from the Redis stream and process them"""
 		try:
-			logger.debug("Waiting for events...")
+			self._logger.debug("Waiting for events...")
 			batched_events = cast(
 				dict[str, List[List[Tuple[str, dict]]]],
 				self.redis_client.xreadgroup(
@@ -48,14 +48,14 @@ class EventHub:
 			)
 
 			if not batched_events:
-				logger.debug("No events received")
+				self._logger.debug("No events received")
 				return
 
 			# We will only need the specific event stream
 			# AFAIK, this should never return the other entries given the way we call xreadgroup
 			event_list = batched_events.get(self.config.stream_input_event, [])
 			if not event_list:
-				logger.debug("No events received for stream")
+				self._logger.debug("No events received for stream")
 				return
 
 			# The event list is a list of list of tuples. The outer list is redundant given our call structure
@@ -64,7 +64,7 @@ class EventHub:
 				executor.submit(self.process_event, event_id, event_data)
 
 		except Exception as e:
-			logger.error(f"Error consuming events: {e}")
+			self._logger.error(f"Error consuming events: {e}")
 
 	def process_event(self, event_id: str, event_data: dict):
 		"""Process a single event from the Redis stream"""
@@ -72,22 +72,23 @@ class EventHub:
 
 		# Missing article_id just ack and discard, there is no point in returning error, we lack the main identifier
 		if not article_id:
-			logger.error(f"Event {event_id} missing article_id, discarding: {event_data}")
+			self._logger.error(f"Event {event_id} missing article_id, discarding: {event_data}")
 			self.redis_client.xack(self.config.stream_input_event, self.config.consumer_group, event_id)
 			return
 
 		url = event_data.get("url", "")
 		if not url:
-			logger.error(f"Event {event_id} missing url for article {article_id}")
+			self._logger.error(f"Event {event_id} missing url for article {article_id}")
 			self.redis_client.xack(self.config.stream_input_event, self.config.consumer_group, event_id)
 			self.redis_client.xadd(
 				self.config.stream_output_event,
 				{"article_id": article_id, "error": json.dumps({"msg": "missing url"})},
 			)
 			return
+		ready_html = event_data.get("html", "")
 
 		try:
-			article = self.article_extractor.extract(url)
+			article = self.article_extractor.extract(url, ready_html)
 			if isinstance(article, ExtractorError):
 				raise article
 			# SUCCESS, publish result downstream and ack
@@ -95,13 +96,13 @@ class EventHub:
 				self.config.stream_output_event,
 				{"article_id": article_id, "result": json.dumps(article.__dict__)},
 			)
-			logger.info(
+			self._logger.info(
 				f"Published result for event {event_id} to stream '{self.config.stream_output_event}'"
 			)
 			self.redis_client.xack(self.config.stream_input_event, self.config.consumer_group, event_id)
 		except Exception as e:
 			# This exception is no-op the pending loop will take care of this event in a minute
-			logger.error(f"Error processing event {event_id}: {e}")
+			self._logger.error(f"Error processing event {event_id}: {e}")
 
 	def _retry_pending_events(self, executor=None):
 		"""Claim idle pending messages and retry or give up based on times_delivered."""
@@ -133,7 +134,7 @@ class EventHub:
 						{"article_id": article_id, "error": json.dumps({"msg": "max retries exceeded"})},
 					)
 				self.redis_client.xack(self.config.stream_input_event, self.config.consumer_group, msg_id)
-				logger.warning(f"Gave up on event {msg_id} after max retries")
+				self._logger.warning(f"Gave up on event {msg_id} after max retries")
 				continue
 
 			# Under max retries — process again
@@ -148,7 +149,7 @@ class EventHub:
 			try:
 				self._retry_pending_events()
 			except Exception as e:
-				logger.error(f"Error in retry sweep: {e}")
+				self._logger.error(f"Error in retry sweep: {e}")
 			time.sleep(60)
 
 	def ensure_group(self):
@@ -162,17 +163,17 @@ class EventHub:
 			)
 		except Exception as e:
 			if "BUSYGROUP" in str(e):
-				logger.info(
+				self._logger.info(
 					f"Consumer group '{self.config.consumer_group}' already exists for stream '{self.config.stream_input_event}'"
 				)
 			else:
-				logger.error(f"Error creating consumer group: {e}")
+				self._logger.error(f"Error creating consumer group: {e}")
 				raise e
 
 	def consume_events(self):
 		"""Continuously consume events from the Redis stream and process them"""
 		self.ensure_group()
-		logger.info("event consumer started")
+		self._logger.info("event consumer started")
 
 		# Start retry sweep as a concurrent background thread
 		retry_thread = threading.Thread(target=self._retry_loop, daemon=True)
