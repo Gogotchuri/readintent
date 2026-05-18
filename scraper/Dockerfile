@@ -2,7 +2,7 @@ FROM python:3.13-trixie
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libxml2 libxslt1.1 build-dep python3-lxml \
+    libxml2 libxslt1.1 python3-lxml \
     && rm -rf /var/lib/apt/lists/*
 
 ENV UV_NO_DEV=1

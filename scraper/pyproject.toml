@@ -10,9 +10,9 @@ requires-python = ">= 3.13"
 dependencies = [
     "trafilatura>=2.0",
     "redis>=5.0",
-    "lxml",
+    "lxml>=6.1.0",
     "types-lxml",
-    "nodriver",
+    "nodriver>=0.50.3",
 ]
 
 [dependency-groups]

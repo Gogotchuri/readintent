@@ -189,18 +189,11 @@ class ArticleExtractor:
 				self._logger.error(f"Error downloading content from {url}: {e}")
 				return ExtractorError(f"Error downloading content from {url}: {e}")
 
-	def extract(self, url: str) -> ExtractedArticle | ExtractorError:
-		"""
-		Extract the article content from the given URL using trafilatura.
-		We are downloading, making sure the article is readable and extracting:
-			Metadata, Pure Text and Formatted HTML in that order.
-		"""
+	def _extract_from_html(self, url: str, html: str) -> ExtractedArticle | ExtractorError:
+		"""Extract the article content from ready HTML. Can be either downloaded from the url or passed in as a parameter"""
 		act = ArticleTransformer()
-		downloaded = self._download_content(url)
-		if isinstance(downloaded, ExtractorError):
-			return downloaded
 		# Strip all pre and code elements from downloaded content
-		downloaded_no_code = act.return_html_with_replaced_code_sections(downloaded)
+		downloaded_no_code = act.return_html_with_replaced_code_sections(html)
 		formatted_html = self._extract_formatted_html(downloaded_no_code)
 		if isinstance(formatted_html, ExtractorError):
 			return formatted_html
@@ -213,11 +206,11 @@ class ArticleExtractor:
 		if isinstance(pure_text, ExtractorError):
 			return pure_text
 
-		if not self._is_readerable(downloaded, pure_text):
+		if not self._is_readerable(html, pure_text):
 			self._logger.warning(f"Content from {url} is not readerable")
 			return ExtractorError(f"Content from {url} is not readerable")
 
-		metadata = self._extract_metadata(url, downloaded)
+		metadata = self._extract_metadata(url, html)
 		if isinstance(metadata, ExtractorError):
 			return metadata
 
@@ -236,3 +229,22 @@ class ArticleExtractor:
 			pure_text=pure_text,
 			url=url
 		)
+
+	def extract(self, url: str, ready_html: str) -> ExtractedArticle | ExtractorError:
+		"""
+		Extract the article content from the given URL using trafilatura.
+		We are either downloading or using passed in html, making sure the article is readable
+		and extracting: Metadata, Pure Text and Formatted HTML in that order.
+		"""
+		if ready_html:
+			res = self._extract_from_html(url, ready_html)
+			# If we have html and we managed to extract the article from it, simply return it.
+			# Otherwise, we will try to extract it from the url and if that also fails, return the error
+			if isinstance(res, ExtractedArticle):
+				self._logger.info(f"Successfully extracted article from ready_html for {url}")
+				return res
+		# Try ignoring the ready_html and extract from the url
+		downloaded = self._download_content(url)
+		if isinstance(downloaded, ExtractorError):
+			return downloaded
+		return self._extract_from_html(url, downloaded)

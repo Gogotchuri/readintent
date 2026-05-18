@@ -7,14 +7,12 @@ def replace_graphic_with_img(html: str) -> str:
 	return html.replace('<graphic', '<img').replace('</graphic>', '</img>')
 
 
-logger = logging.Logger = logging.getLogger(__name__)
-
-
 class ArticleTransformer:
 	"""
 	Used to aid in transformation of the extracted article html to make it easier to run TTS and display in UI
 	"""
 	code_blocks: dict
+	_logger: logging.Logger = logging.getLogger(__name__)
 
 	def __init__(self):
 		self.code_blocks = {}
@@ -39,7 +37,7 @@ class ArticleTransformer:
 
 			return lxml_html.tostring(new_tree).decode("utf-8")
 		except Exception as e:
-			logger.error(f"Error replacing code sections: {e}")
+			self._logger.error(f"Error replacing code sections: {e}")
 			return raw_html
 
 	def swap_code_placeholders_with_code_sections(self, html: str) -> str:
@@ -55,7 +53,7 @@ class ArticleTransformer:
 					code.set("data-lang", code_lang)
 			html = lxml_html.tostring(tree).decode("utf-8")
 		except Exception as e:
-			logger.error(f"Error swapping code placeholders with code sections: {e}")
+			self._logger.error(f"Error swapping code placeholders with code sections: {e}")
 
 		return html
 
@@ -90,5 +88,5 @@ class ArticleTransformer:
 					continue
 				html = html.replace(code_placeholder, f"skipping section with {loc} lines of code");
 		except Exception as e:
-			logger.error(f"Error transforming extracted html for pure text: {e}")
+			self._logger.error(f"Error transforming extracted html for pure text: {e}")
 		return html
