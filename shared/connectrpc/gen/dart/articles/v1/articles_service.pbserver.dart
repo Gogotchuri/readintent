@@ -25,6 +25,7 @@ abstract class ArticlesServiceBase extends $pb.GeneratedService {
   $async.Future<$0.GetArticlesResponse> getArticles($pb.ServerContext ctx, $0.GetArticlesRequest request);
   $async.Future<$0.GetArticleResponse> getArticle($pb.ServerContext ctx, $0.GetArticleRequest request);
   $async.Future<$0.DeleteArticleResponse> deleteArticle($pb.ServerContext ctx, $0.DeleteArticleRequest request);
+  $async.Future<$0.CheckForUpdatesResponse> checkForUpdates($pb.ServerContext ctx, $0.CheckForUpdatesRequest request);
 
   $pb.GeneratedMessage createRequest($core.String methodName) {
     switch (methodName) {
@@ -32,6 +33,7 @@ abstract class ArticlesServiceBase extends $pb.GeneratedService {
       case 'GetArticles': return $0.GetArticlesRequest();
       case 'GetArticle': return $0.GetArticleRequest();
       case 'DeleteArticle': return $0.DeleteArticleRequest();
+      case 'CheckForUpdates': return $0.CheckForUpdatesRequest();
       default: throw $core.ArgumentError('Unknown method: $methodName');
     }
   }
@@ -42,6 +44,7 @@ abstract class ArticlesServiceBase extends $pb.GeneratedService {
       case 'GetArticles': return this.getArticles(ctx, request as $0.GetArticlesRequest);
       case 'GetArticle': return this.getArticle(ctx, request as $0.GetArticleRequest);
       case 'DeleteArticle': return this.deleteArticle(ctx, request as $0.DeleteArticleRequest);
+      case 'CheckForUpdates': return this.checkForUpdates(ctx, request as $0.CheckForUpdatesRequest);
       default: throw $core.ArgumentError('Unknown method: $methodName');
     }
   }

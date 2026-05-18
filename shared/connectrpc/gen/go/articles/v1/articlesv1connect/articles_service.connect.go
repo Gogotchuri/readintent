@@ -45,6 +45,9 @@ const (
 	// ArticlesServiceDeleteArticleProcedure is the fully-qualified name of the ArticlesService's
 	// DeleteArticle RPC.
 	ArticlesServiceDeleteArticleProcedure = "/articles.v1.ArticlesService/DeleteArticle"
+	// ArticlesServiceCheckForUpdatesProcedure is the fully-qualified name of the ArticlesService's
+	// CheckForUpdates RPC.
+	ArticlesServiceCheckForUpdatesProcedure = "/articles.v1.ArticlesService/CheckForUpdates"
 )
 
 // ArticlesServiceClient is a client for the articles.v1.ArticlesService service.
@@ -53,6 +56,7 @@ type ArticlesServiceClient interface {
 	GetArticles(context.Context, *connect.Request[v1.GetArticlesRequest]) (*connect.Response[v1.GetArticlesResponse], error)
 	GetArticle(context.Context, *connect.Request[v1.GetArticleRequest]) (*connect.Response[v1.GetArticleResponse], error)
 	DeleteArticle(context.Context, *connect.Request[v1.DeleteArticleRequest]) (*connect.Response[v1.DeleteArticleResponse], error)
+	CheckForUpdates(context.Context, *connect.Request[v1.CheckForUpdatesRequest]) (*connect.Response[v1.CheckForUpdatesResponse], error)
 }
 
 // NewArticlesServiceClient constructs a client for the articles.v1.ArticlesService service. By
@@ -90,15 +94,22 @@ func NewArticlesServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(articlesServiceMethods.ByName("DeleteArticle")),
 			connect.WithClientOptions(opts...),
 		),
+		checkForUpdates: connect.NewClient[v1.CheckForUpdatesRequest, v1.CheckForUpdatesResponse](
+			httpClient,
+			baseURL+ArticlesServiceCheckForUpdatesProcedure,
+			connect.WithSchema(articlesServiceMethods.ByName("CheckForUpdates")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // articlesServiceClient implements ArticlesServiceClient.
 type articlesServiceClient struct {
-	parseArticle  *connect.Client[v1.ParseArticleRequest, v1.ParseArticleResponse]
-	getArticles   *connect.Client[v1.GetArticlesRequest, v1.GetArticlesResponse]
-	getArticle    *connect.Client[v1.GetArticleRequest, v1.GetArticleResponse]
-	deleteArticle *connect.Client[v1.DeleteArticleRequest, v1.DeleteArticleResponse]
+	parseArticle    *connect.Client[v1.ParseArticleRequest, v1.ParseArticleResponse]
+	getArticles     *connect.Client[v1.GetArticlesRequest, v1.GetArticlesResponse]
+	getArticle      *connect.Client[v1.GetArticleRequest, v1.GetArticleResponse]
+	deleteArticle   *connect.Client[v1.DeleteArticleRequest, v1.DeleteArticleResponse]
+	checkForUpdates *connect.Client[v1.CheckForUpdatesRequest, v1.CheckForUpdatesResponse]
 }
 
 // ParseArticle calls articles.v1.ArticlesService.ParseArticle.
@@ -121,12 +132,18 @@ func (c *articlesServiceClient) DeleteArticle(ctx context.Context, req *connect.
 	return c.deleteArticle.CallUnary(ctx, req)
 }
 
+// CheckForUpdates calls articles.v1.ArticlesService.CheckForUpdates.
+func (c *articlesServiceClient) CheckForUpdates(ctx context.Context, req *connect.Request[v1.CheckForUpdatesRequest]) (*connect.Response[v1.CheckForUpdatesResponse], error) {
+	return c.checkForUpdates.CallUnary(ctx, req)
+}
+
 // ArticlesServiceHandler is an implementation of the articles.v1.ArticlesService service.
 type ArticlesServiceHandler interface {
 	ParseArticle(context.Context, *connect.Request[v1.ParseArticleRequest]) (*connect.Response[v1.ParseArticleResponse], error)
 	GetArticles(context.Context, *connect.Request[v1.GetArticlesRequest]) (*connect.Response[v1.GetArticlesResponse], error)
 	GetArticle(context.Context, *connect.Request[v1.GetArticleRequest]) (*connect.Response[v1.GetArticleResponse], error)
 	DeleteArticle(context.Context, *connect.Request[v1.DeleteArticleRequest]) (*connect.Response[v1.DeleteArticleResponse], error)
+	CheckForUpdates(context.Context, *connect.Request[v1.CheckForUpdatesRequest]) (*connect.Response[v1.CheckForUpdatesResponse], error)
 }
 
 // NewArticlesServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -160,6 +177,12 @@ func NewArticlesServiceHandler(svc ArticlesServiceHandler, opts ...connect.Handl
 		connect.WithSchema(articlesServiceMethods.ByName("DeleteArticle")),
 		connect.WithHandlerOptions(opts...),
 	)
+	articlesServiceCheckForUpdatesHandler := connect.NewUnaryHandler(
+		ArticlesServiceCheckForUpdatesProcedure,
+		svc.CheckForUpdates,
+		connect.WithSchema(articlesServiceMethods.ByName("CheckForUpdates")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/articles.v1.ArticlesService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case ArticlesServiceParseArticleProcedure:
@@ -170,6 +193,8 @@ func NewArticlesServiceHandler(svc ArticlesServiceHandler, opts ...connect.Handl
 			articlesServiceGetArticleHandler.ServeHTTP(w, r)
 		case ArticlesServiceDeleteArticleProcedure:
 			articlesServiceDeleteArticleHandler.ServeHTTP(w, r)
+		case ArticlesServiceCheckForUpdatesProcedure:
+			articlesServiceCheckForUpdatesHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -193,4 +218,8 @@ func (UnimplementedArticlesServiceHandler) GetArticle(context.Context, *connect.
 
 func (UnimplementedArticlesServiceHandler) DeleteArticle(context.Context, *connect.Request[v1.DeleteArticleRequest]) (*connect.Response[v1.DeleteArticleResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("articles.v1.ArticlesService.DeleteArticle is not implemented"))
+}
+
+func (UnimplementedArticlesServiceHandler) CheckForUpdates(context.Context, *connect.Request[v1.CheckForUpdatesRequest]) (*connect.Response[v1.CheckForUpdatesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("articles.v1.ArticlesService.CheckForUpdates is not implemented"))
 }
