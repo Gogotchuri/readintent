@@ -967,6 +967,121 @@ class DeleteArticleResponse extends $pb.GeneratedMessage {
   static DeleteArticleResponse? _defaultInstance;
 }
 
+class CheckForUpdatesRequest extends $pb.GeneratedMessage {
+  factory CheckForUpdatesRequest({
+    $fixnum.Int64? lastCheckedAt,
+  }) {
+    final $result = create();
+    if (lastCheckedAt != null) {
+      $result.lastCheckedAt = lastCheckedAt;
+    }
+    return $result;
+  }
+  CheckForUpdatesRequest._() : super();
+  factory CheckForUpdatesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CheckForUpdatesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CheckForUpdatesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'articles.v1'), createEmptyInstance: create)
+    ..aInt64(1, _omitFieldNames ? '' : 'lastCheckedAt')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CheckForUpdatesRequest clone() => CheckForUpdatesRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CheckForUpdatesRequest copyWith(void Function(CheckForUpdatesRequest) updates) => super.copyWith((message) => updates(message as CheckForUpdatesRequest)) as CheckForUpdatesRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CheckForUpdatesRequest create() => CheckForUpdatesRequest._();
+  CheckForUpdatesRequest createEmptyInstance() => create();
+  static $pb.PbList<CheckForUpdatesRequest> createRepeated() => $pb.PbList<CheckForUpdatesRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CheckForUpdatesRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CheckForUpdatesRequest>(create);
+  static CheckForUpdatesRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get lastCheckedAt => $_getI64(0);
+  @$pb.TagNumber(1)
+  set lastCheckedAt($fixnum.Int64 v) { $_setInt64(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasLastCheckedAt() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLastCheckedAt() => clearField(1);
+}
+
+class CheckForUpdatesResponse extends $pb.GeneratedMessage {
+  factory CheckForUpdatesResponse({
+    $core.bool? hasUpdates,
+    $fixnum.Int64? serverTimestamp,
+  }) {
+    final $result = create();
+    if (hasUpdates != null) {
+      $result.hasUpdates = hasUpdates;
+    }
+    if (serverTimestamp != null) {
+      $result.serverTimestamp = serverTimestamp;
+    }
+    return $result;
+  }
+  CheckForUpdatesResponse._() : super();
+  factory CheckForUpdatesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CheckForUpdatesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CheckForUpdatesResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'articles.v1'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'hasUpdates')
+    ..aInt64(2, _omitFieldNames ? '' : 'serverTimestamp')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CheckForUpdatesResponse clone() => CheckForUpdatesResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CheckForUpdatesResponse copyWith(void Function(CheckForUpdatesResponse) updates) => super.copyWith((message) => updates(message as CheckForUpdatesResponse)) as CheckForUpdatesResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CheckForUpdatesResponse create() => CheckForUpdatesResponse._();
+  CheckForUpdatesResponse createEmptyInstance() => create();
+  static $pb.PbList<CheckForUpdatesResponse> createRepeated() => $pb.PbList<CheckForUpdatesResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CheckForUpdatesResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CheckForUpdatesResponse>(create);
+  static CheckForUpdatesResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get hasUpdates => $_getBF(0);
+  @$pb.TagNumber(1)
+  set hasUpdates($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasHasUpdates() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearHasUpdates() => clearField(1);
+
+  /// Current server time - use this as next last_checked_at
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get serverTimestamp => $_getI64(1);
+  @$pb.TagNumber(2)
+  set serverTimestamp($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasServerTimestamp() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearServerTimestamp() => clearField(2);
+}
+
 class ArticlesServiceApi {
   $pb.RpcClient _client;
   ArticlesServiceApi(this._client);
@@ -982,6 +1097,9 @@ class ArticlesServiceApi {
   ;
   $async.Future<DeleteArticleResponse> deleteArticle($pb.ClientContext? ctx, DeleteArticleRequest request) =>
     _client.invoke<DeleteArticleResponse>(ctx, 'ArticlesService', 'DeleteArticle', request, DeleteArticleResponse())
+  ;
+  $async.Future<CheckForUpdatesResponse> checkForUpdates($pb.ClientContext? ctx, CheckForUpdatesRequest request) =>
+    _client.invoke<CheckForUpdatesResponse>(ctx, 'ArticlesService', 'CheckForUpdates', request, CheckForUpdatesResponse())
   ;
 }
 
