@@ -37,4 +37,11 @@ abstract final class ArticlesService {
     articlesv1articles_service.DeleteArticleRequest.new,
     articlesv1articles_service.DeleteArticleResponse.new,
   );
+
+  static const checkForUpdates = connect.Spec(
+    '/$name/CheckForUpdates',
+    connect.StreamType.unary,
+    articlesv1articles_service.CheckForUpdatesRequest.new,
+    articlesv1articles_service.CheckForUpdatesResponse.new,
+  );
 }

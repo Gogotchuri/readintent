@@ -1,3 +1,4 @@
+import "package:fixnum/fixnum.dart";
 import "package:readintent_flutter/core/connect_transport.dart";
 import "package:readintent_flutter/features/articles/api/articles_client_exceptions.dart";
 import "package:readintent_flutter/features/articles/api/articles_service_client.dart";
@@ -54,6 +55,18 @@ class ArticlesClient {
       handleArticlesConnectException(e, "delete article");
     } catch (e) {
       throw ArticlesException("Failed to delete article: $e");
+    }
+  }
+
+  Future<articles_pb.CheckForUpdatesResponse> checkForUpdates(int lastCheckedAtUnixSeconds) async {
+    try {
+      return await _client.checkForUpdates(
+        articles_pb.CheckForUpdatesRequest(lastCheckedAt: Int64(lastCheckedAtUnixSeconds)),
+      );
+    } on ConnectException catch (e) {
+      handleArticlesConnectException(e, "check for updates");
+    } catch (e) {
+      throw ArticlesException("Failed to check for updates: $e");
     }
   }
 }

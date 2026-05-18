@@ -50,12 +50,35 @@ class ArticleRepository {
   Future<articles_pb.GetArticlesResponse?> _fetchAndCacheFirstPage(int pageSize) async {
     try {
       final response = await _remote.getArticles(pageSize: pageSize);
-      final now = DateTime.now().millisecondsSinceEpoch;
-      final companions = <ArticlePreviewsCompanion>[];
-      for (var i = 0; i < response.articles.length; i++) {
-        companions.add(previewProtoToCompanion(response.articles[i], i, now));
-      }
-      await _db.replacePreviews(companions);
+      await _cacheFirstPage(response);
+      return response;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _cacheFirstPage(articles_pb.GetArticlesResponse response) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final companions = <ArticlePreviewsCompanion>[];
+    for (var i = 0; i < response.articles.length; i++) {
+      companions.add(previewProtoToCompanion(response.articles[i], i, now));
+    }
+    await _db.replacePreviews(companions);
+  }
+  /// Checks the server for updates since [lastCheckedAt] (unix seconds).
+  /// Returns null if offline.
+  Future<articles_pb.CheckForUpdatesResponse?> checkForUpdates(int lastCheckedAt) async {
+    if (!_isOnline) return null;
+    return _remote.checkForUpdates(lastCheckedAt);
+  }
+
+  /// Fetches fresh articles from the server and caches them.
+  /// Returns null if offline or on error.
+  Future<articles_pb.GetArticlesResponse?> fetchFreshArticles(int pageSize) async {
+    if (!_isOnline) return null;
+    try {
+      final response = await _remote.getArticles(pageSize: pageSize);
+      await _cacheFirstPage(response);
       return response;
     } catch (_) {
       return null;

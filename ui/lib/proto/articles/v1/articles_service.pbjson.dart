@@ -215,6 +215,33 @@ const DeleteArticleResponse$json = {
 final $typed_data.Uint8List deleteArticleResponseDescriptor = $convert.base64Decode(
     'ChVEZWxldGVBcnRpY2xlUmVzcG9uc2U=');
 
+@$core.Deprecated('Use checkForUpdatesRequestDescriptor instead')
+const CheckForUpdatesRequest$json = {
+  '1': 'CheckForUpdatesRequest',
+  '2': [
+    {'1': 'last_checked_at', '3': 1, '4': 1, '5': 3, '10': 'lastCheckedAt'},
+  ],
+};
+
+/// Descriptor for `CheckForUpdatesRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List checkForUpdatesRequestDescriptor = $convert.base64Decode(
+    'ChZDaGVja0ZvclVwZGF0ZXNSZXF1ZXN0EiYKD2xhc3RfY2hlY2tlZF9hdBgBIAEoA1INbGFzdE'
+    'NoZWNrZWRBdA==');
+
+@$core.Deprecated('Use checkForUpdatesResponseDescriptor instead')
+const CheckForUpdatesResponse$json = {
+  '1': 'CheckForUpdatesResponse',
+  '2': [
+    {'1': 'has_updates', '3': 1, '4': 1, '5': 8, '10': 'hasUpdates'},
+    {'1': 'server_timestamp', '3': 2, '4': 1, '5': 3, '10': 'serverTimestamp'},
+  ],
+};
+
+/// Descriptor for `CheckForUpdatesResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List checkForUpdatesResponseDescriptor = $convert.base64Decode(
+    'ChdDaGVja0ZvclVwZGF0ZXNSZXNwb25zZRIfCgtoYXNfdXBkYXRlcxgBIAEoCFIKaGFzVXBkYX'
+    'RlcxIpChBzZXJ2ZXJfdGltZXN0YW1wGAIgASgDUg9zZXJ2ZXJUaW1lc3RhbXA=');
+
 const $core.Map<$core.String, $core.dynamic> ArticlesServiceBase$json = {
   '1': 'ArticlesService',
   '2': [
@@ -222,6 +249,7 @@ const $core.Map<$core.String, $core.dynamic> ArticlesServiceBase$json = {
     {'1': 'GetArticles', '2': '.articles.v1.GetArticlesRequest', '3': '.articles.v1.GetArticlesResponse'},
     {'1': 'GetArticle', '2': '.articles.v1.GetArticleRequest', '3': '.articles.v1.GetArticleResponse'},
     {'1': 'DeleteArticle', '2': '.articles.v1.DeleteArticleRequest', '3': '.articles.v1.DeleteArticleResponse'},
+    {'1': 'CheckForUpdates', '2': '.articles.v1.CheckForUpdatesRequest', '3': '.articles.v1.CheckForUpdatesResponse'},
   ],
 };
 
@@ -239,6 +267,8 @@ const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> ArticlesSe
   '.articles.v1.PhonemizerTokenMeta': PhonemizerTokenMeta$json,
   '.articles.v1.DeleteArticleRequest': DeleteArticleRequest$json,
   '.articles.v1.DeleteArticleResponse': DeleteArticleResponse$json,
+  '.articles.v1.CheckForUpdatesRequest': CheckForUpdatesRequest$json,
+  '.articles.v1.CheckForUpdatesResponse': CheckForUpdatesResponse$json,
 };
 
 /// Descriptor for `ArticlesService`. Decode as a `google.protobuf.ServiceDescriptorProto`.
@@ -249,5 +279,7 @@ final $typed_data.Uint8List articlesServiceDescriptor = $convert.base64Decode(
     'V0QXJ0aWNsZXNSZXNwb25zZRJNCgpHZXRBcnRpY2xlEh4uYXJ0aWNsZXMudjEuR2V0QXJ0aWNs'
     'ZVJlcXVlc3QaHy5hcnRpY2xlcy52MS5HZXRBcnRpY2xlUmVzcG9uc2USVgoNRGVsZXRlQXJ0aW'
     'NsZRIhLmFydGljbGVzLnYxLkRlbGV0ZUFydGljbGVSZXF1ZXN0GiIuYXJ0aWNsZXMudjEuRGVs'
-    'ZXRlQXJ0aWNsZVJlc3BvbnNl');
+    'ZXRlQXJ0aWNsZVJlc3BvbnNlElwKD0NoZWNrRm9yVXBkYXRlcxIjLmFydGljbGVzLnYxLkNoZW'
+    'NrRm9yVXBkYXRlc1JlcXVlc3QaJC5hcnRpY2xlcy52MS5DaGVja0ZvclVwZGF0ZXNSZXNwb25z'
+    'ZQ==');
 
