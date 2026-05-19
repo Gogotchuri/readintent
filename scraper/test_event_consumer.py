@@ -1,6 +1,6 @@
 import json
 
-from article_extraction import ExtractedArticle, ExtractorError
+from article_extractor import ExtractedArticle, ExtractorError
 from conftest import ScraperHubFixture
 
 

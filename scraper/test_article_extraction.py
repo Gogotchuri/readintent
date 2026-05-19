@@ -1,5 +1,5 @@
 from unittest.mock import Mock
-from article_extraction import ArticleExtractor, ExtractorError, ExtractedArticle, ArticleProcessor
+from article_extractor import ArticleExtractor, ExtractorError, ExtractedArticle, ArticleProcessor
 from trafilatura.settings import Document
 
 def _make_metadata(title="Title", author="Author", date="2026-01-01", categories=None, description=None, image=None) -> Document:
@@ -22,7 +22,7 @@ URL = "https://example.com/article"
 
 def test_extract_success():
     proc = _make_mock_processor()
-    result = ArticleExtractor(proc).extract(URL)
+    result = ArticleExtractor(proc).extract(URL, "")
     assert isinstance(result, ExtractedArticle)
     assert result.url == URL
     assert result.title == "Title"
@@ -71,16 +71,26 @@ def test_metadata_no_title():
 
 def test_metadata_no_author():
     proc = _make_mock_processor(metadata=_make_metadata(author=None))
-    call_and_expect_extraction_error(proc)
+    result = ArticleExtractor(proc).extract(URL, "")
+    assert isinstance(result, ExtractedArticle)
+    assert result.author == ""
+
     proc = _make_mock_processor(metadata=_make_metadata(author=""))
-    call_and_expect_extraction_error(proc)
+    result = ArticleExtractor(proc).extract(URL, "")
+    assert isinstance(result, ExtractedArticle)
+    assert result.author == ""
 
 
 def test_metadata_no_date():
     proc = _make_mock_processor(metadata=_make_metadata(date=None))
-    call_and_expect_extraction_error(proc)
+    result = ArticleExtractor(proc).extract(URL, "")
+    assert isinstance(result, ExtractedArticle)
+    assert result.date == ""
+
     proc = _make_mock_processor(metadata=_make_metadata(date=""))
-    call_and_expect_extraction_error(proc)
+    result = ArticleExtractor(proc).extract(URL, "")
+    assert isinstance(result, ExtractedArticle)
+    assert result.date == ""
 
 
 def test_metadata_exception():
@@ -115,5 +125,5 @@ def test_html_extraction_exception():
     call_and_expect_extraction_error(proc)
 
 def call_and_expect_extraction_error(proc: Mock):
-    result = ArticleExtractor(proc).extract(URL)
+    result = ArticleExtractor(proc).extract(URL, "")
     assert isinstance(result, ExtractorError)
