@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
+import "package:go_router/go_router.dart";
 import "package:readintent_flutter/core/connectivity.dart";
 import "package:readintent_flutter/features/articles/presentation/articles_screen.dart";
 import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
@@ -34,12 +35,20 @@ class _ShellLayoutState extends ConsumerState<ShellLayout> {
                 alignment: Alignment.bottomCenter,
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 16),
-                  child: IconButton(
-                    icon: const Icon(Icons.logout),
-                    tooltip: "Logout",
-                    onPressed: () {
-                      ref.read(authProvider.notifier).logout();
-                    },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.extension),
+                        tooltip: "Pair Extension",
+                        onPressed: () => context.push("/pair-extension"),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.logout),
+                        tooltip: "Logout",
+                        onPressed: () => ref.read(authProvider.notifier).logout(),
+                      ),
+                    ],
                   ),
                 ),
               ),

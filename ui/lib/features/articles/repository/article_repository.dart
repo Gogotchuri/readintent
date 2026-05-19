@@ -52,7 +52,8 @@ class ArticleRepository {
       final response = await _remote.getArticles(pageSize: pageSize);
       await _cacheFirstPage(response);
       return response;
-    } catch (_) {
+    } catch (e) {
+      print("Failed to fetch first page of articles: $e");
       return null;
     }
   }

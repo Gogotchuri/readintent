@@ -4,6 +4,7 @@ import "package:readintent_flutter/proto/auth/v1/auth_service.pb.dart" as auth_p
 /// Interface for the auth RPC calls. Wraps the generated connectRPC client
 /// so it can be mocked in tests.
 abstract class AuthServiceClientI {
+  Future<auth_pb.ClaimGrantCodeResponse> claimGrantCode(auth_pb.ClaimGrantCodeRequest input);
   Future<auth_pb.PasswordLoginResponse> passwordLogin(auth_pb.PasswordLoginRequest input);
   Future<auth_pb.PasswordRegistrationResponse> passwordRegistration(
     auth_pb.PasswordRegistrationRequest input,
@@ -17,6 +18,10 @@ abstract class AuthServiceClientI {
 class ConnecAuthServiceClient implements AuthServiceClientI {
   final AuthServiceClient _client;
   ConnecAuthServiceClient(this._client);
+
+  @override
+  Future<auth_pb.ClaimGrantCodeResponse> claimGrantCode(auth_pb.ClaimGrantCodeRequest input) =>
+      _client.claimGrantCode(input);
 
   @override
   Future<auth_pb.PasswordLoginResponse> passwordLogin(auth_pb.PasswordLoginRequest input) =>

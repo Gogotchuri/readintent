@@ -69,7 +69,11 @@ async function userCodeUpdated() {
 
 async function sessionTokenUpdated() {
   const [sessionToken, err] = await sessionStorage.getSessionToken();
-  if (err || !sessionToken) return;
+  if (err || !sessionToken) {
+    showState("unpaired");
+    initializeFromState("unpaired");
+    return;
+  }
   showState("paired");
 }
 

@@ -128,7 +128,7 @@ func (s *Service) SubmitArticle(ctx context.Context, url, html, userID string) e
 }
 
 func generateRandomCode(l int) (string, error) {
-	const characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	const characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	res := make([]byte, l)
 	for i := 0; i < l; i++ {
 		ind, err := rand.Int(rand.Reader, big.NewInt(int64(len(characters))))
