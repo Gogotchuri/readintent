@@ -1,4 +1,4 @@
-## Execution Plan for Read Intent
+# Execution Plan for Read Intent
 
 **Ilia Gogotchuri (2026/03/21)**
 
