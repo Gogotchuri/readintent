@@ -7,7 +7,7 @@ from typing import List, Tuple, cast
 
 import redis
 
-from article_extraction import ArticleExtractor, ExtractorError
+from article_extractor import ArticleExtractor, ExtractorError
 from config import Config
 
 

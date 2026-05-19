@@ -43,6 +43,7 @@ class ArticleTransformer:
 	def swap_code_placeholders_with_code_sections(self, html: str) -> str:
 		try:
 			for code_placeholder, code_section in self.code_blocks.items():
+				self._logger.debug(f"Replacing code placeholder {code_placeholder} with code section {code_section}")
 				html = html.replace(f"<p>{code_placeholder}</p>", code_section)
 			tree = lxml_html.fromstring(html)
 			for _, code in enumerate(tree.xpath("//code")):
@@ -83,6 +84,8 @@ class ArticleTransformer:
 				section_tree = lxml_html.fromstring(code_section)
 				loc = section_tree.text_content().count("\n")
 				# We should be fine with 2 lines of code, might be simple commands or one-liner, possible for TTS to read
+				self._logger.debug(
+					f"Replacing code placeholder {code_placeholder} with {loc} lines of code {code_section}")
 				if loc <= 2:
 					html = html.replace(f"<p>{code_placeholder}</p>", code_section)
 					continue
