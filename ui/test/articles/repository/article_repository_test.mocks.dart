@@ -171,6 +171,12 @@ class _FakeArticle_23 extends _i1.SmartFake implements _i6.Article {
     : super(parent, parentInvocation);
 }
 
+class _FakeCheckForUpdatesResponse_24 extends _i1.SmartFake
+    implements _i6.CheckForUpdatesResponse {
+  _FakeCheckForUpdatesResponse_24(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
 /// A class which mocks [AppDatabase].
 ///
 /// See the documentation for Mockito's code generation for more information.
@@ -984,4 +990,19 @@ class MockArticlesClient extends _i1.Mock implements _i8.ArticlesClient {
             returnValueForMissingStub: _i5.Future<void>.value(),
           )
           as _i5.Future<void>);
+
+  @override
+  _i5.Future<_i6.CheckForUpdatesResponse> checkForUpdates(
+    int? lastCheckedAtUnixSeconds,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#checkForUpdates, [lastCheckedAtUnixSeconds]),
+            returnValue: _i5.Future<_i6.CheckForUpdatesResponse>.value(
+              _FakeCheckForUpdatesResponse_24(
+                this,
+                Invocation.method(#checkForUpdates, [lastCheckedAtUnixSeconds]),
+              ),
+            ),
+          )
+          as _i5.Future<_i6.CheckForUpdatesResponse>);
 }

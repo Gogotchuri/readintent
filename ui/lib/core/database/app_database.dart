@@ -12,7 +12,7 @@ import "package:sqlite3/sqlite3.dart";
 part "app_database.g.dart";
 
 class ArticlePreviews extends Table {
-  IntColumn get id => integer()();
+  IntColumn get id => integer().unique()();
   TextColumn get status => text()();
   TextColumn get title => text().withDefault(const Constant(""))();
   TextColumn get author => text().withDefault(const Constant(""))();
@@ -29,7 +29,7 @@ class ArticlePreviews extends Table {
 }
 
 class ArticleDetails extends Table {
-  IntColumn get id => integer().references(ArticlePreviews, #id)();
+  IntColumn get id => integer().unique()();
   TextColumn get extractedHtml => text().withDefault(const Constant(""))();
   TextColumn get pureText => text().withDefault(const Constant(""))();
   BlobColumn get phonemizerBlob => blob().nullable()();
@@ -76,15 +76,14 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> upsertPreview(ArticlePreviewsCompanion entry) {
-    return into(articlePreviews).insertOnConflictUpdate(entry);
+    return into(articlePreviews).insert(entry, mode: InsertMode.insertOrReplace);
   }
 
   // Replace all previews in a single transaction
   Future<void> replacePreviews(List<ArticlePreviewsCompanion> entries) {
     return transaction(() async {
-      await delete(articlePreviews).go();
       for (final entry in entries) {
-        await into(articlePreviews).insert(entry);
+        await into(articlePreviews).insert(entry, mode: InsertMode.insertOrReplace);
       }
     });
   }
@@ -102,7 +101,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> upsertDetail(ArticleDetailsCompanion entry) {
-    return into(articleDetails).insertOnConflictUpdate(entry);
+    return into(articleDetails).insert(entry, mode: InsertMode.insertOrReplace);
   }
 
   // -- PendingOperations --

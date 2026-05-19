@@ -115,6 +115,11 @@ class Auth extends _$Auth {
     }
   }
 
+  /// claimGrantCode is used for browser extension authentication flow
+  Future<void> claimGrantCode(String code) async {
+    await _authClient.claimGrantCode(code);
+  }
+
   /// logout clears the session and user data and sets the state to unauthenticated
   Future<void> logout() async {
     if (state is! AuthAuthenticated) {

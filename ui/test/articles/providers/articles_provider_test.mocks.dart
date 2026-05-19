@@ -69,6 +69,24 @@ class MockArticleRepository extends _i1.Mock implements _i3.ArticleRepository {
           as _i4.Future<_i2.GetArticlesResponse>);
 
   @override
+  _i4.Future<_i2.CheckForUpdatesResponse?> checkForUpdates(
+    int? lastCheckedAt,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#checkForUpdates, [lastCheckedAt]),
+            returnValue: _i4.Future<_i2.CheckForUpdatesResponse?>.value(),
+          )
+          as _i4.Future<_i2.CheckForUpdatesResponse?>);
+
+  @override
+  _i4.Future<_i2.GetArticlesResponse?> fetchFreshArticles(int? pageSize) =>
+      (super.noSuchMethod(
+            Invocation.method(#fetchFreshArticles, [pageSize]),
+            returnValue: _i4.Future<_i2.GetArticlesResponse?>.value(),
+          )
+          as _i4.Future<_i2.GetArticlesResponse?>);
+
+  @override
   _i4.Future<_i2.GetArticlesResponse> getArticlesPage({
     int? pageSize = 20,
     String? pageToken,

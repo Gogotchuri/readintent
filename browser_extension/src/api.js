@@ -1,6 +1,6 @@
 import { sessionStorage } from "./browser_apis.js";
 
-const API_URL = "http://localhost:8081";
+const API_URL = "http://localhost:5050";
 
 /**
  * Given a async function, returns tuple of [response, error] (Go style)

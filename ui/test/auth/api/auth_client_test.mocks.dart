@@ -25,35 +25,41 @@ import 'package:readintent_flutter/proto/auth/v1/auth_service.pb.dart' as _i2;
 // ignore_for_file: subtype_of_sealed_class
 // ignore_for_file: invalid_use_of_internal_member
 
-class _FakePasswordLoginResponse_0 extends _i1.SmartFake
-    implements _i2.PasswordLoginResponse {
-  _FakePasswordLoginResponse_0(Object parent, Invocation parentInvocation)
+class _FakeClaimGrantCodeResponse_0 extends _i1.SmartFake
+    implements _i2.ClaimGrantCodeResponse {
+  _FakeClaimGrantCodeResponse_0(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakePasswordRegistrationResponse_1 extends _i1.SmartFake
+class _FakePasswordLoginResponse_1 extends _i1.SmartFake
+    implements _i2.PasswordLoginResponse {
+  _FakePasswordLoginResponse_1(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakePasswordRegistrationResponse_2 extends _i1.SmartFake
     implements _i2.PasswordRegistrationResponse {
-  _FakePasswordRegistrationResponse_1(
+  _FakePasswordRegistrationResponse_2(
     Object parent,
     Invocation parentInvocation,
   ) : super(parent, parentInvocation);
 }
 
-class _FakeGetSessionResponse_2 extends _i1.SmartFake
+class _FakeGetSessionResponse_3 extends _i1.SmartFake
     implements _i2.GetSessionResponse {
-  _FakeGetSessionResponse_2(Object parent, Invocation parentInvocation)
+  _FakeGetSessionResponse_3(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeLogoutResponse_3 extends _i1.SmartFake
+class _FakeLogoutResponse_4 extends _i1.SmartFake
     implements _i2.LogoutResponse {
-  _FakeLogoutResponse_3(Object parent, Invocation parentInvocation)
+  _FakeLogoutResponse_4(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeHealthResponse_4 extends _i1.SmartFake
+class _FakeHealthResponse_5 extends _i1.SmartFake
     implements _i2.HealthResponse {
-  _FakeHealthResponse_4(Object parent, Invocation parentInvocation)
+  _FakeHealthResponse_5(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
@@ -67,13 +73,28 @@ class MockAuthServiceClientI extends _i1.Mock
   }
 
   @override
+  _i4.Future<_i2.ClaimGrantCodeResponse> claimGrantCode(
+    _i2.ClaimGrantCodeRequest? input,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#claimGrantCode, [input]),
+            returnValue: _i4.Future<_i2.ClaimGrantCodeResponse>.value(
+              _FakeClaimGrantCodeResponse_0(
+                this,
+                Invocation.method(#claimGrantCode, [input]),
+              ),
+            ),
+          )
+          as _i4.Future<_i2.ClaimGrantCodeResponse>);
+
+  @override
   _i4.Future<_i2.PasswordLoginResponse> passwordLogin(
     _i2.PasswordLoginRequest? input,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#passwordLogin, [input]),
             returnValue: _i4.Future<_i2.PasswordLoginResponse>.value(
-              _FakePasswordLoginResponse_0(
+              _FakePasswordLoginResponse_1(
                 this,
                 Invocation.method(#passwordLogin, [input]),
               ),
@@ -88,7 +109,7 @@ class MockAuthServiceClientI extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#passwordRegistration, [input]),
             returnValue: _i4.Future<_i2.PasswordRegistrationResponse>.value(
-              _FakePasswordRegistrationResponse_1(
+              _FakePasswordRegistrationResponse_2(
                 this,
                 Invocation.method(#passwordRegistration, [input]),
               ),
@@ -101,7 +122,7 @@ class MockAuthServiceClientI extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#getSession, [input]),
             returnValue: _i4.Future<_i2.GetSessionResponse>.value(
-              _FakeGetSessionResponse_2(
+              _FakeGetSessionResponse_3(
                 this,
                 Invocation.method(#getSession, [input]),
               ),
@@ -114,7 +135,7 @@ class MockAuthServiceClientI extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#logout, [input]),
             returnValue: _i4.Future<_i2.LogoutResponse>.value(
-              _FakeLogoutResponse_3(this, Invocation.method(#logout, [input])),
+              _FakeLogoutResponse_4(this, Invocation.method(#logout, [input])),
             ),
           )
           as _i4.Future<_i2.LogoutResponse>);
@@ -124,7 +145,7 @@ class MockAuthServiceClientI extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#health, [input]),
             returnValue: _i4.Future<_i2.HealthResponse>.value(
-              _FakeHealthResponse_4(this, Invocation.method(#health, [input])),
+              _FakeHealthResponse_5(this, Invocation.method(#health, [input])),
             ),
           )
           as _i4.Future<_i2.HealthResponse>);

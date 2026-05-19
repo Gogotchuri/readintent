@@ -33,8 +33,7 @@ class AuthClient {
 
   late final AuthServiceClientI _client;
 
-  AuthClient({required this.onUnauthorized, required AuthServiceClientI client})
-    : _client = client;
+  AuthClient({required this.onUnauthorized, required AuthServiceClientI client}) : _client = client;
 
   Future<Session> getSession() async {
     try {
@@ -44,6 +43,16 @@ class AuthClient {
       handleConnectException(e, "validate session");
     } catch (e) {
       throw AuthException("Failed to validate session: $e");
+    }
+  }
+
+  Future<void> claimGrantCode(String code) async {
+    try {
+      await _client.claimGrantCode(auth_pb.ClaimGrantCodeRequest(userCode: code));
+    } on ConnectException catch (e) {
+      handleConnectException(e, "claim grant code");
+    } catch (e) {
+      throw AuthException("Failed to claim grant code: $e");
     }
   }
 

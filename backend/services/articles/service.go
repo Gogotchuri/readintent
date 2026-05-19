@@ -29,11 +29,12 @@ func NewService(articleRepo Repository, eventHub ArticleSubmitter) *Service {
 
 func (s Service) ParseArticle(ctx context.Context, userID, url, html string) error {
 	//TODO the URL must be processed and validated first at this stage
-
+	slog.Info(fmt.Sprintf("Parsing article for user %s and url %s", userID, url))
 	// Check if the article already exists for the user
 	_, err := s.articleRepo.GetArticleForUserWithURL(ctx, userID, url)
 	if err == nil {
-		return fmt.Errorf("article already exists for user %s and url %s", userID, url)
+		slog.Info(fmt.Sprintf("Article already exists for user %s and url %s", userID, url))
+		return nil
 	}
 	if !errors.Is(err, ErrArticleNotFound) {
 		return fmt.Errorf("checking user article: %w", err)

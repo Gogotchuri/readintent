@@ -17,6 +17,7 @@ class $ArticlePreviewsTable extends ArticlePreviews
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
@@ -640,9 +641,7 @@ class $ArticleDetailsTable extends ArticleDetails
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES article_previews (id)',
-    ),
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
   static const VerificationMeta _extractedHtmlMeta = const VerificationMeta(
     'extractedHtml',
@@ -1488,37 +1487,6 @@ typedef $$ArticlePreviewsTableUpdateCompanionBuilder =
       Value<int> cachedAt,
     });
 
-final class $$ArticlePreviewsTableReferences
-    extends
-        BaseReferences<_$AppDatabase, $ArticlePreviewsTable, ArticlePreview> {
-  $$ArticlePreviewsTableReferences(
-    super.$_db,
-    super.$_table,
-    super.$_typedResult,
-  );
-
-  static MultiTypedResultKey<$ArticleDetailsTable, List<ArticleDetail>>
-  _articleDetailsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.articleDetails,
-    aliasName: $_aliasNameGenerator(
-      db.articlePreviews.id,
-      db.articleDetails.id,
-    ),
-  );
-
-  $$ArticleDetailsTableProcessedTableManager get articleDetailsRefs {
-    final manager = $$ArticleDetailsTableTableManager(
-      $_db,
-      $_db.articleDetails,
-    ).filter((f) => f.id.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_articleDetailsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
 class $$ArticlePreviewsTableFilterComposer
     extends Composer<_$AppDatabase, $ArticlePreviewsTable> {
   $$ArticlePreviewsTableFilterComposer({
@@ -1582,31 +1550,6 @@ class $$ArticlePreviewsTableFilterComposer
     column: $table.cachedAt,
     builder: (column) => ColumnFilters(column),
   );
-
-  Expression<bool> articleDetailsRefs(
-    Expression<bool> Function($$ArticleDetailsTableFilterComposer f) f,
-  ) {
-    final $$ArticleDetailsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.articleDetails,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ArticleDetailsTableFilterComposer(
-            $db: $db,
-            $table: $db.articleDetails,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
 }
 
 class $$ArticlePreviewsTableOrderingComposer
@@ -1719,31 +1662,6 @@ class $$ArticlePreviewsTableAnnotationComposer
 
   GeneratedColumn<int> get cachedAt =>
       $composableBuilder(column: $table.cachedAt, builder: (column) => column);
-
-  Expression<T> articleDetailsRefs<T extends Object>(
-    Expression<T> Function($$ArticleDetailsTableAnnotationComposer a) f,
-  ) {
-    final $$ArticleDetailsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.articleDetails,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ArticleDetailsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.articleDetails,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
 }
 
 class $$ArticlePreviewsTableTableManager
@@ -1757,9 +1675,16 @@ class $$ArticlePreviewsTableTableManager
           $$ArticlePreviewsTableAnnotationComposer,
           $$ArticlePreviewsTableCreateCompanionBuilder,
           $$ArticlePreviewsTableUpdateCompanionBuilder,
-          (ArticlePreview, $$ArticlePreviewsTableReferences),
+          (
+            ArticlePreview,
+            BaseReferences<
+              _$AppDatabase,
+              $ArticlePreviewsTable,
+              ArticlePreview
+            >,
+          ),
           ArticlePreview,
-          PrefetchHooks Function({bool articleDetailsRefs})
+          PrefetchHooks Function()
         > {
   $$ArticlePreviewsTableTableManager(
     _$AppDatabase db,
@@ -1827,45 +1752,9 @@ class $$ArticlePreviewsTableTableManager
                 cachedAt: cachedAt,
               ),
           withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $$ArticlePreviewsTableReferences(db, table, e),
-                ),
-              )
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({articleDetailsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (articleDetailsRefs) db.articleDetails,
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (articleDetailsRefs)
-                    await $_getPrefetchedData<
-                      ArticlePreview,
-                      $ArticlePreviewsTable,
-                      ArticleDetail
-                    >(
-                      currentTable: table,
-                      referencedTable: $$ArticlePreviewsTableReferences
-                          ._articleDetailsRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$ArticlePreviewsTableReferences(
-                            db,
-                            table,
-                            p0,
-                          ).articleDetailsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.id == item.id),
-                      typedResults: items,
-                    ),
-                ];
-              },
-            );
-          },
+          prefetchHooksCallback: null,
         ),
       );
 }
@@ -1880,9 +1769,12 @@ typedef $$ArticlePreviewsTableProcessedTableManager =
       $$ArticlePreviewsTableAnnotationComposer,
       $$ArticlePreviewsTableCreateCompanionBuilder,
       $$ArticlePreviewsTableUpdateCompanionBuilder,
-      (ArticlePreview, $$ArticlePreviewsTableReferences),
+      (
+        ArticlePreview,
+        BaseReferences<_$AppDatabase, $ArticlePreviewsTable, ArticlePreview>,
+      ),
       ArticlePreview,
-      PrefetchHooks Function({bool articleDetailsRefs})
+      PrefetchHooks Function()
     >;
 typedef $$ArticleDetailsTableCreateCompanionBuilder =
     ArticleDetailsCompanion Function({
@@ -1901,34 +1793,6 @@ typedef $$ArticleDetailsTableUpdateCompanionBuilder =
       Value<int> cachedAt,
     });
 
-final class $$ArticleDetailsTableReferences
-    extends BaseReferences<_$AppDatabase, $ArticleDetailsTable, ArticleDetail> {
-  $$ArticleDetailsTableReferences(
-    super.$_db,
-    super.$_table,
-    super.$_typedResult,
-  );
-
-  static $ArticlePreviewsTable _idTable(_$AppDatabase db) =>
-      db.articlePreviews.createAlias(
-        $_aliasNameGenerator(db.articleDetails.id, db.articlePreviews.id),
-      );
-
-  $$ArticlePreviewsTableProcessedTableManager get id {
-    final $_column = $_itemColumn<int>('id')!;
-
-    final manager = $$ArticlePreviewsTableTableManager(
-      $_db,
-      $_db.articlePreviews,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_idTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-}
-
 class $$ArticleDetailsTableFilterComposer
     extends Composer<_$AppDatabase, $ArticleDetailsTable> {
   $$ArticleDetailsTableFilterComposer({
@@ -1938,6 +1802,11 @@ class $$ArticleDetailsTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get extractedHtml => $composableBuilder(
     column: $table.extractedHtml,
     builder: (column) => ColumnFilters(column),
@@ -1957,29 +1826,6 @@ class $$ArticleDetailsTableFilterComposer
     column: $table.cachedAt,
     builder: (column) => ColumnFilters(column),
   );
-
-  $$ArticlePreviewsTableFilterComposer get id {
-    final $$ArticlePreviewsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.articlePreviews,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ArticlePreviewsTableFilterComposer(
-            $db: $db,
-            $table: $db.articlePreviews,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$ArticleDetailsTableOrderingComposer
@@ -1991,6 +1837,11 @@ class $$ArticleDetailsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get extractedHtml => $composableBuilder(
     column: $table.extractedHtml,
     builder: (column) => ColumnOrderings(column),
@@ -2010,29 +1861,6 @@ class $$ArticleDetailsTableOrderingComposer
     column: $table.cachedAt,
     builder: (column) => ColumnOrderings(column),
   );
-
-  $$ArticlePreviewsTableOrderingComposer get id {
-    final $$ArticlePreviewsTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.articlePreviews,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ArticlePreviewsTableOrderingComposer(
-            $db: $db,
-            $table: $db.articlePreviews,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$ArticleDetailsTableAnnotationComposer
@@ -2044,6 +1872,9 @@ class $$ArticleDetailsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
   GeneratedColumn<String> get extractedHtml => $composableBuilder(
     column: $table.extractedHtml,
     builder: (column) => column,
@@ -2059,29 +1890,6 @@ class $$ArticleDetailsTableAnnotationComposer
 
   GeneratedColumn<int> get cachedAt =>
       $composableBuilder(column: $table.cachedAt, builder: (column) => column);
-
-  $$ArticlePreviewsTableAnnotationComposer get id {
-    final $$ArticlePreviewsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.articlePreviews,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ArticlePreviewsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.articlePreviews,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$ArticleDetailsTableTableManager
@@ -2095,9 +1903,12 @@ class $$ArticleDetailsTableTableManager
           $$ArticleDetailsTableAnnotationComposer,
           $$ArticleDetailsTableCreateCompanionBuilder,
           $$ArticleDetailsTableUpdateCompanionBuilder,
-          (ArticleDetail, $$ArticleDetailsTableReferences),
+          (
+            ArticleDetail,
+            BaseReferences<_$AppDatabase, $ArticleDetailsTable, ArticleDetail>,
+          ),
           ArticleDetail,
-          PrefetchHooks Function({bool id})
+          PrefetchHooks Function()
         > {
   $$ArticleDetailsTableTableManager(
     _$AppDatabase db,
@@ -2141,55 +1952,9 @@ class $$ArticleDetailsTableTableManager
                 cachedAt: cachedAt,
               ),
           withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $$ArticleDetailsTableReferences(db, table, e),
-                ),
-              )
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({id = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (id) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.id,
-                                referencedTable: $$ArticleDetailsTableReferences
-                                    ._idTable(db),
-                                referencedColumn:
-                                    $$ArticleDetailsTableReferences
-                                        ._idTable(db)
-                                        .id,
-                              )
-                              as T;
-                    }
-
-                    return state;
-                  },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
+          prefetchHooksCallback: null,
         ),
       );
 }
@@ -2204,9 +1969,12 @@ typedef $$ArticleDetailsTableProcessedTableManager =
       $$ArticleDetailsTableAnnotationComposer,
       $$ArticleDetailsTableCreateCompanionBuilder,
       $$ArticleDetailsTableUpdateCompanionBuilder,
-      (ArticleDetail, $$ArticleDetailsTableReferences),
+      (
+        ArticleDetail,
+        BaseReferences<_$AppDatabase, $ArticleDetailsTable, ArticleDetail>,
+      ),
       ArticleDetail,
-      PrefetchHooks Function({bool id})
+      PrefetchHooks Function()
     >;
 typedef $$PendingOperationsTableCreateCompanionBuilder =
     PendingOperationsCompanion Function({
