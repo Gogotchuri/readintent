@@ -9,7 +9,8 @@ import "package:readintent_flutter/features/tts/audio_cache.dart";
 import "package:readintent_flutter/features/tts/audio_handler.dart";
 import "package:readintent_flutter/features/tts/audio_generator.dart";
 import "package:readintent_flutter/features/tts/voice_style.dart";
-import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
+import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
+    as articles_pb;
 
 part "article_player_provider.g.dart";
 
@@ -116,7 +117,13 @@ class ArticlePlayer extends _$ArticlePlayer {
     state = const ArticlePlayerState(isLoading: true);
 
     try {
-      _session = AudioGenerator(article: article, voice: voice, speed: speed, cache: _cache, pipelineFactory: _pipelineFactory);
+      _session = AudioGenerator(
+        article: article,
+        voice: voice,
+        speed: speed,
+        cache: _cache,
+        pipelineFactory: _pipelineFactory,
+      );
 
       // Check cache first, if we have completely generated audio available, skip straight to playback
       final cachedPath = await _session!.checkCacheForComplete();
@@ -135,7 +142,9 @@ class ArticlePlayer extends _$ArticlePlayer {
         );
 
         if (sessionState.estimatedDuration != null && _mediaItem != null) {
-          _handler.updateMediaItem(_mediaItem!.copyWith(duration: sessionState.estimatedDuration));
+          _handler.updateMediaItem(
+            _mediaItem!.copyWith(duration: sessionState.estimatedDuration),
+          );
         }
 
         if (sessionState.isComplete) {
@@ -146,7 +155,9 @@ class ArticlePlayer extends _$ArticlePlayer {
             bufferedDuration: actualDuration,
           );
           if (_mediaItem != null) {
-            _handler.updateMediaItem(_mediaItem!.copyWith(duration: actualDuration));
+            _handler.updateMediaItem(
+              _mediaItem!.copyWith(duration: actualDuration),
+            );
           }
           // Final reload so player has the complete file
           _reloadPlayer();
@@ -193,7 +204,9 @@ class ArticlePlayer extends _$ArticlePlayer {
 
   Future<void> _loadPlayerSource() async {
     if (_session?.filePath == null) return;
-    final tag = _mediaItem?.copyWith(duration: state.estimatedDuration ?? state.bufferedDuration);
+    final tag = _mediaItem?.copyWith(
+      duration: state.estimatedDuration ?? state.bufferedDuration,
+    );
     try {
       await _handler.setSource(_session!.filePath!, tag: tag);
       _loadedDuration = state.bufferedDuration;
@@ -254,8 +267,8 @@ class ArticlePlayer extends _$ArticlePlayer {
       if (!_playerStarted) return;
 
       if (s.processingState == ProcessingState.completed) {
+      // Ran out of generated audio, waiting for more
         if (!state.ttsComplete) {
-          // Ran out of loaded audio during generation — wait for more
           _waitingForBuffer = true;
           state = state.copyWith(isLoading: true, isPlaying: false);
         } else {
@@ -268,7 +281,8 @@ class ArticlePlayer extends _$ArticlePlayer {
       state = state.copyWith(
         isPlaying: s.playing,
         isLoading:
-            s.processingState == ProcessingState.loading || s.processingState == ProcessingState.buffering,
+            s.processingState == ProcessingState.loading ||
+            s.processingState == ProcessingState.buffering,
       );
     });
   }
@@ -296,19 +310,18 @@ class ArticlePlayer extends _$ArticlePlayer {
     }
 
     // Clamp to buffered range
-    final maxMs = (state.bufferedDuration - const Duration(milliseconds: 500)).inMilliseconds.clamp(
-      0,
-      state.bufferedDuration.inMilliseconds,
-    );
+    final maxMs = (state.bufferedDuration - const Duration(milliseconds: 500))
+        .inMilliseconds
+        .clamp(0, state.bufferedDuration.inMilliseconds);
     final clampedMs = target.inMilliseconds.clamp(0, maxMs);
     await _handler.seek(Duration(milliseconds: clampedMs));
   }
 
-  Future<void> jumpForward() async => seekTo(state.position + const Duration(seconds: 15));
+  Future<void> jumpForward() async =>
+      seekTo(state.position + const Duration(seconds: 15));
 
   Future<void> jumpBackward() async {
     final target = state.position - const Duration(seconds: 15);
     await seekTo(target.isNegative ? Duration.zero : target);
   }
-
 }

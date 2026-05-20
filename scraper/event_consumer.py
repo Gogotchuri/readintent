@@ -22,6 +22,7 @@ class EventHub:
 	This is basically a port calling ArticleExtractor
 	"""
 	_logger = logging.getLogger(__name__)
+
 	def __init__(
 			self,
 			conf: Config,
@@ -126,7 +127,7 @@ class EventHub:
 
 		for msg_id, msg_data in result[1]:
 			if delivery_counts.get(msg_id, 0) >= self.config.max_retries:
-				# Give up — publish error downstream, ack
+				# Give up and publish error downstream, ack
 				article_id = msg_data.get("article_id", "")
 				if article_id:
 					self.redis_client.xadd(
@@ -137,7 +138,7 @@ class EventHub:
 				self._logger.warning(f"Gave up on event {msg_id} after max retries")
 				continue
 
-			# Under max retries — process again
+			# Under max retries and process again
 			if executor:
 				executor.submit(self.process_event, msg_id, msg_data)
 			else:

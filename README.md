@@ -44,10 +44,46 @@ Those are just some fo the upsides. Down the line if the shared version manageme
 
 ## Architecture and event flow
 
+### General Architecture
+![General Architecture Diagram](GeneralArchLight.png)
+Read Intent is technically a microservice architecture as a whole.
+This diagram should cover the main flows and general layout of the services.
+The main entry-point for the backend services infrastructure is a single server (**BFF**) acting as a gateway.
+Everything else is closed to the internet as a part of the private network and only the BFF can initiate the flows and be requested to give information.
+You can [read more about the BFF](./backend/README.md).
+The Python services rely solely on Redis Streams events for I/O, which gets initiated by BFF.
+
 ### Ports
 There are two main ways to access the backend services from the internet:
 - ConnectRPC - Authentication and CRUD operations
 - HTTP API - Restricted to only extension authentication and article submission
 
+Every request from the internet must go to backend, using either of two ways, on a HTTP server initiated on a single port.
+
 ### Authentication
-//TODO
+#### Kratos
+The main way we authenticate is by using [Ory Kratos](https://www.ory.com/docs/kratos/configuring) self-hosted instance, behind then BFF (`backend/`). We are using Kratos to manage every aspect of authentication and user information, including sign up, sign in, verification, password reset, etc.
+(WIP) Google Sign in will also be managed by Kratos
+#### JWT for extension
+Another authentication method is implemented for the browser extension, to make pairing it with the mobile app easier - "OAuth 2.0 Device Authorization Grant" ([RFC8628](https://datatracker.ietf.org/doc/html/rfc8628))
+with slight modification of not supporting auth by URLs and only supports verification with user code.
+We are using mobile app, which is authenticated by Kratos to pair the browser extension to the user, using a device code, displayed in the extension. Once the pairing is successful we are generating signed JWT token, **exclusively for the authentication of parse article** endpoint.
+
+### Regular user flow - With manual article submission
+
+#### 1. Article Submission
+User can submit article for parsing in one of two ways:
+- Browser Extension - a) Send any URL for parsing. b) Send the current page, URL and trimmed rendered HTML
+- Mobile App - Sending URL
+
+The browser submission of the current page is especially useful for getting around the issues with paywalls. If the user is already authorized to view the article, they can send the rendered HTML directly and we will be able to use it, without the paywall restriction.
+
+#### 2. On Article Submission
+1. The articles service on backend stores the delivered article URL and status as "processing" in articles table and links the article to the user who submitted it using *many-to-many* relationship. The articles table is used as a sort of caching feature, and other users wanting to submit the same article will simple reuse the already parsed article. *TODO - In case the article is parse from HTML we will need to mark it as special and not reuse it. This will avoid access to the articles they are unauthorize to see and also bad actor submitting malformed articles and other seeing them*
+    - Meanwhile, UI will display the processing article in the list
+2. The articles service submits an input event to the Redis Streams for scraper to take on.
+3. Once the scraper parses the article, it emits output event, with "article_id" and either "result" or an "error" field in it.
+    - The articles service gets the event and changes article status accordingly.
+    - The phonemizer service also gets the same event and starts generating phonemes for the parsed article.
+5. Results from the phonemizer will be consumed by the articles service and update the article accordingly.
+6. The UI is checking with an lightweight endpoint if any articles have updated since the last check, pinging it with exponential backoff. If anything changed, the UI will query and get the complete set of updated articles, including the newest addition.

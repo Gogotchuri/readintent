@@ -7,7 +7,8 @@ import "package:readintent_flutter/core/connectivity.dart";
 import "package:readintent_flutter/core/database/app_database.dart";
 import "package:readintent_flutter/features/articles/api/articles_client.dart";
 import "package:readintent_flutter/models/operation.dart";
-import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
+import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
+    as articles_pb;
 
 class ParseArticleResult {
   final bool queued;
@@ -44,10 +45,15 @@ class ArticleRepository {
           .catchError((_) {});
     }
 
-    return articles_pb.GetArticlesResponse(articles: cachedProtos, totalCount: cachedProtos.length);
+    return articles_pb.GetArticlesResponse(
+      articles: cachedProtos,
+      totalCount: cachedProtos.length,
+    );
   }
 
-  Future<articles_pb.GetArticlesResponse?> _fetchAndCacheFirstPage(int pageSize) async {
+  Future<articles_pb.GetArticlesResponse?> _fetchAndCacheFirstPage(
+    int pageSize,
+  ) async {
     try {
       final response = await _remote.getArticles(pageSize: pageSize);
       await _cacheFirstPage(response);
@@ -66,16 +72,21 @@ class ArticleRepository {
     }
     await _db.replacePreviews(companions);
   }
+
   /// Checks the server for updates since [lastCheckedAt] (unix seconds).
   /// Returns null if offline.
-  Future<articles_pb.CheckForUpdatesResponse?> checkForUpdates(int lastCheckedAt) async {
+  Future<articles_pb.CheckForUpdatesResponse?> checkForUpdates(
+    int lastCheckedAt,
+  ) async {
     if (!_isOnline) return null;
     return _remote.checkForUpdates(lastCheckedAt);
   }
 
   /// Fetches fresh articles from the server and caches them.
   /// Returns null if offline or on error.
-  Future<articles_pb.GetArticlesResponse?> fetchFreshArticles(int pageSize) async {
+  Future<articles_pb.GetArticlesResponse?> fetchFreshArticles(
+    int pageSize,
+  ) async {
     if (!_isOnline) return null;
     try {
       final response = await _remote.getArticles(pageSize: pageSize);
@@ -87,7 +98,10 @@ class ArticleRepository {
   }
 
   /// Fetches the next page from the server (online only, no caching needed for pages beyond 1).
-  Future<articles_pb.GetArticlesResponse> getArticlesPage({int pageSize = 20, String? pageToken}) {
+  Future<articles_pb.GetArticlesResponse> getArticlesPage({
+    int pageSize = 20,
+    String? pageToken,
+  }) {
     return _remote.getArticles(pageSize: pageSize, pageToken: pageToken);
   }
 
@@ -125,7 +139,10 @@ class ArticleRepository {
     return fetchFuture;
   }
 
-  Future<articles_pb.Article?> _fetchAndCacheDetail(String id, int intId) async {
+  Future<articles_pb.Article?> _fetchAndCacheDetail(
+    String id,
+    int intId,
+  ) async {
     try {
       final article = await _remote.getArticle(id);
       final now = DateTime.now().millisecondsSinceEpoch;
@@ -137,8 +154,9 @@ class ArticleRepository {
       Uint8List? phonemizerBlob;
       if (article.phonemizerData.isNotEmpty) {
         // Wrap repeated PhonemizerData in a container message for serialization
-        final container = articles_pb.Article()..phonemizerData.addAll(article.phonemizerData);
-        // We serialize only the phonemizerData field — extract the bytes from the full message
+        final container = articles_pb.Article()
+          ..phonemizerData.addAll(article.phonemizerData);
+        // We serialize only the phonemizerData field - extract the bytes from the full message
         // and store them. On read, we deserialize the same way.
         phonemizerBlob = Uint8List.fromList(container.writeToBuffer());
       }
@@ -254,7 +272,11 @@ ArticlePreviewsCompanion previewProtoToCompanion(
   );
 }
 
-ArticlePreviewsCompanion articleToPreviewCompanion(articles_pb.Article article, int sortOrder, int cachedAt) {
+ArticlePreviewsCompanion articleToPreviewCompanion(
+  articles_pb.Article article,
+  int sortOrder,
+  int cachedAt,
+) {
   return ArticlePreviewsCompanion(
     id: Value(article.id.toInt()),
     status: Value(article.status),
@@ -296,7 +318,10 @@ ArticleDetailsCompanion detailRowToCompanion(ArticleDetail row) {
   );
 }
 
-articles_pb.Article detailRowToProto(ArticlePreview preview, ArticleDetail detail) {
+articles_pb.Article detailRowToProto(
+  ArticlePreview preview,
+  ArticleDetail detail,
+) {
   List<articles_pb.PhonemizerData> phonemizerData = [];
   if (detail.phonemizerBlob != null) {
     try {
@@ -322,4 +347,3 @@ articles_pb.Article detailRowToProto(ArticlePreview preview, ArticleDetail detai
     phonemizerData: phonemizerData,
   );
 }
-

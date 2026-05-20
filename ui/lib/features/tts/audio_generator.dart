@@ -51,7 +51,8 @@ class AudioGenerator {
   GrowingAudioFile? _audioFile;
   bool _disposed = false;
 
-  final StreamController<TTSSessionState> _stateController = StreamController<TTSSessionState>.broadcast();
+  final StreamController<TTSSessionState> _stateController =
+      StreamController<TTSSessionState>.broadcast();
   TTSSessionState _state = const TTSSessionState();
 
   AudioGenerator({
@@ -74,15 +75,17 @@ class AudioGenerator {
   Stream<TTSSessionState> get stateStream => _stateController.stream;
   TTSSessionState get currentState => _state;
   String? get filePath => _audioFile?.filePath;
-  Duration get bufferedDuration => _audioFile?.bufferedDuration ?? Duration.zero;
+  Duration get bufferedDuration =>
+      _audioFile?.bufferedDuration ?? Duration.zero;
   bool get isComplete => _state.isComplete;
-  Stream<Duration>? get bufferedDurationStream => _audioFile?.bufferedDurationStream;
+  Stream<Duration>? get bufferedDurationStream =>
+      _audioFile?.bufferedDurationStream;
 
   /// Returns the cache path if a complete (no .meta companion) file is cached.
   Future<String?> checkCacheForComplete() async {
     final cached = await cache.load(cacheKey);
     if (cached == null) return null;
-    // A .meta file means generation was interrupted — not complete
+    // A .meta file means generation was interrupted - not complete
     if (File("${cached.path}.meta").existsSync()) return null;
     return cached.path;
   }
@@ -113,7 +116,10 @@ class AudioGenerator {
       await _ensurePipeline();
       if (_disposed) return;
 
-      final totalTokens = chunks.fold<int>(0, (sum, c) => sum + c.tokenIds.length);
+      final totalTokens = chunks.fold<int>(
+        0,
+        (sum, c) => sum + c.tokenIds.length,
+      );
       int processedTokens = 0;
       // Count tokens from already-processed chunks for estimation
       for (int i = 0; i < startIndex && i < chunks.length; i++) {
@@ -122,7 +128,7 @@ class AudioGenerator {
 
       bool bufferReadyCalled = false;
 
-      // If resuming, we already have playable audio — start the player immediately
+      // If resuming, we already have playable audio, start the player immediately
       if (startIndex > 0) {
         bufferReadyCalled = true;
         await onBufferReady();
@@ -138,7 +144,8 @@ class AudioGenerator {
         await _audioFile!.addChunk(result.audio, i);
         _updateEstimation(processedTokens, totalTokens);
 
-        if (!bufferReadyCalled && _audioFile!.bufferedDuration >= bufferThreshold) {
+        if (!bufferReadyCalled &&
+            _audioFile!.bufferedDuration >= bufferThreshold) {
           bufferReadyCalled = true;
           await onBufferReady();
         }
@@ -176,7 +183,8 @@ class AudioGenerator {
   void _updateEstimation(int processedTokens, int totalTokens) {
     if (_audioFile == null || processedTokens == 0) return;
     final generatedMs = _audioFile!.bufferedDuration.inMilliseconds;
-    final estimatedTotalMs = (generatedMs * totalTokens / processedTokens).round();
+    final estimatedTotalMs = (generatedMs * totalTokens / processedTokens)
+        .round();
     _emitState(
       _state.copyWith(
         estimatedDuration: Duration(milliseconds: estimatedTotalMs),
@@ -207,7 +215,13 @@ List<PhonemeChunk> _protoToChunks(List<PhonemizerData> protoChunks) {
       graphemes: pd.graphemes,
       tokenIds: pd.tokenIds.map((id) => id.toInt()).toList(),
       tokenMeta: pd.tokenMeta
-          .map((m) => TokenMeta(text: m.text, phonemeLen: m.phonemeLen, hasWhitespace: m.hasWhitespace))
+          .map(
+            (m) => TokenMeta(
+              text: m.text,
+              phonemeLen: m.phonemeLen,
+              hasWhitespace: m.hasWhitespace,
+            ),
+          )
           .toList(),
     );
   }).toList();

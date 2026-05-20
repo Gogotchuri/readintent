@@ -51,7 +51,11 @@ void main() {
         articlesServiceProvider.overrideWithValue(mockRemote),
       ],
     );
-    processor = PendingOperationsProcessor(mockDb, mockRemote, container.read(_refProvider));
+    processor = PendingOperationsProcessor(
+      mockDb,
+      mockRemote,
+      container.read(_refProvider),
+    );
   });
 
   tearDown(() {
@@ -81,28 +85,42 @@ void main() {
     test("stops at first failure, preserves FIFO", () async {
       final ops = [
         makeOp(id: 1, type: opParseArticle),
-        makeOp(id: 2, type: opParseArticle, payload: jsonEncode({"url": "https://fail.com"})),
+        makeOp(
+          id: 2,
+          type: opParseArticle,
+          payload: jsonEncode({"url": "https://fail.com"}),
+        ),
         makeOp(id: 3, type: opDeleteArticle),
       ];
       when(mockDb.getPendingOps()).thenAnswer((_) async => ops);
-      when(mockRemote.parseArticle("https://example.com")).thenAnswer((_) async {});
-      when(mockRemote.parseArticle("https://fail.com")).thenThrow(Exception("Network error"));
+      when(
+        mockRemote.parseArticle("https://example.com"),
+      ).thenAnswer((_) async {});
+      when(
+        mockRemote.parseArticle("https://fail.com"),
+      ).thenThrow(Exception("Network error"));
       when(mockDb.deletePendingOp(any)).thenAnswer((_) async {});
-      when(mockDb.updatePendingOp(any,
-        retryCount: anyNamed("retryCount"),
-        lastError: anyNamed("lastError"),
-        status: anyNamed("status"),
-      )).thenAnswer((_) async {});
+      when(
+        mockDb.updatePendingOp(
+          any,
+          retryCount: anyNamed("retryCount"),
+          lastError: anyNamed("lastError"),
+          status: anyNamed("status"),
+        ),
+      ).thenAnswer((_) async {});
 
       await processor.processQueue();
 
       // 1st op executed and deleted
       verify(mockDb.deletePendingOp(1)).called(1);
       // 2nd op failed, retry count updated
-      verify(mockDb.updatePendingOp(2,
-        retryCount: 1,
-        lastError: argThat(contains("Network error"), named: "lastError"),
-      )).called(1);
+      verify(
+        mockDb.updatePendingOp(
+          2,
+          retryCount: 1,
+          lastError: argThat(contains("Network error"), named: "lastError"),
+        ),
+      ).called(1);
       // 3rd op never touched
       verifyNever(mockRemote.deleteArticle(any));
       verifyNever(mockDb.deletePendingOp(3));
@@ -129,123 +147,175 @@ void main() {
   });
 
   group("_executeOp (via processQueue)", () {
-    test("parse article op: calls remote.parseArticle with URL from payload", () async {
-      when(mockDb.getPendingOps()).thenAnswer((_) async => [
-        makeOp(type: opParseArticle, payload: jsonEncode({"url": "https://test.com/article"})),
-      ]);
-      when(mockRemote.parseArticle(any)).thenAnswer((_) async {});
-      when(mockDb.deletePendingOp(any)).thenAnswer((_) async {});
+    test(
+      "parse article op: calls remote.parseArticle with URL from payload",
+      () async {
+        when(mockDb.getPendingOps()).thenAnswer(
+          (_) async => [
+            makeOp(
+              type: opParseArticle,
+              payload: jsonEncode({"url": "https://test.com/article"}),
+            ),
+          ],
+        );
+        when(mockRemote.parseArticle(any)).thenAnswer((_) async {});
+        when(mockDb.deletePendingOp(any)).thenAnswer((_) async {});
 
-      await processor.processQueue();
+        await processor.processQueue();
 
-      verify(mockRemote.parseArticle("https://test.com/article")).called(1);
-    });
+        verify(mockRemote.parseArticle("https://test.com/article")).called(1);
+      },
+    );
 
-    test("delete article op: calls remote.deleteArticle with article_id from payload", () async {
-      when(mockDb.getPendingOps()).thenAnswer((_) async => [
-        makeOp(type: opDeleteArticle, payload: jsonEncode({"article_id": "42"})),
-      ]);
-      when(mockRemote.deleteArticle(any)).thenAnswer((_) async {});
-      when(mockDb.deletePendingOp(any)).thenAnswer((_) async {});
+    test(
+      "delete article op: calls remote.deleteArticle with article_id from payload",
+      () async {
+        when(mockDb.getPendingOps()).thenAnswer(
+          (_) async => [
+            makeOp(
+              type: opDeleteArticle,
+              payload: jsonEncode({"article_id": "42"}),
+            ),
+          ],
+        );
+        when(mockRemote.deleteArticle(any)).thenAnswer((_) async {});
+        when(mockDb.deletePendingOp(any)).thenAnswer((_) async {});
 
-      await processor.processQueue();
+        await processor.processQueue();
 
-      verify(mockRemote.deleteArticle("42")).called(1);
-    });
+        verify(mockRemote.deleteArticle("42")).called(1);
+      },
+    );
 
     test("unknown op type: marked as failed", () async {
-      when(mockDb.getPendingOps()).thenAnswer((_) async => [
-        makeOp(type: "unknown_op_type", payload: "{}"),
-      ]);
-      when(mockDb.updatePendingOp(any,
-        retryCount: anyNamed("retryCount"),
-        lastError: anyNamed("lastError"),
-        status: anyNamed("status"),
-      )).thenAnswer((_) async {});
+      when(mockDb.getPendingOps()).thenAnswer(
+        (_) async => [makeOp(type: "unknown_op_type", payload: "{}")],
+      );
+      when(
+        mockDb.updatePendingOp(
+          any,
+          retryCount: anyNamed("retryCount"),
+          lastError: anyNamed("lastError"),
+          status: anyNamed("status"),
+        ),
+      ).thenAnswer((_) async {});
 
       await processor.processQueue();
 
-      verify(mockDb.updatePendingOp(1,
-        status: opStatusFailed,
-        lastError: argThat(contains("Unknown"), named: "lastError"),
-      )).called(1);
+      verify(
+        mockDb.updatePendingOp(
+          1,
+          status: opStatusFailed,
+          lastError: argThat(contains("Unknown"), named: "lastError"),
+        ),
+      ).called(1);
     });
 
     test("retries increment retryCount", () async {
-      when(mockDb.getPendingOps()).thenAnswer((_) async => [
-        makeOp(retryCount: 0),
-      ]);
+      when(
+        mockDb.getPendingOps(),
+      ).thenAnswer((_) async => [makeOp(retryCount: 0)]);
       when(mockRemote.parseArticle(any)).thenThrow(Exception("fail"));
-      when(mockDb.updatePendingOp(any,
-        retryCount: anyNamed("retryCount"),
-        lastError: anyNamed("lastError"),
-        status: anyNamed("status"),
-      )).thenAnswer((_) async {});
+      when(
+        mockDb.updatePendingOp(
+          any,
+          retryCount: anyNamed("retryCount"),
+          lastError: anyNamed("lastError"),
+          status: anyNamed("status"),
+        ),
+      ).thenAnswer((_) async {});
 
       await processor.processQueue();
 
-      verify(mockDb.updatePendingOp(1,
-        retryCount: 1,
-        lastError: argThat(contains("fail"), named: "lastError"),
-      )).called(1);
+      verify(
+        mockDb.updatePendingOp(
+          1,
+          retryCount: 1,
+          lastError: argThat(contains("fail"), named: "lastError"),
+        ),
+      ).called(1);
     });
 
     test("max retries reached: marks as failed", () async {
-      when(mockDb.getPendingOps()).thenAnswer((_) async => [
-        makeOp(retryCount: 2), // _maxRetries = 3, so next failure (count=3) should mark failed
-      ]);
+      when(mockDb.getPendingOps()).thenAnswer(
+        (_) async => [
+          makeOp(
+            retryCount: 2,
+          ), // _maxRetries = 3, so next failure (count=3) should mark failed
+        ],
+      );
       when(mockRemote.parseArticle(any)).thenThrow(Exception("fail"));
-      when(mockDb.updatePendingOp(any,
-        retryCount: anyNamed("retryCount"),
-        lastError: anyNamed("lastError"),
-        status: anyNamed("status"),
-      )).thenAnswer((_) async {});
+      when(
+        mockDb.updatePendingOp(
+          any,
+          retryCount: anyNamed("retryCount"),
+          lastError: anyNamed("lastError"),
+          status: anyNamed("status"),
+        ),
+      ).thenAnswer((_) async {});
 
       await processor.processQueue();
 
-      verify(mockDb.updatePendingOp(1,
-        retryCount: 3,
-        lastError: argThat(contains("fail"), named: "lastError"),
-        status: opStatusFailed,
-      )).called(1);
+      verify(
+        mockDb.updatePendingOp(
+          1,
+          retryCount: 3,
+          lastError: argThat(contains("fail"), named: "lastError"),
+          status: opStatusFailed,
+        ),
+      ).called(1);
     });
 
     test("error message stored in lastError", () async {
-      when(mockDb.getPendingOps()).thenAnswer((_) async => [
-        makeOp(retryCount: 0),
-      ]);
-      when(mockRemote.parseArticle(any)).thenThrow(Exception("Specific error message"));
-      when(mockDb.updatePendingOp(any,
-        retryCount: anyNamed("retryCount"),
-        lastError: anyNamed("lastError"),
-        status: anyNamed("status"),
-      )).thenAnswer((_) async {});
+      when(
+        mockDb.getPendingOps(),
+      ).thenAnswer((_) async => [makeOp(retryCount: 0)]);
+      when(
+        mockRemote.parseArticle(any),
+      ).thenThrow(Exception("Specific error message"));
+      when(
+        mockDb.updatePendingOp(
+          any,
+          retryCount: anyNamed("retryCount"),
+          lastError: anyNamed("lastError"),
+          status: anyNamed("status"),
+        ),
+      ).thenAnswer((_) async {});
 
       await processor.processQueue();
 
-      verify(mockDb.updatePendingOp(1,
-        retryCount: 1,
-        lastError: argThat(contains("Specific error message"), named: "lastError"),
-      )).called(1);
+      verify(
+        mockDb.updatePendingOp(
+          1,
+          retryCount: 1,
+          lastError: argThat(
+            contains("Specific error message"),
+            named: "lastError",
+          ),
+        ),
+      ).called(1);
     });
   });
 
   group("dispose", () {
     test("cancels retry timer", () async {
       // Trigger a failure to schedule a retry timer
-      when(mockDb.getPendingOps()).thenAnswer((_) async => [
-        makeOp(retryCount: 0),
-      ]);
+      when(
+        mockDb.getPendingOps(),
+      ).thenAnswer((_) async => [makeOp(retryCount: 0)]);
       when(mockRemote.parseArticle(any)).thenThrow(Exception("fail"));
-      when(mockDb.updatePendingOp(any,
-        retryCount: anyNamed("retryCount"),
-        lastError: anyNamed("lastError"),
-        status: anyNamed("status"),
-      )).thenAnswer((_) async {});
+      when(
+        mockDb.updatePendingOp(
+          any,
+          retryCount: anyNamed("retryCount"),
+          lastError: anyNamed("lastError"),
+          status: anyNamed("status"),
+        ),
+      ).thenAnswer((_) async {});
 
       await processor.processQueue();
 
-      // Dispose should cancel the timer — no further processing
+      // Dispose should cancel the timer, no further processing
       processor.dispose();
 
       // Reset mocks and verify no more calls after timer would have fired

@@ -317,7 +317,6 @@ func TestGetArticles(t *testing.T) {
 		}
 	}
 
-	// Default request — all 3 articles
 	resp, err := repo.GetArticles(ctx, userID, iomodels.GetArticlesRequest{PageSize: 10})
 	if err != nil {
 		t.Fatalf("GetArticles failed: %v", err)
@@ -550,7 +549,6 @@ func TestHasUpdatedArticles(t *testing.T) {
 	const userID = "repo-test-user"
 	const url = "https://example.com/update-check-test"
 
-	// No articles yet — should return false
 	has, err := repo.HasUpdatedArticles(ctx, userID, dbNow(t, db).Add(-1*time.Hour))
 	if err != nil {
 		t.Fatalf("HasUpdatedArticles failed: %v", err)
@@ -566,7 +564,6 @@ func TestHasUpdatedArticles(t *testing.T) {
 		t.Fatalf("CreateInitialArticle failed: %v", err)
 	}
 
-	// Check with timestamp before creation — should find updates
 	has, err = repo.HasUpdatedArticles(ctx, userID, beforeCreate)
 	if err != nil {
 		t.Fatalf("HasUpdatedArticles failed: %v", err)
@@ -575,7 +572,6 @@ func TestHasUpdatedArticles(t *testing.T) {
 		t.Error("expected updates after article creation")
 	}
 
-	// Check with timestamp in the future — should find no updates
 	has, err = repo.HasUpdatedArticles(ctx, userID, dbNow(t, db).Add(1*time.Hour))
 	if err != nil {
 		t.Fatalf("HasUpdatedArticles failed: %v", err)
@@ -584,7 +580,6 @@ func TestHasUpdatedArticles(t *testing.T) {
 		t.Error("expected no updates with future timestamp")
 	}
 
-	// Update the article — updated_at should change via UpdateArticle's SET updated_at = NOW()
 	article, err := repo.GetArticleByID(ctx, created.Id)
 	if err != nil {
 		t.Fatalf("GetArticleByID failed: %v", err)

@@ -13,7 +13,8 @@ import "package:readintent_flutter/features/articles/providers/article_player_pr
 import "package:readintent_flutter/features/tts/audio_cache.dart";
 import "package:readintent_flutter/features/tts/audio_handler.dart";
 import "package:readintent_flutter/features/tts/pipeline.dart";
-import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as pb;
+import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
+    as pb;
 
 import "../../helpers/fakes.dart";
 
@@ -26,17 +27,26 @@ pb.Article _makeArticle(int chunkCount, {int tokensPerChunk = 100}) {
     status: "ready",
   );
   for (int i = 0; i < chunkCount; i++) {
-    article.phonemizerData.add(pb.PhonemizerData(
-      graphemes: "Chunk $i",
-      tokenIds: List.generate(tokensPerChunk, (j) => Int64(j + 1)),
-      tokenMeta: [pb.PhonemizerTokenMeta(text: "word", phonemeLen: 3, hasWhitespace: true)],
-    ));
+    article.phonemizerData.add(
+      pb.PhonemizerData(
+        graphemes: "Chunk $i",
+        tokenIds: List.generate(tokensPerChunk, (j) => Int64(j + 1)),
+        tokenMeta: [
+          pb.PhonemizerTokenMeta(
+            text: "word",
+            phonemeLen: 3,
+            hasWhitespace: true,
+          ),
+        ],
+      ),
+    );
   }
   return article;
 }
 
 /// Let async stream events propagate.
-Future<void> pumpEvents() => Future<void>.delayed(const Duration(milliseconds: 50));
+Future<void> pumpEvents() =>
+    Future<void>.delayed(const Duration(milliseconds: 50));
 
 void main() {
   late Directory tempDir;
@@ -66,7 +76,10 @@ void main() {
 
   /// Create a new container with a listener to keep the provider alive.
   ProviderContainer makeContainer({required PipelineFactory pipelineFactory}) {
-    final c = createTestContainer(handler: handler, pipelineFactory: pipelineFactory);
+    final c = createTestContainer(
+      handler: handler,
+      pipelineFactory: pipelineFactory,
+    );
     c.listen(articlePlayerProvider("1"), (_, __) {});
     return c;
   }
@@ -93,59 +106,71 @@ void main() {
   });
 
   group("ArticlePlayer - Cache Hit", () {
-    test("play() with cached file skips generation and plays directly", () async {
-      final cache = AudioCache();
-      final article = _makeArticle(2);
-      final key = cache.cacheKey(
-        articleId: article.id.toString(),
-        articleText: article.pureText,
-        voice: "af_sky",
-        speed: 1.0,
-      );
-      await cache.save(key, Uint8List.fromList([0xFF, 0xFB, 0x90, 0x00, 0x01, 0x02]));
-      handler.sourceDuration = const Duration(minutes: 3);
+    test(
+      "play() with cached file skips generation and plays directly",
+      () async {
+        final cache = AudioCache();
+        final article = _makeArticle(2);
+        final key = cache.cacheKey(
+          articleId: article.id.toString(),
+          articleText: article.pureText,
+          voice: "af_sky",
+          speed: 1.0,
+        );
+        await cache.save(
+          key,
+          Uint8List.fromList([0xFF, 0xFB, 0x90, 0x00, 0x01, 0x02]),
+        );
+        handler.sourceDuration = const Duration(minutes: 3);
 
-      final notifier = readNotifier();
-      await notifier.play(article: article);
+        final notifier = readNotifier();
+        await notifier.play(article: article);
 
-      final state = readState();
-      expect(state.ttsComplete, true);
-      expect(state.isLoading, false);
-      expect(handler.calls, contains("setSource"));
-      expect(handler.calls, contains("play"));
-    });
+        final state = readState();
+        expect(state.ttsComplete, true);
+        expect(state.isLoading, false);
+        expect(handler.calls, contains("setSource"));
+        expect(handler.calls, contains("play"));
+      },
+    );
 
-    test("cached audio sets estimatedDuration from handler.setSource() return", () async {
-      final cache = AudioCache();
-      final article = _makeArticle(2);
-      final key = cache.cacheKey(
-        articleId: article.id.toString(),
-        articleText: article.pureText,
-        voice: "af_sky",
-        speed: 1.0,
-      );
-      await cache.save(key, Uint8List.fromList([0xFF, 0xFB, 0x90, 0x00]));
-      handler.sourceDuration = const Duration(minutes: 5);
+    test(
+      "cached audio sets estimatedDuration from handler.setSource() return",
+      () async {
+        final cache = AudioCache();
+        final article = _makeArticle(2);
+        final key = cache.cacheKey(
+          articleId: article.id.toString(),
+          articleText: article.pureText,
+          voice: "af_sky",
+          speed: 1.0,
+        );
+        await cache.save(key, Uint8List.fromList([0xFF, 0xFB, 0x90, 0x00]));
+        handler.sourceDuration = const Duration(minutes: 5);
 
-      final notifier = readNotifier();
-      await notifier.play(article: article);
+        final notifier = readNotifier();
+        await notifier.play(article: article);
 
-      final state = readState();
-      expect(state.estimatedDuration, const Duration(minutes: 5));
-    });
+        final state = readState();
+        expect(state.estimatedDuration, const Duration(minutes: 5));
+      },
+    );
   });
 
   group("ArticlePlayer - Generation Path", () {
-    test("generation starts and handler.play() called after buffer threshold", () async {
-      final article = _makeArticle(5, tokensPerChunk: 100);
-      final notifier = readNotifier();
+    test(
+      "generation starts and handler.play() called after buffer threshold",
+      () async {
+        final article = _makeArticle(5, tokensPerChunk: 100);
+        final notifier = readNotifier();
 
-      await notifier.play(article: article);
-      await pumpEvents();
+        await notifier.play(article: article);
+        await pumpEvents();
 
-      expect(handler.calls, contains("setSource"));
-      expect(handler.calls, contains("play"));
-    });
+        expect(handler.calls, contains("setSource"));
+        expect(handler.calls, contains("play"));
+      },
+    );
 
     test("session state updates forwarded to provider state", () async {
       final article = _makeArticle(3);
@@ -163,7 +188,7 @@ void main() {
       final notifier = readNotifier();
 
       await notifier.play(article: article);
-      // Broadcast stream events are async — wait for them to propagate
+      // Broadcast stream events are async - wait for them to propagate
       await pumpEvents();
 
       final state = readState();
@@ -198,11 +223,15 @@ void main() {
       await pumpEvents();
 
       // Count setSource calls before
-      final setSourceBefore = handler.calls.where((c) => c == "setSource").length;
+      final setSourceBefore = handler.calls
+          .where((c) => c == "setSource")
+          .length;
       await notifier.play(article: article);
 
       // No new setSource calls should be made
-      final setSourceAfter = handler.calls.where((c) => c == "setSource").length;
+      final setSourceAfter = handler.calls
+          .where((c) => c == "setSource")
+          .length;
       expect(setSourceAfter, setSourceBefore);
     });
 
@@ -213,7 +242,10 @@ void main() {
       await notifier.play(article: article);
       await pumpEvents();
 
-      expect(handler.calls.where((c) => c == "updateMediaItem").length, greaterThan(0));
+      expect(
+        handler.calls.where((c) => c == "updateMediaItem").length,
+        greaterThan(0),
+      );
     });
   });
 
@@ -233,19 +265,22 @@ void main() {
   });
 
   group("ArticlePlayer - Player State Stream", () {
-    test("ProcessingState.completed + ttsComplete=true → track finished", () async {
-      final article = _makeArticle(2);
-      final notifier = readNotifier();
-      await notifier.play(article: article);
-      await pumpEvents();
+    test(
+      "ProcessingState.completed + ttsComplete=true → track finished",
+      () async {
+        final article = _makeArticle(2);
+        final notifier = readNotifier();
+        await notifier.play(article: article);
+        await pumpEvents();
 
-      expect(readState().ttsComplete, true);
+        expect(readState().ttsComplete, true);
 
-      handler.simulateProcessingState(ProcessingState.completed);
-      await pumpEvents();
+        handler.simulateProcessingState(ProcessingState.completed);
+        await pumpEvents();
 
-      expect(readState().isPlaying, false);
-    });
+        expect(readState().isPlaying, false);
+      },
+    );
 
     test("ProcessingState.loading sets isLoading=true", () async {
       final article = _makeArticle(2);
@@ -271,20 +306,23 @@ void main() {
       expect(readState().isLoading, true);
     });
 
-    test("ProcessingState.ready + playing=true sets isPlaying=true, isLoading=false", () async {
-      final article = _makeArticle(2);
-      final notifier = readNotifier();
-      await notifier.play(article: article);
-      await pumpEvents();
+    test(
+      "ProcessingState.ready + playing=true sets isPlaying=true, isLoading=false",
+      () async {
+        final article = _makeArticle(2);
+        final notifier = readNotifier();
+        await notifier.play(article: article);
+        await pumpEvents();
 
-      await handler.play();
-      handler.simulateProcessingState(ProcessingState.ready);
-      await pumpEvents();
+        await handler.play();
+        handler.simulateProcessingState(ProcessingState.ready);
+        await pumpEvents();
 
-      final state = readState();
-      expect(state.isPlaying, true);
-      expect(state.isLoading, false);
-    });
+        final state = readState();
+        expect(state.isPlaying, true);
+        expect(state.isLoading, false);
+      },
+    );
   });
 
   group("ArticlePlayer - pause/resume/togglePlayPause", () {
@@ -312,21 +350,24 @@ void main() {
       expect(handler.calls, contains("play"));
     });
 
-    test("togglePlayPause() pauses when playing, resumes when paused", () async {
-      final article = _makeArticle(2);
-      final notifier = readNotifier();
-      await notifier.play(article: article);
-      await pumpEvents();
+    test(
+      "togglePlayPause() pauses when playing, resumes when paused",
+      () async {
+        final article = _makeArticle(2);
+        final notifier = readNotifier();
+        await notifier.play(article: article);
+        await pumpEvents();
 
-      // Handler is playing after play()
-      expect(handler.isPlaying, true);
-      await notifier.togglePlayPause(); // should pause
-      expect(handler.calls, contains("pause"));
-      expect(handler.isPlaying, false);
+        // Handler is playing after play()
+        expect(handler.isPlaying, true);
+        await notifier.togglePlayPause(); // should pause
+        expect(handler.calls, contains("pause"));
+        expect(handler.isPlaying, false);
 
-      await notifier.togglePlayPause(); // should resume (play)
-      expect(handler.isPlaying, true);
-    });
+        await notifier.togglePlayPause(); // should resume (play)
+        expect(handler.isPlaying, true);
+      },
+    );
   });
 
   group("ArticlePlayer - seekTo", () {
@@ -407,7 +448,7 @@ void main() {
       await notifier.play(article: article);
       await pumpEvents();
 
-      // Close the listener first, then dispose — which triggers cleanup
+      // Close the listener first, then dispose, which triggers cleanup
       _sub?.close();
       _sub = null;
       handler.calls.clear();
