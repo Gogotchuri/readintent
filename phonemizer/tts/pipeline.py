@@ -29,7 +29,7 @@ class PhonemizerResult:
 
 class PhonemizerPipeline:
     def __init__(self, pipeline: KPipeline):
-        # model=False = "quiet" mode — only does G2P, no model loaded
+        # model=False = "quiet" mode
         self.pipeline = pipeline
 
     def generate_phonemes(self, text:str, voice='af_heart') -> List[PhonemizerResult]:

@@ -125,7 +125,7 @@ class EventHub:
 
         for msg_id, msg_data in result[1]:
             if delivery_counts.get(msg_id, 0) >= self.config.max_retries:
-                # Give up — publish error downstream, ack
+                # Give up and publish error downstream, ack
                 article_id = msg_data.get("article_id", "")
                 if article_id:
                     self.redis_client.xadd(
@@ -136,7 +136,7 @@ class EventHub:
                 logger.warning(f"Gave up on event {msg_id} after max retries")
                 continue
 
-            # Under max retries — process again
+            # Under max retries and process again
             self.process_event(msg_id, msg_data)
 
     def _retry_loop(self):

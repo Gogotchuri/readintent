@@ -10,7 +10,8 @@ import "package:path_provider_platform_interface/path_provider_platform_interfac
 import "package:readintent_flutter/features/articles/providers/article_player_provider.dart";
 import "package:readintent_flutter/features/tts/audio_handler.dart";
 import "package:readintent_flutter/features/tts/pipeline.dart";
-import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as pb;
+import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
+    as pb;
 
 import "../../helpers/fakes.dart";
 
@@ -23,19 +24,31 @@ pb.Article _makeArticle(int chunkCount, {int tokensPerChunk = 100}) {
     status: "ready",
   );
   for (int i = 0; i < chunkCount; i++) {
-    article.phonemizerData.add(pb.PhonemizerData(
-      graphemes: "Chunk $i",
-      tokenIds: List.generate(tokensPerChunk, (j) => Int64(j + 1)),
-      tokenMeta: [pb.PhonemizerTokenMeta(text: "word", phonemeLen: 3, hasWhitespace: true)],
-    ));
+    article.phonemizerData.add(
+      pb.PhonemizerData(
+        graphemes: "Chunk $i",
+        tokenIds: List.generate(tokensPerChunk, (j) => Int64(j + 1)),
+        tokenMeta: [
+          pb.PhonemizerTokenMeta(
+            text: "word",
+            phonemeLen: 3,
+            hasWhitespace: true,
+          ),
+        ],
+      ),
+    );
   }
   return article;
 }
 
-Future<void> pumpEvents() => Future<void>.delayed(const Duration(milliseconds: 50));
+Future<void> pumpEvents() =>
+    Future<void>.delayed(const Duration(milliseconds: 50));
 
 /// Creates container with listener to keep the autoDispose provider alive.
-ProviderContainer _makeContainer(FakeAudioHandler handler, PipelineFactory factory) {
+ProviderContainer _makeContainer(
+  FakeAudioHandler handler,
+  PipelineFactory factory,
+) {
   final c = createTestContainer(handler: handler, pipelineFactory: factory);
   c.listen(articlePlayerProvider("1"), (_, __) {});
   return c;
@@ -61,84 +74,90 @@ void main() {
   });
 
   group("E2E Scenario 1: Full Playback Lifecycle", () {
-    test("play → generation → buffer ready → play → pause → resume → complete → dispose", () async {
-      final factory = fakePipelineFactory(defaultAudioProducer);
-      container = _makeContainer(handler, factory);
+    test(
+      "play → generation → buffer ready → play → pause → resume → complete → dispose",
+      () async {
+        final factory = fakePipelineFactory(defaultAudioProducer);
+        container = _makeContainer(handler, factory);
 
-      final notifier = container.read(articlePlayerProvider("1").notifier);
-      final article = _makeArticle(5, tokensPerChunk: 100);
+        final notifier = container.read(articlePlayerProvider("1").notifier);
+        final article = _makeArticle(5, tokensPerChunk: 100);
 
-      // Initial state
-      var state = container.read(articlePlayerProvider("1"));
-      expect(state.position, Duration.zero);
-      expect(state.isPlaying, false);
-      expect(state.isLoading, false);
+        // Initial state
+        var state = container.read(articlePlayerProvider("1"));
+        expect(state.position, Duration.zero);
+        expect(state.isPlaying, false);
+        expect(state.isLoading, false);
 
-      // Play
-      await notifier.play(article: article);
-      await pumpEvents();
+        // Play
+        await notifier.play(article: article);
+        await pumpEvents();
 
-      // After generation completes
-      state = container.read(articlePlayerProvider("1"));
-      expect(state.ttsComplete, true);
-      expect(state.bufferedDuration.inMilliseconds, greaterThan(0));
-      expect(state.estimatedDuration, isNotNull);
-      expect(handler.calls, contains("setSource"));
-      expect(handler.calls, contains("play"));
+        // After generation completes
+        state = container.read(articlePlayerProvider("1"));
+        expect(state.ttsComplete, true);
+        expect(state.bufferedDuration.inMilliseconds, greaterThan(0));
+        expect(state.estimatedDuration, isNotNull);
+        expect(handler.calls, contains("setSource"));
+        expect(handler.calls, contains("play"));
 
-      // Simulate position update
-      handler.emitPosition(const Duration(seconds: 1));
-      await pumpEvents();
-      state = container.read(articlePlayerProvider("1"));
-      expect(state.position, const Duration(seconds: 1));
+        // Simulate position update
+        handler.emitPosition(const Duration(seconds: 1));
+        await pumpEvents();
+        state = container.read(articlePlayerProvider("1"));
+        expect(state.position, const Duration(seconds: 1));
 
-      // Pause
-      await notifier.pause();
-      handler.simulateProcessingState(ProcessingState.ready);
-      await pumpEvents();
-      state = container.read(articlePlayerProvider("1"));
-      expect(state.isPlaying, false);
+        // Pause
+        await notifier.pause();
+        handler.simulateProcessingState(ProcessingState.ready);
+        await pumpEvents();
+        state = container.read(articlePlayerProvider("1"));
+        expect(state.isPlaying, false);
 
-      // Resume
-      await notifier.resume();
-      handler.simulateProcessingState(ProcessingState.ready);
-      await pumpEvents();
-      state = container.read(articlePlayerProvider("1"));
-      expect(state.isPlaying, true);
+        // Resume
+        await notifier.resume();
+        handler.simulateProcessingState(ProcessingState.ready);
+        await pumpEvents();
+        state = container.read(articlePlayerProvider("1"));
+        expect(state.isPlaying, true);
 
-      // Verify MP3 file on disk
-      expect(handler.lastSourcePath, isNotNull);
-      final mp3File = File(handler.lastSourcePath!);
-      expect(mp3File.existsSync(), true);
-      expect(mp3File.lengthSync(), greaterThan(0));
-      expect(File("${handler.lastSourcePath!}.meta").existsSync(), false);
+        // Verify MP3 file on disk
+        expect(handler.lastSourcePath, isNotNull);
+        final mp3File = File(handler.lastSourcePath!);
+        expect(mp3File.existsSync(), true);
+        expect(mp3File.lengthSync(), greaterThan(0));
+        expect(File("${handler.lastSourcePath!}.meta").existsSync(), false);
 
-      // Dispose
-      container.dispose();
-    });
+        // Dispose
+        container.dispose();
+      },
+    );
   });
 
   group("E2E Scenario 2: Buffer Stall + Recovery", () {
-    test("ProcessingState.completed during generation → stall → recovery", () async {
-      final factory = fakePipelineFactory(defaultAudioProducer);
-      container = _makeContainer(handler, factory);
+    test(
+      "ProcessingState.completed during generation → stall → recovery",
+      () async {
+        final factory = fakePipelineFactory(defaultAudioProducer);
+        container = _makeContainer(handler, factory);
 
-      final notifier = container.read(articlePlayerProvider("1").notifier);
-      final article = _makeArticle(3);
+        final notifier = container.read(articlePlayerProvider("1").notifier);
+        final article = _makeArticle(3);
 
-      await notifier.play(article: article);
-      await pumpEvents();
+        await notifier.play(article: article);
+        await pumpEvents();
 
-      var state = container.read(articlePlayerProvider("1"));
-      expect(state.ttsComplete, true);
+        var state = container.read(articlePlayerProvider("1"));
+        expect(state.ttsComplete, true);
 
-      // When ProcessingState.completed arrives with ttsComplete=true, track finishes
-      handler.simulateProcessingState(ProcessingState.completed);
-      await pumpEvents();
+        // When ProcessingState.completed arrives with ttsComplete=true, track finishes
+        handler.simulateProcessingState(ProcessingState.completed);
+        await pumpEvents();
 
-      state = container.read(articlePlayerProvider("1"));
-      expect(state.isPlaying, false);
-    });
+        state = container.read(articlePlayerProvider("1"));
+        expect(state.isPlaying, false);
+      },
+    );
   });
 
   group("E2E Scenario 3: Cached Playback", () {
@@ -174,7 +193,6 @@ void main() {
 
       state = container.read(articlePlayerProvider("1"));
       expect(state.ttsComplete, true);
-      // No inference should have been called — played from cache
       expect(inferenceCount, 0);
     });
   });

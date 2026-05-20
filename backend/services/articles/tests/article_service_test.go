@@ -25,7 +25,6 @@ func TestParseAndGetArticle(t *testing.T) {
 		t.Fatalf("ParseArticle failed: %v", err)
 	}
 
-	// GetArticles — verify the article shows up
 	resp, err := client.GetArticles(t.Context(), connect.NewRequest(&v1.GetArticlesRequest{
 		PageSize: 10,
 	}))

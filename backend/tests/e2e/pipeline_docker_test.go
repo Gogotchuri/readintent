@@ -86,7 +86,6 @@ func TestFullPipeline_Docker(t *testing.T) {
 	baseURL := startBackend(t, db, redisClient)
 	client := newArticlesClient(t, baseURL)
 
-	// Submit article — URL resolves inside Docker network to the nginx test-server
 	_, err = client.ParseArticle(t.Context(), connect.NewRequest(&v1.ParseArticleRequest{
 		Url: "http://test-server/article.html",
 	}))

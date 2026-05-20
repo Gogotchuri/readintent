@@ -37,7 +37,7 @@ class PendingOperationsProcessor {
         _ref.invalidate(articlesProvider);
       }
       if (processed != ops.length) {
-        // Not all ops processed — likely due to failure. Schedule retry after delay.
+        // Not all ops processed, likely due to failure. Schedule retry after delay.
         // The retry count will be incremented for the failed op, so it will eventually be marked as failed after max retries
         // and stop blocking the queue.
         _retryTimer = Timer(const Duration(seconds: 5), processQueue);
@@ -60,8 +60,12 @@ class PendingOperationsProcessor {
           await _remote.deleteArticle(payload["article_id"] as String);
           break;
         default:
-          // Unknown op type — mark failed
-          await _db.updatePendingOp(op.id, status: opStatusFailed, lastError: "Unknown: ${op.type}");
+          // Unknown op type
+          await _db.updatePendingOp(
+            op.id,
+            status: opStatusFailed,
+            lastError: "Unknown: ${op.type}",
+          );
           return true;
       }
 
@@ -70,10 +74,19 @@ class PendingOperationsProcessor {
     } catch (e) {
       final newRetry = op.retryCount + 1;
       if (newRetry >= _maxRetries) {
-        await _db.updatePendingOp(op.id, retryCount: newRetry, lastError: e.toString(), status: opStatusFailed);
+        await _db.updatePendingOp(
+          op.id,
+          retryCount: newRetry,
+          lastError: e.toString(),
+          status: opStatusFailed,
+        );
         return true; // Move past failed op
       }
-      await _db.updatePendingOp(op.id, retryCount: newRetry, lastError: e.toString());
+      await _db.updatePendingOp(
+        op.id,
+        retryCount: newRetry,
+        lastError: e.toString(),
+      );
       return false; // Stop processing
     }
   }
@@ -83,16 +96,19 @@ class PendingOperationsProcessor {
   }
 }
 
-final pendingOperationsProcessorProvider = Provider<PendingOperationsProcessor>((ref) {
-  final db = ref.read(appDatabaseProvider);
-  final remote = ref.read(articlesServiceProvider);
-  return PendingOperationsProcessor(db, remote, ref);
-});
+final pendingOperationsProcessorProvider = Provider<PendingOperationsProcessor>(
+  (ref) {
+    final db = ref.read(appDatabaseProvider);
+    final remote = ref.read(articlesServiceProvider);
+    return PendingOperationsProcessor(db, remote, ref);
+  },
+);
 
 /// Watches connectivity and triggers queue processing when coming online.
 final pendingOperationsWatcherProvider = Provider<void>((ref) {
   // Be pessimistic and assume we have no connection by default
-  final isOnline = ref.watch(connectivityMonitorProvider).whenData((v) => v).value ?? false;
+  final isOnline =
+      ref.watch(connectivityMonitorProvider).whenData((v) => v).value ?? false;
   if (isOnline) {
     final processor = ref.read(pendingOperationsProcessorProvider);
     ref.onDispose(() => processor.dispose());

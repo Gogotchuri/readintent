@@ -66,7 +66,7 @@ class AudioCache {
     final dir = await _getDir();
     final dest = File("${dir.path}/$key.mp3");
     try {
-      // Try rename (move) first — fast, no copy needed
+      // Try rename (move) first
       await source.rename(dest.path);
     } on FileSystemException {
       // Cross-device move: fall back to copy + delete
@@ -81,12 +81,18 @@ class AudioCache {
   Future<void> evictIfNeeded() async {
     final dir = await _getDir();
     // Get all cached files and their total size
-    final files = dir.listSync().whereType<File>().where((f) => f.path.endsWith(".mp3")).toList();
+    final files = dir
+        .listSync()
+        .whereType<File>()
+        .where((f) => f.path.endsWith(".mp3"))
+        .toList();
     // Run reducer to sum file sizes
     int total = files.fold(0, (sum, f) => sum + f.lengthSync());
     if (total <= _maxCacheBytes) return;
 
-    files.sort((a, b) => a.statSync().accessed.compareTo(b.statSync().accessed));
+    files.sort(
+      (a, b) => a.statSync().accessed.compareTo(b.statSync().accessed),
+    );
 
     for (final f in files) {
       if (total <= _maxCacheBytes) break;
