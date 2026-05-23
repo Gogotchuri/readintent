@@ -24,15 +24,15 @@ runcmd:
   - install -m 0755 -d /etc/apt/keyrings
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
   - chmod a+r /etc/apt/keyrings/docker.asc
-  - echo "deb [arch=$$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $$(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
+  - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
   - apt-get update
   - apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
   # Wait for persistent volume to be attached
   - |
-    for i in $$(seq 1 30); do
+    for i in $(seq 1 30); do
       test -b /dev/disk/by-id/scsi-0HC_Volume_${volume_id} && break
-      echo "Waiting for volume... attempt $$i"
+      echo "Waiting for volume... attempt $i"
       sleep 5
     done
 
@@ -75,8 +75,6 @@ write_files:
       KRATOS_DB_USER=kratos
       KRATOS_DB_PASSWORD=${postgres_admin_pass}
       BFF_DB_PASSWORD=${postgres_admin_pass}
-      KRATOS_SECRET=${kratos_secret}
-      KRATOS_COOKIE_SECRET=${kratos_cookie_secret}
 
   # Caddyfile
   - path: /opt/readintent/Caddyfile

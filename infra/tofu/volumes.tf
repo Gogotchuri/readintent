@@ -8,6 +8,11 @@ resource "hcloud_volume" "data" {
     environment = var.environment
     managed_by  = "opentofu"
   }
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = [format]
+  }
 }
 
 resource "hcloud_volume_attachment" "data" {
