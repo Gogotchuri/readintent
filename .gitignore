@@ -2,3 +2,16 @@
 .vscode/
 .idea/
 .zed/
+
+## Secrets / keys
+age-key.txt
+infra/tofu/age-key.txt
+
+## OpenTofu / Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+## Environment files
+.env
+infra/.env
