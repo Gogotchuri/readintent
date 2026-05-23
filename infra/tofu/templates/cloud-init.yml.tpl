@@ -28,6 +28,22 @@ runcmd:
   - apt-get update
   - apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
+  # Wait for persistent volume to be attached
+  - |
+    for i in $$(seq 1 30); do
+      test -b /dev/disk/by-id/scsi-0HC_Volume_${volume_id} && break
+      echo "Waiting for volume... attempt $$i"
+      sleep 5
+    done
+
+  # Mount persistent volume
+  - mkdir -p /mnt/data
+  - mount -o discard,defaults /dev/disk/by-id/scsi-0HC_Volume_${volume_id} /mnt/data
+  - echo "/dev/disk/by-id/scsi-0HC_Volume_${volume_id} /mnt/data ext4 discard,nofail,defaults 0 0" >> /etc/fstab
+  - mkdir -p /mnt/data/postgres /mnt/data/redis
+  - chown -R 70:70 /mnt/data/postgres
+  - chown -R 999:1000 /mnt/data/redis
+
   # Login to Docker Hub
   - echo "${dockerhub_token}" | docker login -u "${dockerhub_username}" --password-stdin
 
