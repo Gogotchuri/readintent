@@ -90,7 +90,7 @@ func main() {
 	}()
 
 	go func() {
-		slog.Info("Starting server", "addr", addr)
+		slog.Info("starting server", "addr", addr)
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("server error", "error", err)
 		}
