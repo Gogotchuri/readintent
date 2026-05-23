@@ -1,0 +1,42 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: ["Build & Push Docker Images"]
+    types: [completed]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Determine target
+        id: target
+        run: |
+          BRANCH="${{ github.event.workflow_run.head_branch }}"
+          if [ "$BRANCH" = "master" ]; then
+            echo "host=PROD_SERVER_HOST" >> "$GITHUB_OUTPUT"
+            echo "env=prod" >> "$GITHUB_OUTPUT"
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+          elif [ "$BRANCH" = "dev" ]; then
+            echo "host=DEV_SERVER_HOST" >> "$GITHUB_OUTPUT"
+            echo "env=dev" >> "$GITHUB_OUTPUT"
+            echo "tag=dev" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy via SSH
+        if: ${{ steps.target.outputs.skip != 'true' }}
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets[steps.target.outputs.host] }}
+          username: deploy
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd /opt/readintent
+            sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=${{ steps.target.outputs.tag }}/' .env
+            docker compose pull
+            docker compose up -d --remove-orphans
+            docker image prune -f

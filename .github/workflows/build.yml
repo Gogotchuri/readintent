@@ -1,0 +1,54 @@
+name: Build & Push Docker Images
+
+on:
+  push:
+    branches: [dev, master]
+    paths:
+      - "backend/**"
+      - "scraper/**"
+      - "phonemizer/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - name: bff
+            context: backend
+          - name: scraper
+            context: scraper
+          - name: phonemizer
+            context: phonemizer
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Determine tags
+        id: tags
+        run: |
+          SHA=$(echo "${{ github.sha }}" | head -c 7)
+          REPO="${{ secrets.DOCKERHUB_USERNAME }}"
+          NAME="readintent_${{ matrix.service.name }}"
+          echo "cache_ref=${REPO}/${NAME}:cache" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.ref_name }}" = "master" ]; then
+            echo "tags=${REPO}/${NAME}:latest,${REPO}/${NAME}:${SHA}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tags=${REPO}/${NAME}:dev,${REPO}/${NAME}:${SHA}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.service.context }}
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          cache-from: type=registry,ref=${{ steps.tags.outputs.cache_ref }}
+          cache-to: type=registry,ref=${{ steps.tags.outputs.cache_ref }},mode=max
