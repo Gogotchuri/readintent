@@ -14,4 +14,5 @@ infra/tofu/age-key.txt
 
 ## Environment files
 .env
+.envrc
 infra/.env

@@ -1,0 +1,162 @@
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      bff:
+        condition: service_started
+    networks:
+      - intranet
+
+  kratos-migrate:
+    image: oryd/kratos:v25.4.0
+    command: "-c /etc/config/kratos/kratos.yml migrate sql -e --yes"
+    restart: on-failure
+    volumes:
+      - ./kratos:/etc/config/kratos:ro
+    environment:
+      - DSN=postgres://${KRATOS_DB_USER}:${KRATOS_DB_PASSWORD}@postgres:5432/kratos_db?sslmode=disable
+    networks:
+      - intranet
+
+  kratos:
+    image: oryd/kratos:v25.4.0
+    depends_on:
+      kratos-migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    command: "-c /etc/config/kratos/kratos.yml serve --watch-courier"
+    restart: unless-stopped
+    volumes:
+      - ./kratos:/etc/config/kratos:ro
+    environment:
+      - DSN=postgres://${KRATOS_DB_USER}:${KRATOS_DB_PASSWORD}@postgres:5432/kratos_db?sslmode=disable
+      - KRATOS_SECRET=${KRATOS_SECRET}
+      - KRATOS_COOKIE_SECRET=${KRATOS_COOKIE_SECRET}
+    networks:
+      - intranet
+    healthcheck:
+      test: ["CMD", "kratos", "remote", "status", "-e", "http://localhost:4434"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  bff:
+    image: ${DOCKER_REPO}/readintent_bff:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      kratos:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      PORT: "5050"
+      KRATOS_PUBLIC_URL: http://kratos:4433
+      DATABASE_CONFIG_HOSTNAME: postgres
+      DATABASE_CONFIG_PORT: "5432"
+      DATABASE_CONFIG_USERNAME: bff
+      DATABASE_CONFIG_PASSWORD: ${BFF_DB_PASSWORD}
+      DATABASE_CONFIG_DATABASE: articles_db
+      DATABASE_CONFIG_SSLMODE: disable
+      REDIS_HOSTNAME: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ""
+      REDIS_DB: "0"
+      REDIS_GROUP_NAME: bff-group
+      REDIS_CONSUMER_NAME: bff-1
+    networks:
+      - intranet
+
+  scraper:
+    image: ${DOCKER_REPO}/readintent_scraper:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      SCRAPER_REDIS_URL: redis://redis:6379/0
+      SCRAPER_STREAM_INPUT: scrape:jobs
+      SCRAPER_STREAM_OUTPUT: scrape:results
+      SCRAPER_CONSUMER_GROUP: scraper-group
+      SCRAPER_CONSUMER_NAME: scraper-1
+      SCRAPER_BLOCK_MS: "5000"
+      SCRAPER_MAX_WORKERS: "4"
+      SCRAPER_MAX_RETRIES: "3"
+      SCRAPER_MIN_IDLE_TIME: "60000"
+    networks:
+      - intranet
+
+  phonemizer:
+    image: ${DOCKER_REPO}/readintent_phonemizer:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      PHONEMIZER_REDIS_URL: redis://redis:6379/0
+      PHONEMIZER_STREAM_INPUT: scrape:results
+      PHONEMIZER_STREAM_OUTPUT: phonemize:results
+      PHONEMIZER_CONSUMER_GROUP: phonemizer-group
+      PHONEMIZER_CONSUMER_NAME: phonemizer-1
+      PHONEMIZER_BLOCK_MS: "5000"
+      PHONEMIZER_MAX_RETRIES: "3"
+      PHONEMIZER_MIN_IDLE_TIME: "60000"
+    networks:
+      - intranet
+
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - intranet
+
+  postgres:
+    image: postgres:16-alpine
+    user: postgres
+    restart: unless-stopped
+    shm_size: 256m
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+      - ./database/docker-initdb:/docker-entrypoint-initdb.d:ro
+    environment:
+      - POSTGRES_USER=${POSTGRES_ADMIN_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_ADMIN_PASSWORD}
+      - POSTGRES_PORT=5432
+      - KRATOS_POSTGRES_PASSWORD=${KRATOS_DB_PASSWORD}
+      - BFF_POSTGRES_PASSWORD=${BFF_DB_PASSWORD}
+    networks:
+      - intranet
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "localhost", "-p", "5432", "-U", "${POSTGRES_ADMIN_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
+  caddy_data:
+  caddy_config:
+
+networks:
+  intranet:
