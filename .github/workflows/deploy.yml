@@ -16,11 +16,11 @@ jobs:
         run: |
           BRANCH="${{ github.event.workflow_run.head_branch }}"
           if [ "$BRANCH" = "master" ]; then
-            echo "host=PROD_SERVER_HOST" >> "$GITHUB_OUTPUT"
+            echo "host=${{ secrets.PROD_SERVER_HOST }}" >> "$GITHUB_OUTPUT"
             echo "env=prod" >> "$GITHUB_OUTPUT"
             echo "tag=latest" >> "$GITHUB_OUTPUT"
           elif [ "$BRANCH" = "dev" ]; then
-            echo "host=DEV_SERVER_HOST" >> "$GITHUB_OUTPUT"
+            echo "host=${{ secrets.DEV_SERVER_HOST }}" >> "$GITHUB_OUTPUT"
             echo "env=dev" >> "$GITHUB_OUTPUT"
             echo "tag=dev" >> "$GITHUB_OUTPUT"
           else
@@ -31,7 +31,7 @@ jobs:
         if: ${{ steps.target.outputs.skip != 'true' }}
         uses: appleboy/ssh-action@v1
         with:
-          host: ${{ secrets[steps.target.outputs.host] }}
+          host: ${{ steps.target.outputs.host }}
           username: deploy
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |

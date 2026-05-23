@@ -19,6 +19,7 @@ resource "hcloud_server" "main" {
     kratos_cookie_secret = data.sops_file.secrets.data["kratos_cookie_secret"]
     dockerhub_username   = data.sops_file.secrets.data["dockerhub_username"]
     dockerhub_token      = data.sops_file.secrets.data["dockerhub_token"]
+    volume_id            = hcloud_volume.data.id
     docker_compose       = file("${path.module}/files/docker-compose.yml")
     caddyfile = templatefile("${path.module}/files/Caddyfile.tpl", {
       domain = var.domain

@@ -31,6 +31,12 @@ variable "ssh_public_key_path" {
   description = "Path to SSH public key file"
 }
 
+variable "volume_size" {
+  type        = number
+  default     = 20
+  description = "Hetzner volume size in GB for persistent data"
+}
+
 variable "enable_backups" {
   type        = bool
   default     = false

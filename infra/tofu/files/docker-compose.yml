@@ -120,7 +120,7 @@ services:
     image: redis:8-alpine
     restart: unless-stopped
     volumes:
-      - redis_data:/data
+      - /mnt/data/redis:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -135,7 +135,7 @@ services:
     restart: unless-stopped
     shm_size: 256m
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - /mnt/data/postgres:/var/lib/postgresql/data
       - ./database/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
       - ./database/docker-initdb:/docker-entrypoint-initdb.d:ro
     environment:
@@ -153,8 +153,6 @@ services:
       retries: 5
 
 volumes:
-  postgres_data:
-  redis_data:
   caddy_data:
   caddy_config:
 
