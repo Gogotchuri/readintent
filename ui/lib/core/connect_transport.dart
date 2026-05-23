@@ -7,7 +7,10 @@ import "package:riverpod_annotation/riverpod_annotation.dart";
 
 part "connect_transport.g.dart";
 
-const String connectBaseUrl = "http://192.168.100.6:5050"; //TODO: Move to config
+const String connectBaseUrl = String.fromEnvironment(
+  "CONNECT_BASE_URL",
+  defaultValue: "https://api.readintent.app",
+);
 const String tokenHeaderKey = "X-Session-Token";
 
 Interceptor _createAuthInterceptor(SessionStorage sessionStorage) {

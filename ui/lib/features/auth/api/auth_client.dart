@@ -15,9 +15,6 @@ import "package:riverpod_annotation/riverpod_annotation.dart";
 
 part "auth_client.g.dart";
 
-const String baseUrl = "http://localhost:8000"; //TODO: Move to config
-const String tokenHeaderKey = "X-Session-Token";
-
 class Session {
   final String sessionToken;
   final User user;
