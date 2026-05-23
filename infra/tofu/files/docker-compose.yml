@@ -39,8 +39,6 @@ services:
       - ./kratos:/etc/config/kratos:ro
     environment:
       - DSN=postgres://${KRATOS_DB_USER}:${KRATOS_DB_PASSWORD}@postgres:5432/kratos_db?sslmode=disable
-      - KRATOS_SECRET=${KRATOS_SECRET}
-      - KRATOS_COOKIE_SECRET=${KRATOS_COOKIE_SECRET}
     networks:
       - intranet
     healthcheck:

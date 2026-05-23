@@ -74,9 +74,9 @@ log:
 
 secrets:
   cookie:
-    - $KRATOS_COOKIE_SECRET
+    - ${kratos_cookie_secret}
   cipher:
-    - $KRATOS_SECRET
+    - ${kratos_secret}
 
 ciphers:
   algorithm: xchacha20-poly1305

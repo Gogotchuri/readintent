@@ -25,7 +25,9 @@ resource "hcloud_server" "main" {
       domain = var.domain
     })
     kratos_config = templatefile("${path.module}/files/kratos.yml.tpl", {
-      domain = var.domain
+      domain               = var.domain
+      kratos_secret        = data.sops_file.secrets.data["kratos_secret"]
+      kratos_cookie_secret = data.sops_file.secrets.data["kratos_cookie_secret"]
     })
     kratos_identity_schema = file("${path.module}/../../infra/kratos/identity.schema.json")
     db_init_sql            = file("${path.module}/../../infra/database/docker-initdb/01-databases.sql")
