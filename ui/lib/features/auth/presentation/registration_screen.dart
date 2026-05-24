@@ -172,7 +172,13 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Text("Already have an account?"),
-          TextButton(onPressed: () => context.go("/login"), child: const Text("Sign In")),
+          TextButton(
+            onPressed: () {
+              ref.read(authProvider.notifier).clearError();
+              context.go("/login");
+            },
+            child: const Text("Sign In"),
+          ),
         ],
       ),
       subtitle: "Sign up to get started",

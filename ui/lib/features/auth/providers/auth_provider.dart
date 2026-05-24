@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:readintent_flutter/core/connectivity.dart";
 import "package:readintent_flutter/core/session_storage.dart";
 import "package:readintent_flutter/features/auth/api/auth_client.dart";
@@ -14,6 +16,7 @@ class Auth extends _$Auth {
   late final SessionStorage _sessionStorage;
   // Keeps track of whether we've validated the session with the server at least once since the provider was initialized
   bool _sessionValidated = false;
+  Timer? _errorTimer;
 
   @override
   AuthState build() {
@@ -80,6 +83,19 @@ class Auth extends _$Auth {
     }
   }
 
+  void clearError() {
+    _errorTimer?.cancel();
+    _errorTimer = null;
+    if (state is AuthError) {
+      state = const AuthUnauthenticated();
+    }
+  }
+
+  void _scheduleErrorClear(Duration duration) {
+    _errorTimer?.cancel();
+    _errorTimer = Timer(duration, clearError);
+  }
+
   /// passwordLogin attempts to login with email and password,
   /// if successful it saves the session and user data and sets the state to AuthAuthenticated,
   /// otherwise sets the state to AuthError
@@ -90,11 +106,14 @@ class Auth extends _$Auth {
       await _sessionStorage.saveToken(session.sessionToken);
       await _sessionStorage.saveUser(session.user);
       _sessionValidated = true;
+      _errorTimer?.cancel();
       state = AuthAuthenticated(sessionToken: session.sessionToken, user: session.user);
     } on ValidationException catch (e) {
       state = AuthError(message: e.message, fieldErrors: e.fieldErrors);
+      _scheduleErrorClear(const Duration(seconds: 5));
     } catch (e) {
       state = AuthError(message: e.toString());
+      _scheduleErrorClear(const Duration(seconds: 5));
     }
   }
 
@@ -110,8 +129,10 @@ class Auth extends _$Auth {
       state = AuthAuthenticated(sessionToken: session.sessionToken, user: session.user);
     } on ValidationException catch (e) {
       state = AuthError(message: e.message, fieldErrors: e.fieldErrors);
+      _scheduleErrorClear(const Duration(seconds: 5));
     } catch (e) {
       state = AuthError(message: e.toString());
+      _scheduleErrorClear(const Duration(seconds: 5));
     }
   }
 
@@ -133,6 +154,7 @@ class Auth extends _$Auth {
     } finally {
       await _sessionStorage.clearSession();
       _sessionValidated = false;
+      _errorTimer?.cancel();
       state = const AuthUnauthenticated();
     }
   }
