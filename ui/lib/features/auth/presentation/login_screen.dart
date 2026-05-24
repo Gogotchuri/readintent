@@ -96,7 +96,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Text("Don't have an account?"),
-          TextButton(onPressed: () => context.go("/register"), child: const Text("Sign Up")),
+          TextButton(
+            onPressed: () {
+              ref.read(authProvider.notifier).clearError();
+              context.go("/register");
+            },
+            child: const Text("Sign Up"),
+          ),
         ],
       ),
     );
