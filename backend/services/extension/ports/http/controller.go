@@ -6,6 +6,8 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+
+	"github.com/gogotchuri/readintent/backend/services/articles/urlutil"
 )
 
 func (es *ExtensionServer) handleRequestCodes(w http.ResponseWriter, r *http.Request) {
@@ -53,13 +55,12 @@ func (es *ExtensionServer) handleSubmitArticle(w http.ResponseWriter, r *http.Re
 		writeError(w, http.StatusBadRequest, err)
 		return
 	}
-	if body.URL == "" {
-		writeError(w, http.StatusBadRequest, fmt.Errorf("url is required"))
-		return
-	}
-
 	userID := claims.Subject
 	if err := es.service.SubmitArticle(r.Context(), userID, body.URL, body.HTML); err != nil {
+		if urlutil.IsValidationError(err) {
+			writeError(w, http.StatusBadRequest, err)
+			return
+		}
 		writeError(w, http.StatusInternalServerError, err)
 		return
 	}

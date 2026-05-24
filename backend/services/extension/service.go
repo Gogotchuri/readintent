@@ -123,7 +123,7 @@ func (s *Service) ClaimGrantCode(ctx context.Context, userCode, userID string) e
 }
 
 // SubmitArticle submits an article for the user to be processed
-func (s *Service) SubmitArticle(ctx context.Context, url, html, userID string) error {
+func (s *Service) SubmitArticle(ctx context.Context, userID, url, html string) error {
 	return s.submitter.ParseArticle(ctx, userID, url, html)
 }
 

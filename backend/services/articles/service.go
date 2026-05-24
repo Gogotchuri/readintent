@@ -11,6 +11,7 @@ import (
 
 	"github.com/gogotchuri/readintent/backend/database/models"
 	iomodels "github.com/gogotchuri/readintent/backend/services/articles/models"
+	"github.com/gogotchuri/readintent/backend/services/articles/urlutil"
 )
 
 var ErrArticleNotFound = errors.New("article not found")
@@ -27,11 +28,14 @@ func NewService(articleRepo Repository, eventHub ArticleSubmitter) *Service {
 	}
 }
 
-func (s Service) ParseArticle(ctx context.Context, userID, url, html string) error {
-	//TODO the URL must be processed and validated first at this stage
+func (s Service) ParseArticle(ctx context.Context, userID, rawURL, html string) error {
+	url, err := urlutil.ResolveAndClean(ctx, rawURL)
+	if err != nil {
+		return fmt.Errorf("invalid article URL: %w", err)
+	}
 	slog.Info(fmt.Sprintf("Parsing article for user %s and url %s", userID, url))
 	// Check if the article already exists for the user
-	_, err := s.articleRepo.GetArticleForUserWithURL(ctx, userID, url)
+	_, err = s.articleRepo.GetArticleForUserWithURL(ctx, userID, url)
 	if err == nil {
 		slog.Info(fmt.Sprintf("Article already exists for user %s and url %s", userID, url))
 		return nil
