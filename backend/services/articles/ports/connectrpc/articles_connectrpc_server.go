@@ -16,6 +16,7 @@ import (
 	"github.com/gogotchuri/readintent/backend/proto/articles/v1/articlesv1connect"
 	"github.com/gogotchuri/readintent/backend/services/articles"
 	iomodels "github.com/gogotchuri/readintent/backend/services/articles/models"
+	"github.com/gogotchuri/readintent/backend/services/articles/urlutil"
 )
 
 var _ articlesv1connect.ArticlesServiceHandler = &ArticlesServer{}
@@ -45,6 +46,9 @@ func (a *ArticlesServer) ParseArticle(ctx context.Context, req *connect.Request[
 	}
 
 	if err := a.service.ParseArticle(ctx, session.Identity.ID, req.Msg.GetUrl(), ""); err != nil {
+		if urlutil.IsValidationError(err) {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("parsing article: %w", err))
 	}
 

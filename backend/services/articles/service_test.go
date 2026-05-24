@@ -363,6 +363,56 @@ func TestService_HandlePhonemizerResult_Error(t *testing.T) {
 	}
 }
 
+func TestService_ParseArticle_InvalidURL(t *testing.T) {
+	svc := NewService(&mockRepository{}, &mockSubmitter{})
+	tests := []struct {
+		name string
+		url  string
+	}{
+		{"empty URL", ""},
+		{"ftp scheme", "ftp://example.com/file"},
+		{"no scheme", "example.com/article"},
+		{"missing host", "https:///path"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := svc.ParseArticle(context.Background(), "user-123", tt.url, "")
+			if err == nil {
+				t.Fatal("expected error for invalid URL")
+			}
+		})
+	}
+}
+
+func TestService_ParseArticle_URLNormalization(t *testing.T) {
+	var repoReceivedURL string
+	repo := &mockRepository{
+		GetArticleForUserWithURLFn: func(_ context.Context, _, u string) (*models.Article, error) {
+			repoReceivedURL = u
+			return nil, ErrArticleNotFound
+		},
+		GetArticleWithURLFn: func(_ context.Context, u string) (*models.Article, error) {
+			return nil, ErrArticleNotFound
+		},
+		CreateInitialArticleFn: func(_ context.Context, _, u string) (*models.Article, error) {
+			return &models.Article{Id: 1, Url: u}, nil
+		},
+	}
+	submitter := &mockSubmitter{
+		SubmitArticleFn: func(_ context.Context, _ int64, _, _ string) error { return nil },
+	}
+	svc := NewService(repo, submitter)
+
+	err := svc.ParseArticle(context.Background(), "user-123",
+		"HTTPS://EXAMPLE.COM/Article/?utm_source=twitter&fbclid=abc", "")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if repoReceivedURL != "https://example.com/Article" {
+		t.Errorf("expected normalized URL, got %q", repoReceivedURL)
+	}
+}
+
 // mockRepository implements Repository using function fields.
 type mockRepository struct {
 	GetArticlesFn              func(ctx context.Context, userID string, searchQ iomodels.GetArticlesRequest) (*iomodels.GetArticlesResponse, error)
