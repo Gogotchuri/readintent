@@ -9,6 +9,8 @@ import "package:flutter_test/flutter_test.dart";
 import "package:just_audio/just_audio.dart";
 import "package:path_provider_platform_interface/path_provider_platform_interface.dart";
 
+import "package:shared_preferences/shared_preferences.dart";
+
 import "package:readintent_flutter/features/articles/providers/article_player_provider.dart";
 import "package:readintent_flutter/features/tts/audio_cache.dart";
 import "package:readintent_flutter/features/tts/audio_handler.dart";
@@ -49,24 +51,23 @@ Future<void> pumpEvents() =>
     Future<void>.delayed(const Duration(milliseconds: 50));
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late Directory tempDir;
   late FakeAudioHandler handler;
   late ProviderContainer container;
   late PipelineFactory factory;
-  ProviderSubscription<ArticlePlayerState>? _sub;
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     tempDir = Directory.systemTemp.createTempSync("article_player_test_");
     PathProviderPlatform.instance = FakePathProvider(tempDir);
     handler = FakeAudioHandler();
     factory = fakePipelineFactory(defaultAudioProducer);
     container = createTestContainer(handler: handler, pipelineFactory: factory);
-    // Keep the autoDispose provider alive for the duration of the test
-    _sub = container.listen(articlePlayerProvider("1"), (_, __) {});
   });
 
   tearDown(() async {
-    _sub?.close();
     container.dispose();
     await handler.dispose();
     if (tempDir.existsSync()) {
@@ -74,27 +75,26 @@ void main() {
     }
   });
 
-  /// Create a new container with a listener to keep the provider alive.
+  /// Create a new container.
   ProviderContainer makeContainer({required PipelineFactory pipelineFactory}) {
-    final c = createTestContainer(
+    return createTestContainer(
       handler: handler,
       pipelineFactory: pipelineFactory,
     );
-    c.listen(articlePlayerProvider("1"), (_, __) {});
-    return c;
   }
 
-  ArticlePlayer readNotifier() {
-    return container.read(articlePlayerProvider("1").notifier);
+  ActivePlayer readNotifier() {
+    return container.read(activePlayerProvider.notifier);
   }
 
-  ArticlePlayerState readState() {
-    return container.read(articlePlayerProvider("1"));
+  ActivePlayerState readState() {
+    return container.read(activePlayerProvider);
   }
 
-  group("ArticlePlayer - Initial State", () {
+  group("ActivePlayer - Initial State", () {
     test("build() returns default state", () {
       final state = readState();
+      expect(state.articleId, isNull);
       expect(state.position, Duration.zero);
       expect(state.bufferedDuration, Duration.zero);
       expect(state.estimatedDuration, isNull);
@@ -102,10 +102,11 @@ void main() {
       expect(state.isLoading, false);
       expect(state.ttsComplete, false);
       expect(state.error, isNull);
+      expect(state.hasActiveArticle, false);
     });
   });
 
-  group("ArticlePlayer - Cache Hit", () {
+  group("ActivePlayer - Cache Hit", () {
     test(
       "play() with cached file skips generation and plays directly",
       () async {
@@ -129,6 +130,7 @@ void main() {
         final state = readState();
         expect(state.ttsComplete, true);
         expect(state.isLoading, false);
+        expect(state.articleId, "1");
         expect(handler.calls, contains("setSource"));
         expect(handler.calls, contains("play"));
       },
@@ -157,7 +159,7 @@ void main() {
     );
   });
 
-  group("ArticlePlayer - Generation Path", () {
+  group("ActivePlayer - Generation Path", () {
     test(
       "generation starts and handler.play() called after buffer threshold",
       () async {
@@ -204,18 +206,18 @@ void main() {
       });
 
       final c = makeContainer(pipelineFactory: errorFactory);
-      final notifier = c.read(articlePlayerProvider("1").notifier);
+      final notifier = c.read(activePlayerProvider.notifier);
 
       await notifier.play(article: _makeArticle(3));
       await pumpEvents();
 
-      final state = c.read(articlePlayerProvider("1"));
+      final state = c.read(activePlayerProvider);
       expect(state.error, isNotNull);
       expect(state.isLoading, false);
       c.dispose();
     });
 
-    test("second play() while session exists is a no-op", () async {
+    test("second play() with same article while active resumes", () async {
       final article = _makeArticle(2);
       final notifier = readNotifier();
 
@@ -249,7 +251,7 @@ void main() {
     });
   });
 
-  group("ArticlePlayer - Position Stream", () {
+  group("ActivePlayer - Position Stream", () {
     test("position updates from handler reflected in state", () async {
       final article = _makeArticle(2);
       final notifier = readNotifier();
@@ -264,7 +266,7 @@ void main() {
     });
   });
 
-  group("ArticlePlayer - Player State Stream", () {
+  group("ActivePlayer - Player State Stream", () {
     test(
       "ProcessingState.completed + ttsComplete=true → track finished",
       () async {
@@ -325,7 +327,7 @@ void main() {
     );
   });
 
-  group("ArticlePlayer - pause/resume/togglePlayPause", () {
+  group("ActivePlayer - pause/resume/togglePlayPause", () {
     test("pause() delegates to handler.pause()", () async {
       final article = _makeArticle(2);
       final notifier = readNotifier();
@@ -370,7 +372,7 @@ void main() {
     );
   });
 
-  group("ArticlePlayer - seekTo", () {
+  group("ActivePlayer - seekTo", () {
     test("with ttsComplete, delegates directly to handler.seek()", () async {
       final article = _makeArticle(2);
       final notifier = readNotifier();
@@ -397,7 +399,7 @@ void main() {
     });
   });
 
-  group("ArticlePlayer - jumpForward/jumpBackward", () {
+  group("ActivePlayer - jumpForward/jumpBackward", () {
     test("jumpForward() seeks to position + 15s", () async {
       final article = _makeArticle(2);
       final notifier = readNotifier();
@@ -441,20 +443,34 @@ void main() {
     });
   });
 
-  group("ArticlePlayer - Cleanup/Disposal", () {
-    test("cleanup cancels all subs and stops handler", () async {
+  group("ActivePlayer - stop()", () {
+    test("stop() stops handler and clears state", () async {
       final article = _makeArticle(2);
       final notifier = readNotifier();
       await notifier.play(article: article);
       await pumpEvents();
 
-      // Close the listener first, then dispose, which triggers cleanup
-      _sub?.close();
-      _sub = null;
       handler.calls.clear();
-      container.dispose();
+      await notifier.stop();
 
       expect(handler.calls, contains("stop"));
+      final state = readState();
+      expect(state.hasActiveArticle, false);
+      expect(state.articleId, isNull);
+    });
+  });
+
+  group("ActivePlayer - Article metadata", () {
+    test("play() sets article metadata in state", () async {
+      final article = _makeArticle(2);
+      final notifier = readNotifier();
+      await notifier.play(article: article);
+      await pumpEvents();
+
+      final state = readState();
+      expect(state.articleId, "1");
+      expect(state.articleTitle, "Test Article");
+      expect(state.articleAuthor, "Author");
     });
   });
 }

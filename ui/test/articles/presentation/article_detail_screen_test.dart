@@ -7,6 +7,7 @@ import "package:flutter_test/flutter_test.dart";
 import "package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart";
 import "package:readintent_flutter/features/articles/presentation/article_detail_screen.dart";
 import "package:readintent_flutter/features/articles/providers/article_detail_provider.dart";
+import "package:readintent_flutter/features/articles/providers/article_player_provider.dart";
 import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
 
 final articleMock = articles_pb.Article(
@@ -29,6 +30,7 @@ void main() {
       overrides: [
         // ignore: deprecated_member_use
         articleDetailProvider.overrideWith(() => _TestArticleDetail(fetchArticle)),
+        activePlayerProvider.overrideWithValue(const ActivePlayerState()),
       ],
     );
     return UncontrolledProviderScope(

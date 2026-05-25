@@ -7,6 +7,8 @@ import "package:flutter_test/flutter_test.dart";
 import "package:just_audio/just_audio.dart";
 import "package:path_provider_platform_interface/path_provider_platform_interface.dart";
 
+import "package:shared_preferences/shared_preferences.dart";
+
 import "package:readintent_flutter/features/articles/providers/article_player_provider.dart";
 import "package:readintent_flutter/features/tts/audio_handler.dart";
 import "package:readintent_flutter/features/tts/pipeline.dart";
@@ -44,22 +46,22 @@ pb.Article _makeArticle(int chunkCount, {int tokensPerChunk = 100}) {
 Future<void> pumpEvents() =>
     Future<void>.delayed(const Duration(milliseconds: 50));
 
-/// Creates container with listener to keep the autoDispose provider alive.
 ProviderContainer _makeContainer(
   FakeAudioHandler handler,
   PipelineFactory factory,
 ) {
-  final c = createTestContainer(handler: handler, pipelineFactory: factory);
-  c.listen(articlePlayerProvider("1"), (_, __) {});
-  return c;
+  return createTestContainer(handler: handler, pipelineFactory: factory);
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late Directory tempDir;
   late FakeAudioHandler handler;
   late ProviderContainer container;
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     tempDir = Directory.systemTemp.createTempSync("article_player_e2e_");
     PathProviderPlatform.instance = FakePathProvider(tempDir);
     handler = FakeAudioHandler();
@@ -75,27 +77,29 @@ void main() {
 
   group("E2E Scenario 1: Full Playback Lifecycle", () {
     test(
-      "play → generation → buffer ready → play → pause → resume → complete → dispose",
+      "play → generation → buffer ready → play → pause → resume → complete → stop",
       () async {
         final factory = fakePipelineFactory(defaultAudioProducer);
         container = _makeContainer(handler, factory);
 
-        final notifier = container.read(articlePlayerProvider("1").notifier);
+        final notifier = container.read(activePlayerProvider.notifier);
         final article = _makeArticle(5, tokensPerChunk: 100);
 
         // Initial state
-        var state = container.read(articlePlayerProvider("1"));
+        var state = container.read(activePlayerProvider);
         expect(state.position, Duration.zero);
         expect(state.isPlaying, false);
         expect(state.isLoading, false);
+        expect(state.hasActiveArticle, false);
 
         // Play
         await notifier.play(article: article);
         await pumpEvents();
 
         // After generation completes
-        state = container.read(articlePlayerProvider("1"));
+        state = container.read(activePlayerProvider);
         expect(state.ttsComplete, true);
+        expect(state.articleId, "1");
         expect(state.bufferedDuration.inMilliseconds, greaterThan(0));
         expect(state.estimatedDuration, isNotNull);
         expect(handler.calls, contains("setSource"));
@@ -104,21 +108,21 @@ void main() {
         // Simulate position update
         handler.emitPosition(const Duration(seconds: 1));
         await pumpEvents();
-        state = container.read(articlePlayerProvider("1"));
+        state = container.read(activePlayerProvider);
         expect(state.position, const Duration(seconds: 1));
 
         // Pause
         await notifier.pause();
         handler.simulateProcessingState(ProcessingState.ready);
         await pumpEvents();
-        state = container.read(articlePlayerProvider("1"));
+        state = container.read(activePlayerProvider);
         expect(state.isPlaying, false);
 
         // Resume
         await notifier.resume();
         handler.simulateProcessingState(ProcessingState.ready);
         await pumpEvents();
-        state = container.read(articlePlayerProvider("1"));
+        state = container.read(activePlayerProvider);
         expect(state.isPlaying, true);
 
         // Verify MP3 file on disk
@@ -128,8 +132,10 @@ void main() {
         expect(mp3File.lengthSync(), greaterThan(0));
         expect(File("${handler.lastSourcePath!}.meta").existsSync(), false);
 
-        // Dispose
-        container.dispose();
+        // Stop
+        await notifier.stop();
+        state = container.read(activePlayerProvider);
+        expect(state.hasActiveArticle, false);
       },
     );
   });
@@ -141,20 +147,20 @@ void main() {
         final factory = fakePipelineFactory(defaultAudioProducer);
         container = _makeContainer(handler, factory);
 
-        final notifier = container.read(articlePlayerProvider("1").notifier);
+        final notifier = container.read(activePlayerProvider.notifier);
         final article = _makeArticle(3);
 
         await notifier.play(article: article);
         await pumpEvents();
 
-        var state = container.read(articlePlayerProvider("1"));
+        var state = container.read(activePlayerProvider);
         expect(state.ttsComplete, true);
 
         // When ProcessingState.completed arrives with ttsComplete=true, track finishes
         handler.simulateProcessingState(ProcessingState.completed);
         await pumpEvents();
 
-        state = container.read(articlePlayerProvider("1"));
+        state = container.read(activePlayerProvider);
         expect(state.isPlaying, false);
       },
     );
@@ -168,14 +174,15 @@ void main() {
       final article = _makeArticle(2);
 
       // First play: generates audio
-      final notifier1 = container.read(articlePlayerProvider("1").notifier);
+      final notifier1 = container.read(activePlayerProvider.notifier);
       await notifier1.play(article: article);
       await pumpEvents();
 
-      var state = container.read(articlePlayerProvider("1"));
+      var state = container.read(activePlayerProvider);
       expect(state.ttsComplete, true);
 
-      // Dispose and recreate to simulate new session
+      // Stop and recreate to simulate new session
+      await notifier1.stop();
       container.dispose();
       handler = FakeAudioHandler();
       handler.sourceDuration = const Duration(minutes: 2);
@@ -187,11 +194,11 @@ void main() {
       });
       container = _makeContainer(handler, countingFactory);
 
-      final notifier2 = container.read(articlePlayerProvider("1").notifier);
+      final notifier2 = container.read(activePlayerProvider.notifier);
       await notifier2.play(article: article);
       await pumpEvents();
 
-      state = container.read(articlePlayerProvider("1"));
+      state = container.read(activePlayerProvider);
       expect(state.ttsComplete, true);
       expect(inferenceCount, 0);
     });
@@ -207,12 +214,12 @@ void main() {
       });
 
       container = _makeContainer(handler, errorFactory);
-      final notifier = container.read(articlePlayerProvider("1").notifier);
+      final notifier = container.read(activePlayerProvider.notifier);
 
       await notifier.play(article: _makeArticle(3));
       await pumpEvents();
 
-      final state = container.read(articlePlayerProvider("1"));
+      final state = container.read(activePlayerProvider);
       expect(state.error, isNotNull);
       expect(state.error, contains("Chunk 2 failed"));
       expect(state.isLoading, false);
