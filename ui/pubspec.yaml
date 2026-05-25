@@ -65,6 +65,8 @@ dependencies:
   onnxruntime_v2: ^1.23.2+2
   fnv: ^1.0.1
   audio_service: ^0.18.18
+  shared_preferences: ^2.3.0
+  marquee: ^2.2.3
 
 dev_dependencies:
   flutter_test:

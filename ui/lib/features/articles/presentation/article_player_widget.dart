@@ -1,49 +1,85 @@
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
+import "package:go_router/go_router.dart";
+import "package:marquee/marquee.dart";
 
 import "package:readintent_flutter/features/articles/providers/article_player_provider.dart";
-import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
 
 class ArticlePlayerWidget extends ConsumerWidget {
-  final articles_pb.Article article;
-
-  const ArticlePlayerWidget({super.key, required this.article});
+  const ArticlePlayerWidget({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final articleId = article.id.toString();
-    final playerState = ref.watch(articlePlayerProvider(articleId));
-    final controller = ref.read(articlePlayerProvider(articleId).notifier);
+    final state = ref.watch(activePlayerProvider);
+    final controller = ref.read(activePlayerProvider.notifier);
+    String? routeArticleId;
+    try {
+      routeArticleId = GoRouterState.of(context).pathParameters["id"];
+    } catch (_) {}
+    final onArticleDetail = routeArticleId != null && routeArticleId == state.articleId;
 
-    return Container(
-      decoration: BoxDecoration(
+    return GestureDetector(
+      onTap: onArticleDetail ? null : () => context.push("/articles/${state.articleId}"),
+      child: Material(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        border: Border(top: BorderSide(color: Colors.grey[300]!)),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildProgressSlider(context, playerState, controller),
-          const SizedBox(height: 4),
-          _buildTimeLabels(context, playerState),
-          _buildControls(context, playerState, controller),
-          if (playerState.error != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                playerState.error!,
-                style: TextStyle(color: Colors.red[700], fontSize: 12),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-        ],
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildTitleRow(context, state.articleTitle ?? "", onArticleDetail ? null : controller),
+              const SizedBox(height: 4),
+              _buildProgressSlider(context, state, controller),
+              const SizedBox(height: 4),
+              _buildTimeLabels(context, state),
+              _buildControls(context, state, controller),
+              if (state.error != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    state.error!,
+                    style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildProgressSlider(BuildContext context, ArticlePlayerState state, ArticlePlayer controller) {
+  Widget _buildTitleRow(BuildContext context, String title, ActivePlayer? controller) {
+    final style = Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)
+        ?? const TextStyle(fontWeight: FontWeight.w500);
+    final fontSize = style.fontSize ?? 14.0;
+    final lineHeight = style.height ?? 1.2;
+
+    return Row(
+      children: [
+        Expanded(
+          child: SizedBox(
+            height: fontSize * lineHeight + 4,
+            child: _AutoMarquee(text: title, style: style),
+          ),
+        ),
+        if (controller != null)
+          IconButton(
+            icon: const Icon(Icons.close, size: 20),
+            onPressed: controller.stop,
+            tooltip: "Stop playback",
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildProgressSlider(BuildContext context, ActivePlayerState state, ActivePlayer controller) {
     final totalMs = (state.estimatedDuration ?? Duration.zero).inMilliseconds;
     final positionMs = state.position.inMilliseconds;
     final bufferedMs = state.bufferedDuration.inMilliseconds;
@@ -55,8 +91,8 @@ class ArticlePlayerWidget extends ConsumerWidget {
       children: [
         LinearProgressIndicator(
           value: bufferedProgress,
-          backgroundColor: Colors.grey[300],
-          valueColor: AlwaysStoppedAnimation(Colors.grey[400]!),
+          backgroundColor: Theme.of(context).colorScheme.outlineVariant,
+          valueColor: AlwaysStoppedAnimation(Theme.of(context).colorScheme.outline),
           minHeight: 3,
         ),
         SliderTheme(
@@ -79,7 +115,7 @@ class ArticlePlayerWidget extends ConsumerWidget {
     );
   }
 
-  Widget _buildTimeLabels(BuildContext context, ArticlePlayerState state) {
+  Widget _buildTimeLabels(BuildContext context, ActivePlayerState state) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -87,14 +123,14 @@ class ArticlePlayerWidget extends ConsumerWidget {
         if (!state.ttsComplete && state.bufferedDuration > Duration.zero)
           Text(
             "Generating...",
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.grey[500]),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         Text(_formatEndTime(state), style: Theme.of(context).textTheme.labelSmall),
       ],
     );
   }
 
-  Widget _buildControls(BuildContext context, ArticlePlayerState state, ArticlePlayer controller) {
+  Widget _buildControls(BuildContext context, ActivePlayerState state, ActivePlayer controller) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -116,7 +152,7 @@ class ArticlePlayerWidget extends ConsumerWidget {
     );
   }
 
-  Widget _buildPlayButton(ArticlePlayerState state, ArticlePlayer controller) {
+  Widget _buildPlayButton(ActivePlayerState state, ActivePlayer controller) {
     if (state.isLoading) {
       return const Padding(
         padding: EdgeInsets.all(12),
@@ -124,17 +160,14 @@ class ArticlePlayerWidget extends ConsumerWidget {
       );
     }
 
-    final neverPlayed =
-        !state.isPlaying && state.position == Duration.zero && state.bufferedDuration == Duration.zero;
-
     return IconButton(
       iconSize: 40,
-      onPressed: neverPlayed ? () => controller.play(article: article) : controller.togglePlayPause,
+      onPressed: controller.togglePlayPause,
       icon: Icon(state.isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled),
     );
   }
 
-  static String _formatEndTime(ArticlePlayerState state) {
+  static String _formatEndTime(ActivePlayerState state) {
     if (state.estimatedDuration == null) return "--:--";
     final formatted = _formatDuration(state.estimatedDuration!);
     return state.ttsComplete ? formatted : "~$formatted";
@@ -144,5 +177,39 @@ class ArticlePlayerWidget extends ConsumerWidget {
     final minutes = d.inMinutes;
     final seconds = d.inSeconds % 60;
     return "${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
+  }
+}
+
+/// Shows a plain Text if it fits, or a scrolling Marquee if it overflows.
+class _AutoMarquee extends StatelessWidget {
+  final String text;
+  final TextStyle style;
+
+  const _AutoMarquee({required this.text, required this.style});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final textPainter = TextPainter(
+          text: TextSpan(text: text, style: style),
+          maxLines: 1,
+          textDirection: TextDirection.ltr,
+        )..layout();
+
+        if (textPainter.width <= constraints.maxWidth) {
+          return Text(text, style: style, maxLines: 1);
+        }
+
+        return Marquee(
+          text: text,
+          style: style,
+          velocity: 30,
+          blankSpace: 80,
+          pauseAfterRound: const Duration(seconds: 2),
+          startAfter: const Duration(seconds: 1),
+        );
+      },
+    );
   }
 }

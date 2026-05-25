@@ -50,6 +50,12 @@ class _FakeDeleteArticleResponse_3 extends _i1.SmartFake
     : super(parent, parentInvocation);
 }
 
+class _FakeCheckForUpdatesResponse_4 extends _i1.SmartFake
+    implements _i2.CheckForUpdatesResponse {
+  _FakeCheckForUpdatesResponse_4(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
 /// A class which mocks [ArticlesServiceClientI].
 ///
 /// See the documentation for Mockito's code generation for more information.
@@ -116,4 +122,19 @@ class MockArticlesServiceClientI extends _i1.Mock
             ),
           )
           as _i4.Future<_i2.DeleteArticleResponse>);
+
+  @override
+  _i4.Future<_i2.CheckForUpdatesResponse> checkForUpdates(
+    _i2.CheckForUpdatesRequest? input,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#checkForUpdates, [input]),
+            returnValue: _i4.Future<_i2.CheckForUpdatesResponse>.value(
+              _FakeCheckForUpdatesResponse_4(
+                this,
+                Invocation.method(#checkForUpdates, [input]),
+              ),
+            ),
+          )
+          as _i4.Future<_i2.CheckForUpdatesResponse>);
 }

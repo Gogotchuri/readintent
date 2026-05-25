@@ -9,11 +9,14 @@ import "package:just_audio/just_audio.dart";
 import "package:path_provider_platform_interface/path_provider_platform_interface.dart";
 import "package:plugin_platform_interface/plugin_platform_interface.dart";
 
+import "package:readintent_flutter/core/player_persistence.dart";
+import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
 import "package:readintent_flutter/features/tts/audio_handler.dart";
 import "package:readintent_flutter/features/tts/audio_generator.dart";
 import "package:readintent_flutter/features/tts/phoneme.dart";
 import "package:readintent_flutter/features/tts/pipeline.dart";
 import "package:readintent_flutter/features/tts/voice_style.dart";
+import "package:readintent_flutter/models/auth_state.dart";
 
 // --- FakeAudioHandler ---
 
@@ -145,9 +148,12 @@ class FakePathProvider extends Fake with MockPlatformInterfaceMixin implements P
 ProviderContainer createTestContainer({
   required FakeAudioHandler handler,
   PipelineFactory? pipelineFactory,
+  PlayerPersistence? persistence,
 }) {
   return ProviderContainer(overrides: [
     audioHandlerProvider.overrideWithValue(handler),
     if (pipelineFactory != null) pipelineFactoryProvider.overrideWithValue(pipelineFactory),
+    if (persistence != null) playerPersistenceProvider.overrideWithValue(persistence),
+    authProvider.overrideWithValue(const AuthInitial()),
   ]);
 }

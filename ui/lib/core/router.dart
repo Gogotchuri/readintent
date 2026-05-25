@@ -5,6 +5,7 @@ import "package:readintent_flutter/features/auth/presentation/registration_scree
 import "package:readintent_flutter/features/auth/presentation/splash_screen.dart";
 import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
 import "package:readintent_flutter/features/articles/presentation/article_detail_screen.dart";
+import "package:readintent_flutter/features/articles/presentation/player_shell.dart";
 import "package:readintent_flutter/features/auth/presentation/device_code_screen.dart";
 import "package:readintent_flutter/features/articles/presentation/home.dart";
 import "package:readintent_flutter/models/auth_state.dart";
@@ -59,17 +60,25 @@ GoRouter appRouter(Ref ref) {
       return null; // Default case, no redirection
     },
     routes: [
+      // Auth routes - outside the shell, no mini player
       GoRoute(path: "/", builder: (context, state) => const SplashScreen()),
       GoRoute(path: "/login", builder: (context, state) => const LoginScreen()),
       GoRoute(path: "/register", builder: (context, state) => const RegistrationScreen()),
-      GoRoute(path: "/home", builder: (context, state) => const HomeScreen()),
-      GoRoute(path: "/pair-extension", builder: (context, state) => const DeviceCodeScreen()),
-      GoRoute(
-        path: "/articles/:id",
-        builder: (context, state) {
-          final id = state.pathParameters["id"]!;
-          return ArticleDetailScreen(articleId: id);
-        },
+
+      // Authenticated routes - wrapped in PlayerShell for persistent mini player
+      ShellRoute(
+        builder: (context, state, child) => PlayerShell(child: child),
+        routes: [
+          GoRoute(path: "/home", builder: (context, state) => const HomeScreen()),
+          GoRoute(path: "/pair-extension", builder: (context, state) => const DeviceCodeScreen()),
+          GoRoute(
+            path: "/articles/:id",
+            builder: (context, state) {
+              final id = state.pathParameters["id"]!;
+              return ArticleDetailScreen(articleId: id);
+            },
+          ),
+        ],
       ),
     ],
   );

@@ -2,7 +2,11 @@ import "dart:async";
 
 import "package:audio_service/audio_service.dart";
 import "package:just_audio/just_audio.dart";
+import "package:readintent_flutter/core/player_persistence.dart";
+import "package:readintent_flutter/features/articles/repository/article_repository.dart";
+import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
 import "package:readintent_flutter/features/tts/pipeline.dart";
+import "package:readintent_flutter/models/auth_state.dart";
 import "package:riverpod_annotation/riverpod_annotation.dart";
 
 import "package:readintent_flutter/features/tts/audio_cache.dart";
@@ -14,7 +18,18 @@ import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
 
 part "article_player_provider.g.dart";
 
-class ArticlePlayerState {
+const Object _sentinel = Object();
+
+/// Resolves a sentinel-guarded copyWith parameter:
+/// returns [current] if [value] was not passed, otherwise casts [value] to T.
+T _resolve<T>(Object? value, T current) =>
+    identical(value, _sentinel) ? current : value as T;
+
+class ActivePlayerState {
+  final String? articleId;
+  final String? articleTitle;
+  final String? articleAuthor;
+  final String? articleImageUrl;
   final Duration position;
   final Duration bufferedDuration;
   final Duration? estimatedDuration;
@@ -23,7 +38,11 @@ class ArticlePlayerState {
   final bool ttsComplete;
   final String? error;
 
-  const ArticlePlayerState({
+  const ActivePlayerState({
+    this.articleId,
+    this.articleTitle,
+    this.articleAuthor,
+    this.articleImageUrl,
     this.position = Duration.zero,
     this.bufferedDuration = Duration.zero,
     this.estimatedDuration,
@@ -33,31 +52,41 @@ class ArticlePlayerState {
     this.error,
   });
 
-  ArticlePlayerState copyWith({
+  bool get hasActiveArticle => articleId != null;
+
+  ActivePlayerState copyWith({
+    Object? articleId = _sentinel,
+    Object? articleTitle = _sentinel,
+    Object? articleAuthor = _sentinel,
+    Object? articleImageUrl = _sentinel,
     Duration? position,
     Duration? bufferedDuration,
-    Duration? estimatedDuration,
+    Object? estimatedDuration = _sentinel,
     bool? isPlaying,
     bool? isLoading,
     bool? ttsComplete,
-    String? error,
+    Object? error = _sentinel,
   }) {
-    return ArticlePlayerState(
+    return ActivePlayerState(
+      articleId: _resolve(articleId, this.articleId),
+      articleTitle: _resolve(articleTitle, this.articleTitle),
+      articleAuthor: _resolve(articleAuthor, this.articleAuthor),
+      articleImageUrl: _resolve(articleImageUrl, this.articleImageUrl),
       position: position ?? this.position,
       bufferedDuration: bufferedDuration ?? this.bufferedDuration,
-      estimatedDuration: estimatedDuration ?? this.estimatedDuration,
+      estimatedDuration: _resolve(estimatedDuration, this.estimatedDuration),
       isPlaying: isPlaying ?? this.isPlaying,
       isLoading: isLoading ?? this.isLoading,
       ttsComplete: ttsComplete ?? this.ttsComplete,
-      error: error ?? this.error,
+      error: _resolve(error, this.error),
     );
   }
 }
 
-@riverpod
-class ArticlePlayer extends _$ArticlePlayer {
+@Riverpod(keepAlive: true)
+class ActivePlayer extends _$ActivePlayer {
   final AudioCache _cache = AudioCache();
-  // Interface to the audio handler for controlling playback and receiving player state updates
+  late final PlayerPersistence _persistence;
   late final AudioHandlerInterface _handler;
   late final PipelineFactory _pipelineFactory;
   AudioGenerator? _session;
@@ -69,14 +98,28 @@ class ArticlePlayer extends _$ArticlePlayer {
   bool _reloading = false;
   bool _waitingForBuffer = false;
   bool _playerStarted = false;
+  bool _restoring = false;
   MediaItem? _mediaItem;
+  articles_pb.Article? _loadedArticle;
+  Duration _resumePosition = Duration.zero;
+  DateTime _lastPersistTime = DateTime.fromMillisecondsSinceEpoch(0);
 
   @override
-  ArticlePlayerState build(String articleId) {
+  ActivePlayerState build() {
     _handler = ref.read(audioHandlerProvider);
     _pipelineFactory = ref.read(pipelineFactoryProvider);
+    _persistence = ref.read(playerPersistenceProvider);
     ref.onDispose(_cleanup);
-    return const ArticlePlayerState();
+
+    // Stop playback on logout
+    ref.listen(authProvider, (_, next) {
+      if (next is AuthUnauthenticated) stop();
+    });
+
+    // Restore last-played on startup
+    _restoreLastPlayed();
+
+    return const ActivePlayerState();
   }
 
   void _cleanup() {
@@ -84,14 +127,16 @@ class ArticlePlayer extends _$ArticlePlayer {
     _playerStateSub?.cancel();
     _bufferedSub?.cancel();
     _sessionStateSub?.cancel();
-    _handler.stop(); // Stop playback on cleanup
     _session?.dispose();
     _session = null;
     _loadedDuration = Duration.zero;
     _reloading = false;
     _waitingForBuffer = false;
     _playerStarted = false;
+    _restoring = false;
     _mediaItem = null;
+    _loadedArticle = null;
+    _lastPersistTime = DateTime.fromMillisecondsSinceEpoch(0);
   }
 
   MediaItem _buildMediaItem(articles_pb.Article article) {
@@ -108,13 +153,34 @@ class ArticlePlayer extends _$ArticlePlayer {
     VoiceStyle voice = VoiceStyle.afSky,
     double speed = 1.0,
   }) async {
-    if (_session != null) return;
+    _restoring = false; // Cancel any in-progress restore
+    final newArticleId = article.id.toString();
 
+    // Same article already active with audio loaded - just resume
+    if (state.articleId == newArticleId && _playerStarted) {
+      if (!state.isPlaying) await resume();
+      return;
+    }
+
+    // Preserve restored position if resuming the same article
+    _resumePosition = state.articleId == newArticleId ? state.position : Duration.zero;
+
+    // Different article or first play - tear down current session
     _cleanup();
     await _handler.stop();
+    _loadedArticle = article;
     _wirePlayerListeners();
 
-    state = const ArticlePlayerState(isLoading: true);
+    state = ActivePlayerState(
+      articleId: newArticleId,
+      articleTitle: article.title,
+      articleAuthor: article.author.isNotEmpty ? article.author : null,
+      articleImageUrl: article.image.isNotEmpty ? article.image : null,
+      position: _resumePosition,
+      isLoading: true,
+    );
+
+    persistState();
 
     try {
       _session = AudioGenerator(
@@ -125,7 +191,7 @@ class ArticlePlayer extends _$ArticlePlayer {
         pipelineFactory: _pipelineFactory,
       );
 
-      // Check cache first, if we have completely generated audio available, skip straight to playback
+      // Check cache first — if we have completely generated audio, skip to playback
       final cachedPath = await _session!.checkCacheForComplete();
       if (cachedPath != null) {
         await _playFromFile(cachedPath, article);
@@ -134,7 +200,7 @@ class ArticlePlayer extends _$ArticlePlayer {
 
       _mediaItem = _buildMediaItem(article);
 
-      // Listen to session state updates
+      // Listen to session state updates (buffered duration, TTS completion)
       _sessionStateSub = _session!.stateStream.listen((sessionState) {
         state = state.copyWith(
           bufferedDuration: sessionState.bufferedDuration,
@@ -159,18 +225,16 @@ class ArticlePlayer extends _$ArticlePlayer {
               _mediaItem!.copyWith(duration: actualDuration),
             );
           }
-          // Final reload so player has the complete file
           _reloadPlayer();
         }
 
-        // Handle buffer stall recovery
+        // Ran out of generated audio, waiting for more — resume when available
         if (_waitingForBuffer && !sessionState.isComplete) {
           _waitingForBuffer = false;
           _reloadAndResume();
         }
       });
 
-      // Subscribe to buffered duration from the audio file for granular updates
       _bufferedSub = _session!.bufferedDurationStream?.listen((d) {
         state = state.copyWith(bufferedDuration: d);
       });
@@ -182,23 +246,64 @@ class ArticlePlayer extends _$ArticlePlayer {
     }
   }
 
-  Future<void> _playFromFile(String path, articles_pb.Article article) async {
+  /// Set the active article metadata so the player widget appears,
+  /// without starting playback. No-op if this article is already active.
+  void loadArticle(articles_pb.Article article) {
+    final newArticleId = article.id.toString();
+
+    if (state.articleId == newArticleId) {
+      _loadedArticle = article;
+      return;
+    }
+
+    // Different article — stop current playback and clean up
+    _cleanup();
+    _handler.stop();
+    _loadedArticle = article;
+
+    state = ActivePlayerState(
+      articleId: newArticleId,
+      articleTitle: article.title,
+      articleAuthor: article.author.isNotEmpty ? article.author : null,
+      articleImageUrl: article.image.isNotEmpty ? article.image : null,
+    );
+  }
+
+  Future<void> stop() async {
+    _cleanup();
+    await _handler.stop();
+    state = const ActivePlayerState();
+    await _persistence.clear();
+  }
+
+  Future<void> _playFromFile(
+    String path,
+    articles_pb.Article article,
+  ) async {
     final tag = _buildMediaItem(article);
     final duration = await _handler.setSource(path, tag: tag);
+    // Seek to restored position if resuming a previously played article
+    if (_resumePosition > Duration.zero) {
+      await _handler.seek(_resumePosition);
+    }
+    _playerStarted = true;
     state = state.copyWith(
       isLoading: false,
       ttsComplete: true,
+      position: _resumePosition,
       estimatedDuration: duration,
       bufferedDuration: duration ?? Duration.zero,
     );
-    _playerStarted = true;
     await _handler.play();
   }
 
   Future<void> _startPlayer() async {
     await _loadPlayerSource();
-    state = state.copyWith(isLoading: false);
+    if (_resumePosition > Duration.zero) {
+      await _handler.seek(_resumePosition);
+    }
     _playerStarted = true;
+    state = state.copyWith(isLoading: false, position: _resumePosition);
     await _handler.play();
   }
 
@@ -211,14 +316,13 @@ class ArticlePlayer extends _$ArticlePlayer {
       await _handler.setSource(_session!.filePath!, tag: tag);
       _loadedDuration = state.bufferedDuration;
     } catch (e) {
-      // This is most likely non-issue and mostly caused by the player concurrently trying to load an incomplete file
       print("Error loading audio source: $e");
     }
   }
 
   Future<void> _reloadPlayer() async {
     if (_reloading || _session?.filePath == null) return;
-    if (state.bufferedDuration <= _loadedDuration) return; // nothing new
+    if (state.bufferedDuration <= _loadedDuration) return;
 
     _reloading = true;
     try {
@@ -247,12 +351,18 @@ class ArticlePlayer extends _$ArticlePlayer {
     }
   }
 
-  // --- Player listeners ---
-
   void _wirePlayerListeners() {
     _positionSub = _handler.positionStream.listen((p) {
-      if (_reloading) return;
+      if (_reloading || !_playerStarted) return;
       state = state.copyWith(position: p);
+
+      // Persist position every ~5 seconds
+      final now = DateTime.now();
+      if (now.difference(_lastPersistTime).inSeconds >= 5) {
+        _lastPersistTime = now;
+        persistState();
+      }
+
       // Trigger reload when nearing end of loaded audio
       if (!state.ttsComplete && !_reloading) {
         final threshold = _loadedDuration - const Duration(milliseconds: 300);
@@ -267,12 +377,10 @@ class ArticlePlayer extends _$ArticlePlayer {
       if (!_playerStarted) return;
 
       if (s.processingState == ProcessingState.completed) {
-      // Ran out of generated audio, waiting for more
         if (!state.ttsComplete) {
           _waitingForBuffer = true;
           state = state.copyWith(isLoading: true, isPlaying: false);
         } else {
-          // Track naturally finished
           state = state.copyWith(isPlaying: false);
         }
         return;
@@ -280,8 +388,7 @@ class ArticlePlayer extends _$ArticlePlayer {
 
       state = state.copyWith(
         isPlaying: s.playing,
-        isLoading:
-            s.processingState == ProcessingState.loading ||
+        isLoading: s.processingState == ProcessingState.loading ||
             s.processingState == ProcessingState.buffering,
       );
     });
@@ -291,10 +398,38 @@ class ArticlePlayer extends _$ArticlePlayer {
   Future<void> resume() async => _handler.play();
 
   Future<void> togglePlayPause() async {
+    if (!_playerStarted) {
+      // Have the article object — start playback directly
+      if (_loadedArticle != null) {
+        await play(article: _loadedArticle!);
+        return;
+      }
+      // Restored from persistence — fetch the article from the repository
+      if (state.articleId != null) {
+        await _fetchAndPlay(state.articleId!);
+        return;
+      }
+      return;
+    }
     if (_handler.isPlaying) {
       await pause();
     } else {
       await resume();
+    }
+  }
+
+  Future<void> _fetchAndPlay(String articleId) async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final repository = ref.read(articleRepositoryProvider);
+      final article = await repository.getArticle(articleId);
+      if (article == null) {
+        state = state.copyWith(isLoading: false, error: "Article not available offline");
+        return;
+      }
+      await play(article: article);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -304,12 +439,10 @@ class ArticlePlayer extends _$ArticlePlayer {
       return;
     }
 
-    // If seeking beyond loaded range, reload first if the buffer has caught up
     if (target > _loadedDuration && state.bufferedDuration > _loadedDuration) {
       await _reloadPlayer();
     }
 
-    // Clamp to buffered range
     final maxMs = (state.bufferedDuration - const Duration(milliseconds: 500))
         .inMilliseconds
         .clamp(0, state.bufferedDuration.inMilliseconds);
@@ -323,5 +456,44 @@ class ArticlePlayer extends _$ArticlePlayer {
   Future<void> jumpBackward() async {
     final target = state.position - const Duration(seconds: 15);
     await seekTo(target.isNegative ? Duration.zero : target);
+  }
+
+  void persistState() {
+    if (state.articleId == null) return;
+    _persistence.save(
+      articleId: state.articleId!,
+      articleTitle: state.articleTitle,
+      articleAuthor: state.articleAuthor,
+      articleImageUrl: state.articleImageUrl,
+      positionMs: state.position.inMilliseconds,
+      estimatedDurationMs: state.estimatedDuration?.inMilliseconds,
+      ttsComplete: state.ttsComplete,
+    );
+  }
+
+  Future<void> _restoreLastPlayed() async {
+    _restoring = true;
+    try {
+      final data = await _persistence.load();
+      // Abort if play() was called while we were loading
+      if (!_restoring || data == null) return;
+
+      state = ActivePlayerState(
+        articleId: data["articleId"] as String,
+        articleTitle: data["articleTitle"] as String?,
+        articleAuthor: data["articleAuthor"] as String?,
+        articleImageUrl: data["articleImageUrl"] as String?,
+        position: Duration(milliseconds: data["positionMs"] as int? ?? 0),
+        estimatedDuration: data["estimatedDurationMs"] != null
+            ? Duration(milliseconds: data["estimatedDurationMs"] as int)
+            : null,
+        ttsComplete: data["ttsComplete"] as bool? ?? false,
+        isPlaying: false,
+      );
+    } catch (_) {
+      // Best-effort restore — don't crash on corrupt/missing data
+    } finally {
+      _restoring = false;
+    }
   }
 }

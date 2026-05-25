@@ -1,44 +1,36 @@
-import "package:fixnum/fixnum.dart";
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_test/flutter_test.dart";
 
 import "package:readintent_flutter/features/articles/presentation/article_player_widget.dart";
 import "package:readintent_flutter/features/articles/providers/article_player_provider.dart";
-import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
 
 void main() {
-  late articles_pb.Article article;
-
-  setUp(() {
-    article = articles_pb.Article(
-      id: Int64(1),
-      title: "Test Article",
-      author: "Test Author",
-      status: "ready",
-    );
-  });
-
-  Widget buildWidget({ArticlePlayerState? overrideState}) {
+  Widget buildWidget({required ActivePlayerState state}) {
     return ProviderScope(
       overrides: [
-        if (overrideState != null)
-          articlePlayerProvider("1").overrideWith(() {
-            return _FakeArticlePlayer(overrideState);
-          }),
+        activePlayerProvider.overrideWith(() {
+          return _FakeActivePlayer(state);
+        }),
       ],
-      child: MaterialApp(
-        home: Scaffold(
-          body: ArticlePlayerWidget(article: article),
-        ),
+      child: const MaterialApp(
+        home: Scaffold(body: ArticlePlayerWidget()),
       ),
     );
   }
 
   group("ArticlePlayerWidget", () {
-    testWidgets("shows play button in initial state", (tester) async {
+    testWidgets("shows article title", (tester) async {
       await tester.pumpWidget(buildWidget(
-        overrideState: const ArticlePlayerState(),
+        state: const ActivePlayerState(articleId: "1", articleTitle: "Test Article"),
+      ));
+
+      expect(find.text("Test Article"), findsOneWidget);
+    });
+
+    testWidgets("shows play button when not playing", (tester) async {
+      await tester.pumpWidget(buildWidget(
+        state: const ActivePlayerState(articleId: "1"),
       ));
 
       expect(find.byIcon(Icons.play_circle_filled), findsOneWidget);
@@ -46,7 +38,7 @@ void main() {
 
     testWidgets("shows pause button when playing", (tester) async {
       await tester.pumpWidget(buildWidget(
-        overrideState: const ArticlePlayerState(isPlaying: true),
+        state: const ActivePlayerState(articleId: "1", isPlaying: true),
       ));
 
       expect(find.byIcon(Icons.pause_circle_filled), findsOneWidget);
@@ -54,7 +46,7 @@ void main() {
 
     testWidgets("shows loading spinner when loading", (tester) async {
       await tester.pumpWidget(buildWidget(
-        overrideState: const ArticlePlayerState(isLoading: true),
+        state: const ActivePlayerState(articleId: "1", isLoading: true),
       ));
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -62,7 +54,8 @@ void main() {
 
     testWidgets("shows time labels", (tester) async {
       await tester.pumpWidget(buildWidget(
-        overrideState: const ArticlePlayerState(
+        state: const ActivePlayerState(
+          articleId: "1",
           position: Duration(seconds: 30),
           estimatedDuration: Duration(minutes: 5),
           ttsComplete: true,
@@ -75,7 +68,8 @@ void main() {
 
     testWidgets("shows generating indicator during TTS", (tester) async {
       await tester.pumpWidget(buildWidget(
-        overrideState: const ArticlePlayerState(
+        state: const ActivePlayerState(
+          articleId: "1",
           bufferedDuration: Duration(seconds: 10),
           ttsComplete: false,
         ),
@@ -86,7 +80,7 @@ void main() {
 
     testWidgets("shows error message", (tester) async {
       await tester.pumpWidget(buildWidget(
-        overrideState: const ArticlePlayerState(error: "Something failed"),
+        state: const ActivePlayerState(articleId: "1", error: "Something failed"),
       ));
 
       expect(find.text("Something failed"), findsOneWidget);
@@ -96,7 +90,8 @@ void main() {
 
     testWidgets("slider value reflects position/estimatedDuration ratio", (tester) async {
       await tester.pumpWidget(buildWidget(
-        overrideState: const ArticlePlayerState(
+        state: const ActivePlayerState(
+          articleId: "1",
           position: Duration(seconds: 30),
           estimatedDuration: Duration(seconds: 60),
         ),
@@ -108,9 +103,7 @@ void main() {
 
     testWidgets("slider disabled when estimatedDuration is zero", (tester) async {
       await tester.pumpWidget(buildWidget(
-        overrideState: const ArticlePlayerState(
-          position: Duration.zero,
-        ),
+        state: const ActivePlayerState(articleId: "1", position: Duration.zero),
       ));
 
       final slider = tester.widget<Slider>(find.byType(Slider));
@@ -119,7 +112,8 @@ void main() {
 
     testWidgets("slider enabled when estimatedDuration is non-zero", (tester) async {
       await tester.pumpWidget(buildWidget(
-        overrideState: const ArticlePlayerState(
+        state: const ActivePlayerState(
+          articleId: "1",
           position: Duration(seconds: 10),
           estimatedDuration: Duration(seconds: 60),
         ),
@@ -133,10 +127,7 @@ void main() {
 
     testWidgets("skip backward disabled at position=0", (tester) async {
       await tester.pumpWidget(buildWidget(
-        overrideState: const ArticlePlayerState(
-          position: Duration.zero,
-          isPlaying: true,
-        ),
+        state: const ActivePlayerState(articleId: "1", position: Duration.zero, isPlaying: true),
       ));
 
       final backButton = tester.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.replay_10));
@@ -145,10 +136,7 @@ void main() {
 
     testWidgets("skip backward enabled at position>0", (tester) async {
       await tester.pumpWidget(buildWidget(
-        overrideState: const ArticlePlayerState(
-          position: Duration(seconds: 5),
-          isPlaying: true,
-        ),
+        state: const ActivePlayerState(articleId: "1", position: Duration(seconds: 5), isPlaying: true),
       ));
 
       final backButton = tester.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.replay_10));
@@ -157,7 +145,8 @@ void main() {
 
     testWidgets("skip forward disabled when position+15s > bufferedDuration and not complete", (tester) async {
       await tester.pumpWidget(buildWidget(
-        overrideState: const ArticlePlayerState(
+        state: const ActivePlayerState(
+          articleId: "1",
           position: Duration(seconds: 10),
           bufferedDuration: Duration(seconds: 20),
           ttsComplete: false,
@@ -171,7 +160,8 @@ void main() {
 
     testWidgets("skip forward enabled when ttsComplete", (tester) async {
       await tester.pumpWidget(buildWidget(
-        overrideState: const ArticlePlayerState(
+        state: const ActivePlayerState(
+          articleId: "1",
           position: Duration(seconds: 10),
           bufferedDuration: Duration(seconds: 20),
           ttsComplete: true,
@@ -185,7 +175,8 @@ void main() {
 
     testWidgets("skip forward enabled when position+15s <= bufferedDuration", (tester) async {
       await tester.pumpWidget(buildWidget(
-        overrideState: const ArticlePlayerState(
+        state: const ActivePlayerState(
+          articleId: "1",
           position: Duration(seconds: 5),
           bufferedDuration: Duration(seconds: 30),
           ttsComplete: false,
@@ -201,7 +192,7 @@ void main() {
 
     testWidgets("end time shows --:-- when estimatedDuration is null", (tester) async {
       await tester.pumpWidget(buildWidget(
-        overrideState: const ArticlePlayerState(),
+        state: const ActivePlayerState(articleId: "1"),
       ));
 
       expect(find.text("--:--"), findsOneWidget);
@@ -209,7 +200,8 @@ void main() {
 
     testWidgets("end time shows ~MM:SS during generation", (tester) async {
       await tester.pumpWidget(buildWidget(
-        overrideState: const ArticlePlayerState(
+        state: const ActivePlayerState(
+          articleId: "1",
           estimatedDuration: Duration(minutes: 5),
           ttsComplete: false,
           bufferedDuration: Duration(seconds: 10),
@@ -221,7 +213,8 @@ void main() {
 
     testWidgets("end time shows MM:SS when complete", (tester) async {
       await tester.pumpWidget(buildWidget(
-        overrideState: const ArticlePlayerState(
+        state: const ActivePlayerState(
+          articleId: "1",
           estimatedDuration: Duration(minutes: 5),
           ttsComplete: true,
         ),
@@ -232,7 +225,8 @@ void main() {
 
     testWidgets("Generating... hidden when ttsComplete", (tester) async {
       await tester.pumpWidget(buildWidget(
-        overrideState: const ArticlePlayerState(
+        state: const ActivePlayerState(
+          articleId: "1",
           bufferedDuration: Duration(seconds: 10),
           ttsComplete: true,
         ),
@@ -243,7 +237,8 @@ void main() {
 
     testWidgets("Generating... hidden when bufferedDuration=0", (tester) async {
       await tester.pumpWidget(buildWidget(
-        overrideState: const ArticlePlayerState(
+        state: const ActivePlayerState(
+          articleId: "1",
           bufferedDuration: Duration.zero,
           ttsComplete: false,
         ),
@@ -252,21 +247,30 @@ void main() {
       expect(find.text("Generating..."), findsNothing);
     });
 
-    testWidgets("error text displayed in red", (tester) async {
+    testWidgets("error text displayed in error color", (tester) async {
       await tester.pumpWidget(buildWidget(
-        overrideState: const ArticlePlayerState(error: "Network failure"),
+        state: const ActivePlayerState(articleId: "1", error: "Network failure"),
       ));
 
+      final context = tester.element(find.text("Network failure"));
       final errorText = tester.widget<Text>(find.text("Network failure"));
-      expect(errorText.style?.color, Colors.red[700]);
+      expect(errorText.style?.color, Theme.of(context).colorScheme.error);
+    });
+
+    testWidgets("close button is shown", (tester) async {
+      await tester.pumpWidget(buildWidget(
+        state: const ActivePlayerState(articleId: "1", articleTitle: "Playing"),
+      ));
+
+      expect(find.byIcon(Icons.close), findsOneWidget);
     });
   });
 }
 
-class _FakeArticlePlayer extends ArticlePlayer {
-  final ArticlePlayerState _initialState;
-  _FakeArticlePlayer(this._initialState);
+class _FakeActivePlayer extends ActivePlayer {
+  final ActivePlayerState _initialState;
+  _FakeActivePlayer(this._initialState);
 
   @override
-  ArticlePlayerState build(String articleId) => _initialState;
+  ActivePlayerState build() => _initialState;
 }
