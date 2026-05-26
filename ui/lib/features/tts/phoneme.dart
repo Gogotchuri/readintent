@@ -30,6 +30,24 @@ class WordTimestamp {
   String toString() => '"$word" ${start.toStringAsFixed(3)}s - ${end.toStringAsFixed(3)}s';
 }
 
+class SentenceTimestamp {
+  final int index;
+  final String text;
+  final double startSeconds;
+  final double endSeconds;
+  final int startWordIndex;
+  final int endWordIndex;
+
+  const SentenceTimestamp({
+    required this.index,
+    required this.text,
+    required this.startSeconds,
+    required this.endSeconds,
+    required this.startWordIndex,
+    required this.endWordIndex,
+  });
+}
+
 class KokoroResult {
   final Float32List audio;
   final List<WordTimestamp> timestamps;
