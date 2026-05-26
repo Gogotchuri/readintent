@@ -69,6 +69,26 @@ class ArticlesClient {
       throw ArticlesException("Failed to check for updates: $e");
     }
   }
+
+  Future<void> saveArticleProgress({
+    required String articleId,
+    required int playerPositionMs,
+    required double scrollPosition,
+  }) async {
+    try {
+      await _client.saveArticleProgress(
+        articles_pb.SaveArticleProgressRequest(
+          articleId: articleId,
+          playerPositionMs: Int64(playerPositionMs),
+          scrollPosition: scrollPosition,
+        ),
+      );
+    } on ConnectException catch (e) {
+      handleArticlesConnectException(e, "save article progress");
+    } catch (e) {
+      throw ArticlesException("Failed to save article progress: $e");
+    }
+  }
 }
 
 @riverpod

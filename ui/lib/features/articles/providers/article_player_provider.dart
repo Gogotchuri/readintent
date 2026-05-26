@@ -165,6 +165,11 @@ class ActivePlayer extends _$ActivePlayer {
     // Preserve restored position if resuming the same article
     _resumePosition = state.articleId == newArticleId ? state.position : Duration.zero;
 
+    // If no local position, use server position from the article proto
+    if (_resumePosition == Duration.zero && article.playerPositionMs > 0) {
+      _resumePosition = Duration(milliseconds: article.playerPositionMs.toInt());
+    }
+
     // Different article or first play - tear down current session
     _cleanup();
     await _handler.stop();
@@ -469,6 +474,15 @@ class ActivePlayer extends _$ActivePlayer {
       estimatedDurationMs: state.estimatedDuration?.inMilliseconds,
       ttsComplete: state.ttsComplete,
     );
+    // Fire-and-forget server sync
+    try {
+      ref.read(articleRepositoryProvider).saveArticleProgress(
+        articleId: state.articleId!,
+        playerPositionMs: state.position.inMilliseconds,
+      );
+    } catch (_) {
+      // Skip server sync if repository is not available
+    }
   }
 
   Future<void> _restoreLastPlayed() async {
@@ -478,18 +492,36 @@ class ActivePlayer extends _$ActivePlayer {
       // Abort if play() was called while we were loading
       if (!_restoring || data == null) return;
 
+      final localPositionMs = data["positionMs"] as int? ?? 0;
+
       state = ActivePlayerState(
         articleId: data["articleId"] as String,
         articleTitle: data["articleTitle"] as String?,
         articleAuthor: data["articleAuthor"] as String?,
         articleImageUrl: data["articleImageUrl"] as String?,
-        position: Duration(milliseconds: data["positionMs"] as int? ?? 0),
+        position: Duration(milliseconds: localPositionMs),
         estimatedDuration: data["estimatedDurationMs"] != null
             ? Duration(milliseconds: data["estimatedDurationMs"] as int)
             : null,
         ttsComplete: data["ttsComplete"] as bool? ?? false,
         isPlaying: false,
       );
+
+      // Check if server has a newer position
+      final articleId = data["articleId"] as String;
+      try {
+        final repository = ref.read(articleRepositoryProvider);
+        final article = await repository.getArticle(articleId);
+        if (!_restoring) return; // play() was called in the meantime
+        // Take the largest position between local and server, to avoid regressions 
+        if (article != null && article.playerPositionMs.toInt() > localPositionMs) {
+          state = state.copyWith(
+            position: Duration(milliseconds: article.playerPositionMs.toInt()),
+          );
+        }
+      } catch (_) {
+        // Best-effort — server position is optional and won't interfere with local restore if it fails
+      }
     } catch (_) {
       // Best-effort restore — don't crash on corrupt/missing data
     } finally {

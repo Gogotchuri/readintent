@@ -127,6 +127,30 @@ class $ArticlePreviewsTable extends ArticlePreviews
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _playerPositionMsMeta = const VerificationMeta(
+    'playerPositionMs',
+  );
+  @override
+  late final GeneratedColumn<int> playerPositionMs = GeneratedColumn<int>(
+    'player_position_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _scrollPositionMeta = const VerificationMeta(
+    'scrollPosition',
+  );
+  @override
+  late final GeneratedColumn<double> scrollPosition = GeneratedColumn<double>(
+    'scroll_position',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -140,6 +164,8 @@ class $ArticlePreviewsTable extends ArticlePreviews
     imageUrl,
     sortOrder,
     cachedAt,
+    playerPositionMs,
+    scrollPosition,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -223,6 +249,24 @@ class $ArticlePreviewsTable extends ArticlePreviews
     } else if (isInserting) {
       context.missing(_cachedAtMeta);
     }
+    if (data.containsKey('player_position_ms')) {
+      context.handle(
+        _playerPositionMsMeta,
+        playerPositionMs.isAcceptableOrUnknown(
+          data['player_position_ms']!,
+          _playerPositionMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('scroll_position')) {
+      context.handle(
+        _scrollPositionMeta,
+        scrollPosition.isAcceptableOrUnknown(
+          data['scroll_position']!,
+          _scrollPositionMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -276,6 +320,14 @@ class $ArticlePreviewsTable extends ArticlePreviews
         DriftSqlType.int,
         data['${effectivePrefix}cached_at'],
       )!,
+      playerPositionMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}player_position_ms'],
+      )!,
+      scrollPosition: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}scroll_position'],
+      )!,
     );
   }
 
@@ -297,6 +349,8 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
   final String imageUrl;
   final int sortOrder;
   final int cachedAt;
+  final int playerPositionMs;
+  final double scrollPosition;
   const ArticlePreview({
     required this.id,
     required this.status,
@@ -309,6 +363,8 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
     required this.imageUrl,
     required this.sortOrder,
     required this.cachedAt,
+    required this.playerPositionMs,
+    required this.scrollPosition,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -324,6 +380,8 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
     map['image_url'] = Variable<String>(imageUrl);
     map['sort_order'] = Variable<int>(sortOrder);
     map['cached_at'] = Variable<int>(cachedAt);
+    map['player_position_ms'] = Variable<int>(playerPositionMs);
+    map['scroll_position'] = Variable<double>(scrollPosition);
     return map;
   }
 
@@ -340,6 +398,8 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
       imageUrl: Value(imageUrl),
       sortOrder: Value(sortOrder),
       cachedAt: Value(cachedAt),
+      playerPositionMs: Value(playerPositionMs),
+      scrollPosition: Value(scrollPosition),
     );
   }
 
@@ -360,6 +420,8 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
       imageUrl: serializer.fromJson<String>(json['imageUrl']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
       cachedAt: serializer.fromJson<int>(json['cachedAt']),
+      playerPositionMs: serializer.fromJson<int>(json['playerPositionMs']),
+      scrollPosition: serializer.fromJson<double>(json['scrollPosition']),
     );
   }
   @override
@@ -377,6 +439,8 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
       'imageUrl': serializer.toJson<String>(imageUrl),
       'sortOrder': serializer.toJson<int>(sortOrder),
       'cachedAt': serializer.toJson<int>(cachedAt),
+      'playerPositionMs': serializer.toJson<int>(playerPositionMs),
+      'scrollPosition': serializer.toJson<double>(scrollPosition),
     };
   }
 
@@ -392,6 +456,8 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
     String? imageUrl,
     int? sortOrder,
     int? cachedAt,
+    int? playerPositionMs,
+    double? scrollPosition,
   }) => ArticlePreview(
     id: id ?? this.id,
     status: status ?? this.status,
@@ -404,6 +470,8 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
     imageUrl: imageUrl ?? this.imageUrl,
     sortOrder: sortOrder ?? this.sortOrder,
     cachedAt: cachedAt ?? this.cachedAt,
+    playerPositionMs: playerPositionMs ?? this.playerPositionMs,
+    scrollPosition: scrollPosition ?? this.scrollPosition,
   );
   ArticlePreview copyWithCompanion(ArticlePreviewsCompanion data) {
     return ArticlePreview(
@@ -422,6 +490,12 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
       imageUrl: data.imageUrl.present ? data.imageUrl.value : this.imageUrl,
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
       cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
+      playerPositionMs: data.playerPositionMs.present
+          ? data.playerPositionMs.value
+          : this.playerPositionMs,
+      scrollPosition: data.scrollPosition.present
+          ? data.scrollPosition.value
+          : this.scrollPosition,
     );
   }
 
@@ -438,7 +512,9 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
           ..write('description: $description, ')
           ..write('imageUrl: $imageUrl, ')
           ..write('sortOrder: $sortOrder, ')
-          ..write('cachedAt: $cachedAt')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('playerPositionMs: $playerPositionMs, ')
+          ..write('scrollPosition: $scrollPosition')
           ..write(')'))
         .toString();
   }
@@ -456,6 +532,8 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
     imageUrl,
     sortOrder,
     cachedAt,
+    playerPositionMs,
+    scrollPosition,
   );
   @override
   bool operator ==(Object other) =>
@@ -471,7 +549,9 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
           other.description == this.description &&
           other.imageUrl == this.imageUrl &&
           other.sortOrder == this.sortOrder &&
-          other.cachedAt == this.cachedAt);
+          other.cachedAt == this.cachedAt &&
+          other.playerPositionMs == this.playerPositionMs &&
+          other.scrollPosition == this.scrollPosition);
 }
 
 class ArticlePreviewsCompanion extends UpdateCompanion<ArticlePreview> {
@@ -486,6 +566,8 @@ class ArticlePreviewsCompanion extends UpdateCompanion<ArticlePreview> {
   final Value<String> imageUrl;
   final Value<int> sortOrder;
   final Value<int> cachedAt;
+  final Value<int> playerPositionMs;
+  final Value<double> scrollPosition;
   const ArticlePreviewsCompanion({
     this.id = const Value.absent(),
     this.status = const Value.absent(),
@@ -498,6 +580,8 @@ class ArticlePreviewsCompanion extends UpdateCompanion<ArticlePreview> {
     this.imageUrl = const Value.absent(),
     this.sortOrder = const Value.absent(),
     this.cachedAt = const Value.absent(),
+    this.playerPositionMs = const Value.absent(),
+    this.scrollPosition = const Value.absent(),
   });
   ArticlePreviewsCompanion.insert({
     this.id = const Value.absent(),
@@ -511,6 +595,8 @@ class ArticlePreviewsCompanion extends UpdateCompanion<ArticlePreview> {
     this.imageUrl = const Value.absent(),
     this.sortOrder = const Value.absent(),
     required int cachedAt,
+    this.playerPositionMs = const Value.absent(),
+    this.scrollPosition = const Value.absent(),
   }) : status = Value(status),
        cachedAt = Value(cachedAt);
   static Insertable<ArticlePreview> custom({
@@ -525,6 +611,8 @@ class ArticlePreviewsCompanion extends UpdateCompanion<ArticlePreview> {
     Expression<String>? imageUrl,
     Expression<int>? sortOrder,
     Expression<int>? cachedAt,
+    Expression<int>? playerPositionMs,
+    Expression<double>? scrollPosition,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -538,6 +626,8 @@ class ArticlePreviewsCompanion extends UpdateCompanion<ArticlePreview> {
       if (imageUrl != null) 'image_url': imageUrl,
       if (sortOrder != null) 'sort_order': sortOrder,
       if (cachedAt != null) 'cached_at': cachedAt,
+      if (playerPositionMs != null) 'player_position_ms': playerPositionMs,
+      if (scrollPosition != null) 'scroll_position': scrollPosition,
     });
   }
 
@@ -553,6 +643,8 @@ class ArticlePreviewsCompanion extends UpdateCompanion<ArticlePreview> {
     Value<String>? imageUrl,
     Value<int>? sortOrder,
     Value<int>? cachedAt,
+    Value<int>? playerPositionMs,
+    Value<double>? scrollPosition,
   }) {
     return ArticlePreviewsCompanion(
       id: id ?? this.id,
@@ -566,6 +658,8 @@ class ArticlePreviewsCompanion extends UpdateCompanion<ArticlePreview> {
       imageUrl: imageUrl ?? this.imageUrl,
       sortOrder: sortOrder ?? this.sortOrder,
       cachedAt: cachedAt ?? this.cachedAt,
+      playerPositionMs: playerPositionMs ?? this.playerPositionMs,
+      scrollPosition: scrollPosition ?? this.scrollPosition,
     );
   }
 
@@ -605,6 +699,12 @@ class ArticlePreviewsCompanion extends UpdateCompanion<ArticlePreview> {
     if (cachedAt.present) {
       map['cached_at'] = Variable<int>(cachedAt.value);
     }
+    if (playerPositionMs.present) {
+      map['player_position_ms'] = Variable<int>(playerPositionMs.value);
+    }
+    if (scrollPosition.present) {
+      map['scroll_position'] = Variable<double>(scrollPosition.value);
+    }
     return map;
   }
 
@@ -621,7 +721,9 @@ class ArticlePreviewsCompanion extends UpdateCompanion<ArticlePreview> {
           ..write('description: $description, ')
           ..write('imageUrl: $imageUrl, ')
           ..write('sortOrder: $sortOrder, ')
-          ..write('cachedAt: $cachedAt')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('playerPositionMs: $playerPositionMs, ')
+          ..write('scrollPosition: $scrollPosition')
           ..write(')'))
         .toString();
   }
@@ -1471,6 +1573,8 @@ typedef $$ArticlePreviewsTableCreateCompanionBuilder =
       Value<String> imageUrl,
       Value<int> sortOrder,
       required int cachedAt,
+      Value<int> playerPositionMs,
+      Value<double> scrollPosition,
     });
 typedef $$ArticlePreviewsTableUpdateCompanionBuilder =
     ArticlePreviewsCompanion Function({
@@ -1485,6 +1589,8 @@ typedef $$ArticlePreviewsTableUpdateCompanionBuilder =
       Value<String> imageUrl,
       Value<int> sortOrder,
       Value<int> cachedAt,
+      Value<int> playerPositionMs,
+      Value<double> scrollPosition,
     });
 
 class $$ArticlePreviewsTableFilterComposer
@@ -1548,6 +1654,16 @@ class $$ArticlePreviewsTableFilterComposer
 
   ColumnFilters<int> get cachedAt => $composableBuilder(
     column: $table.cachedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get playerPositionMs => $composableBuilder(
+    column: $table.playerPositionMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get scrollPosition => $composableBuilder(
+    column: $table.scrollPosition,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -1615,6 +1731,16 @@ class $$ArticlePreviewsTableOrderingComposer
     column: $table.cachedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get playerPositionMs => $composableBuilder(
+    column: $table.playerPositionMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get scrollPosition => $composableBuilder(
+    column: $table.scrollPosition,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ArticlePreviewsTableAnnotationComposer
@@ -1662,6 +1788,16 @@ class $$ArticlePreviewsTableAnnotationComposer
 
   GeneratedColumn<int> get cachedAt =>
       $composableBuilder(column: $table.cachedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get playerPositionMs => $composableBuilder(
+    column: $table.playerPositionMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get scrollPosition => $composableBuilder(
+    column: $table.scrollPosition,
+    builder: (column) => column,
+  );
 }
 
 class $$ArticlePreviewsTableTableManager
@@ -1712,6 +1848,8 @@ class $$ArticlePreviewsTableTableManager
                 Value<String> imageUrl = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
                 Value<int> cachedAt = const Value.absent(),
+                Value<int> playerPositionMs = const Value.absent(),
+                Value<double> scrollPosition = const Value.absent(),
               }) => ArticlePreviewsCompanion(
                 id: id,
                 status: status,
@@ -1724,6 +1862,8 @@ class $$ArticlePreviewsTableTableManager
                 imageUrl: imageUrl,
                 sortOrder: sortOrder,
                 cachedAt: cachedAt,
+                playerPositionMs: playerPositionMs,
+                scrollPosition: scrollPosition,
               ),
           createCompanionCallback:
               ({
@@ -1738,6 +1878,8 @@ class $$ArticlePreviewsTableTableManager
                 Value<String> imageUrl = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
                 required int cachedAt,
+                Value<int> playerPositionMs = const Value.absent(),
+                Value<double> scrollPosition = const Value.absent(),
               }) => ArticlePreviewsCompanion.insert(
                 id: id,
                 status: status,
@@ -1750,6 +1892,8 @@ class $$ArticlePreviewsTableTableManager
                 imageUrl: imageUrl,
                 sortOrder: sortOrder,
                 cachedAt: cachedAt,
+                playerPositionMs: playerPositionMs,
+                scrollPosition: scrollPosition,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

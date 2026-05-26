@@ -48,6 +48,9 @@ const (
 	// ArticlesServiceCheckForUpdatesProcedure is the fully-qualified name of the ArticlesService's
 	// CheckForUpdates RPC.
 	ArticlesServiceCheckForUpdatesProcedure = "/articles.v1.ArticlesService/CheckForUpdates"
+	// ArticlesServiceSaveArticleProgressProcedure is the fully-qualified name of the ArticlesService's
+	// SaveArticleProgress RPC.
+	ArticlesServiceSaveArticleProgressProcedure = "/articles.v1.ArticlesService/SaveArticleProgress"
 )
 
 // ArticlesServiceClient is a client for the articles.v1.ArticlesService service.
@@ -57,6 +60,7 @@ type ArticlesServiceClient interface {
 	GetArticle(context.Context, *connect.Request[v1.GetArticleRequest]) (*connect.Response[v1.GetArticleResponse], error)
 	DeleteArticle(context.Context, *connect.Request[v1.DeleteArticleRequest]) (*connect.Response[v1.DeleteArticleResponse], error)
 	CheckForUpdates(context.Context, *connect.Request[v1.CheckForUpdatesRequest]) (*connect.Response[v1.CheckForUpdatesResponse], error)
+	SaveArticleProgress(context.Context, *connect.Request[v1.SaveArticleProgressRequest]) (*connect.Response[v1.SaveArticleProgressResponse], error)
 }
 
 // NewArticlesServiceClient constructs a client for the articles.v1.ArticlesService service. By
@@ -100,16 +104,23 @@ func NewArticlesServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(articlesServiceMethods.ByName("CheckForUpdates")),
 			connect.WithClientOptions(opts...),
 		),
+		saveArticleProgress: connect.NewClient[v1.SaveArticleProgressRequest, v1.SaveArticleProgressResponse](
+			httpClient,
+			baseURL+ArticlesServiceSaveArticleProgressProcedure,
+			connect.WithSchema(articlesServiceMethods.ByName("SaveArticleProgress")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // articlesServiceClient implements ArticlesServiceClient.
 type articlesServiceClient struct {
-	parseArticle    *connect.Client[v1.ParseArticleRequest, v1.ParseArticleResponse]
-	getArticles     *connect.Client[v1.GetArticlesRequest, v1.GetArticlesResponse]
-	getArticle      *connect.Client[v1.GetArticleRequest, v1.GetArticleResponse]
-	deleteArticle   *connect.Client[v1.DeleteArticleRequest, v1.DeleteArticleResponse]
-	checkForUpdates *connect.Client[v1.CheckForUpdatesRequest, v1.CheckForUpdatesResponse]
+	parseArticle        *connect.Client[v1.ParseArticleRequest, v1.ParseArticleResponse]
+	getArticles         *connect.Client[v1.GetArticlesRequest, v1.GetArticlesResponse]
+	getArticle          *connect.Client[v1.GetArticleRequest, v1.GetArticleResponse]
+	deleteArticle       *connect.Client[v1.DeleteArticleRequest, v1.DeleteArticleResponse]
+	checkForUpdates     *connect.Client[v1.CheckForUpdatesRequest, v1.CheckForUpdatesResponse]
+	saveArticleProgress *connect.Client[v1.SaveArticleProgressRequest, v1.SaveArticleProgressResponse]
 }
 
 // ParseArticle calls articles.v1.ArticlesService.ParseArticle.
@@ -137,6 +148,11 @@ func (c *articlesServiceClient) CheckForUpdates(ctx context.Context, req *connec
 	return c.checkForUpdates.CallUnary(ctx, req)
 }
 
+// SaveArticleProgress calls articles.v1.ArticlesService.SaveArticleProgress.
+func (c *articlesServiceClient) SaveArticleProgress(ctx context.Context, req *connect.Request[v1.SaveArticleProgressRequest]) (*connect.Response[v1.SaveArticleProgressResponse], error) {
+	return c.saveArticleProgress.CallUnary(ctx, req)
+}
+
 // ArticlesServiceHandler is an implementation of the articles.v1.ArticlesService service.
 type ArticlesServiceHandler interface {
 	ParseArticle(context.Context, *connect.Request[v1.ParseArticleRequest]) (*connect.Response[v1.ParseArticleResponse], error)
@@ -144,6 +160,7 @@ type ArticlesServiceHandler interface {
 	GetArticle(context.Context, *connect.Request[v1.GetArticleRequest]) (*connect.Response[v1.GetArticleResponse], error)
 	DeleteArticle(context.Context, *connect.Request[v1.DeleteArticleRequest]) (*connect.Response[v1.DeleteArticleResponse], error)
 	CheckForUpdates(context.Context, *connect.Request[v1.CheckForUpdatesRequest]) (*connect.Response[v1.CheckForUpdatesResponse], error)
+	SaveArticleProgress(context.Context, *connect.Request[v1.SaveArticleProgressRequest]) (*connect.Response[v1.SaveArticleProgressResponse], error)
 }
 
 // NewArticlesServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -183,6 +200,12 @@ func NewArticlesServiceHandler(svc ArticlesServiceHandler, opts ...connect.Handl
 		connect.WithSchema(articlesServiceMethods.ByName("CheckForUpdates")),
 		connect.WithHandlerOptions(opts...),
 	)
+	articlesServiceSaveArticleProgressHandler := connect.NewUnaryHandler(
+		ArticlesServiceSaveArticleProgressProcedure,
+		svc.SaveArticleProgress,
+		connect.WithSchema(articlesServiceMethods.ByName("SaveArticleProgress")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/articles.v1.ArticlesService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case ArticlesServiceParseArticleProcedure:
@@ -195,6 +218,8 @@ func NewArticlesServiceHandler(svc ArticlesServiceHandler, opts ...connect.Handl
 			articlesServiceDeleteArticleHandler.ServeHTTP(w, r)
 		case ArticlesServiceCheckForUpdatesProcedure:
 			articlesServiceCheckForUpdatesHandler.ServeHTTP(w, r)
+		case ArticlesServiceSaveArticleProgressProcedure:
+			articlesServiceSaveArticleProgressHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -222,4 +247,8 @@ func (UnimplementedArticlesServiceHandler) DeleteArticle(context.Context, *conne
 
 func (UnimplementedArticlesServiceHandler) CheckForUpdates(context.Context, *connect.Request[v1.CheckForUpdatesRequest]) (*connect.Response[v1.CheckForUpdatesResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("articles.v1.ArticlesService.CheckForUpdates is not implemented"))
+}
+
+func (UnimplementedArticlesServiceHandler) SaveArticleProgress(context.Context, *connect.Request[v1.SaveArticleProgressRequest]) (*connect.Response[v1.SaveArticleProgressResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("articles.v1.ArticlesService.SaveArticleProgress is not implemented"))
 }

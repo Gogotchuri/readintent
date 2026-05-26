@@ -44,4 +44,11 @@ abstract final class ArticlesService {
     articlesv1articles_service.CheckForUpdatesRequest.new,
     articlesv1articles_service.CheckForUpdatesResponse.new,
   );
+
+  static const saveArticleProgress = connect.Spec(
+    '/$name/SaveArticleProgress',
+    connect.StreamType.unary,
+    articlesv1articles_service.SaveArticleProgressRequest.new,
+    articlesv1articles_service.SaveArticleProgressResponse.new,
+  );
 }

@@ -56,6 +56,12 @@ class _FakeCheckForUpdatesResponse_4 extends _i1.SmartFake
     : super(parent, parentInvocation);
 }
 
+class _FakeSaveArticleProgressResponse_5 extends _i1.SmartFake
+    implements _i2.SaveArticleProgressResponse {
+  _FakeSaveArticleProgressResponse_5(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
 /// A class which mocks [ArticlesServiceClientI].
 ///
 /// See the documentation for Mockito's code generation for more information.
@@ -137,4 +143,19 @@ class MockArticlesServiceClientI extends _i1.Mock
             ),
           )
           as _i4.Future<_i2.CheckForUpdatesResponse>);
+
+  @override
+  _i4.Future<_i2.SaveArticleProgressResponse> saveArticleProgress(
+    _i2.SaveArticleProgressRequest? input,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#saveArticleProgress, [input]),
+            returnValue: _i4.Future<_i2.SaveArticleProgressResponse>.value(
+              _FakeSaveArticleProgressResponse_5(
+                this,
+                Invocation.method(#saveArticleProgress, [input]),
+              ),
+            ),
+          )
+          as _i4.Future<_i2.SaveArticleProgressResponse>);
 }
