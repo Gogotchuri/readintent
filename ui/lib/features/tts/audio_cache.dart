@@ -4,6 +4,7 @@ import "dart:typed_data";
 
 import "package:fnv/fnv.dart";
 import "package:path_provider/path_provider.dart";
+import "package:readintent_flutter/features/tts/phoneme.dart";
 
 class AudioCache {
   // We will store generated audio files up-to 500Mb in total.
@@ -77,6 +78,35 @@ class AudioCache {
     return dest;
   }
 
+  /// Save word timestamps as JSON alongside the audio cache file.
+  Future<void> saveTimestamps(String key, List<WordTimestamp> timestamps) async {
+    final dir = await _getDir();
+    final file = File("${dir.path}/$key.timestamps");
+    final json = jsonEncode(timestamps.map((t) => {
+      "word": t.word,
+      "start": t.start,
+      "end": t.end,
+    }).toList());
+    await file.writeAsString(json);
+  }
+
+  /// Load cached word timestamps, or null if not found.
+  Future<List<WordTimestamp>?> loadTimestamps(String key) async {
+    final dir = await _getDir();
+    final file = File("${dir.path}/$key.timestamps");
+    if (!await file.exists()) return null;
+    try {
+      final json = jsonDecode(await file.readAsString()) as List;
+      return json.map((e) => WordTimestamp(
+        word: e["word"] as String,
+        start: (e["start"] as num).toDouble(),
+        end: (e["end"] as num).toDouble(),
+      )).toList();
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Evict least recently accessed files until total cache size is under the limit.
   Future<void> evictIfNeeded() async {
     final dir = await _getDir();
@@ -97,10 +127,14 @@ class AudioCache {
     for (final f in files) {
       if (total <= _maxCacheBytes) break;
       total -= f.lengthSync();
-      // Also delete companion .meta file if it exists
+      // Also delete companion .meta and .timestamps files if they exist
       final metaFile = File("${f.path}.meta");
       if (metaFile.existsSync()) {
         await metaFile.delete();
+      }
+      final tsFile = File("${f.path.replaceFirst('.mp3', '')}.timestamps");
+      if (tsFile.existsSync()) {
+        await tsFile.delete();
       }
       await f.delete();
     }

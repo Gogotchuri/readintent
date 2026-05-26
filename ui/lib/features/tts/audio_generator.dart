@@ -50,9 +50,10 @@ class AudioGenerator {
   TTSPipeline? _pipeline;
   GrowingAudioFile? _audioFile;
   bool _disposed = false;
+  List<WordTimestamp> _wordTimestamps = [];
+  double _accumulatedSeconds = 0.0;
 
-  final StreamController<TTSSessionState> _stateController =
-      StreamController<TTSSessionState>.broadcast();
+  final StreamController<TTSSessionState> _stateController = StreamController<TTSSessionState>.broadcast();
   TTSSessionState _state = const TTSSessionState();
 
   AudioGenerator({
@@ -75,11 +76,10 @@ class AudioGenerator {
   Stream<TTSSessionState> get stateStream => _stateController.stream;
   TTSSessionState get currentState => _state;
   String? get filePath => _audioFile?.filePath;
-  Duration get bufferedDuration =>
-      _audioFile?.bufferedDuration ?? Duration.zero;
+  Duration get bufferedDuration => _audioFile?.bufferedDuration ?? Duration.zero;
   bool get isComplete => _state.isComplete;
-  Stream<Duration>? get bufferedDurationStream =>
-      _audioFile?.bufferedDurationStream;
+  Stream<Duration>? get bufferedDurationStream => _audioFile?.bufferedDurationStream;
+  List<WordTimestamp> get wordTimestamps => List.unmodifiable(_wordTimestamps);
 
   /// Returns the cache path if a complete (no .meta companion) file is cached.
   Future<String?> checkCacheForComplete() async {
@@ -90,46 +90,32 @@ class AudioGenerator {
     return cached.path;
   }
 
-  /// Run TTS generation. Calls [onBufferReady] once the buffer threshold is reached.
+  /// Run TTS generation. Calls [onBufferReady] once the buffer threshold is reached. Can be called multiple times if the buffer is consumed and more generation is needed.
   Future<void> generate({
     Duration bufferThreshold = const Duration(seconds: 10),
     required Future<void> Function() onBufferReady,
   }) async {
     if (_disposed) return;
 
-    final cachePath = await cache.pathForKey(cacheKey);
-
-    // Try resume
-    final resumed = GrowingAudioFile.tryResume(cachePath);
-    final int startIndex;
-    if (resumed != null) {
-      _audioFile = resumed;
-      startIndex = resumed.lastEncodedChunkIndex + 1;
-    } else {
-      _audioFile = GrowingAudioFile(filePath: cachePath);
-      startIndex = 0;
-    }
-
+    // Setup audio file (resume if possible) and get the starting chunk index
+    final startIndex = await _initAudioFile();
     _emitState(_state.copyWith(bufferedDuration: _audioFile!.bufferedDuration));
 
     try {
       await _ensurePipeline();
       if (_disposed) return;
 
-      final totalTokens = chunks.fold<int>(
-        0,
-        (sum, c) => sum + c.tokenIds.length,
-      );
+      final totalTokens = chunks.fold<int>(0, (sum, c) => sum + c.tokenIds.length);
       int processedTokens = 0;
-      // Count tokens from already-processed chunks for estimation
       for (int i = 0; i < startIndex && i < chunks.length; i++) {
         processedTokens += chunks[i].tokenIds.length;
       }
 
       bool bufferReadyCalled = false;
 
-      // If resuming, we already have playable audio, start the player immediately
+      // If we are resuming from a previous session, we might already have enough buffered audio
       if (startIndex > 0) {
+        await _restoreResumeState();
         bufferReadyCalled = true;
         await onBufferReady();
       }
@@ -141,33 +127,25 @@ class AudioGenerator {
         final result = await _pipeline!.runInference(chunks[i], voice);
         if (_disposed) return;
 
+        _appendTimestamps(result.timestamps);
         await _audioFile!.addChunk(result.audio, i);
+        _accumulatedSeconds = _audioFile!.bufferedDuration.inMilliseconds / 1000.0;
+        // Save timestamps incrementally so they survive interrupted generation
+        await cache.saveTimestamps(cacheKey, _wordTimestamps);
         _updateEstimation(processedTokens, totalTokens);
 
-        if (!bufferReadyCalled &&
-            _audioFile!.bufferedDuration >= bufferThreshold) {
+        // Call onBufferReady if we have reached the threshold and haven't called it since the last chunk was added
+        if (!bufferReadyCalled && _audioFile!.bufferedDuration >= bufferThreshold) {
           bufferReadyCalled = true;
           await onBufferReady();
         }
       }
 
-      // If we never reached threshold, start anyway
       if (!bufferReadyCalled && !_disposed) {
         await onBufferReady();
       }
 
-      if (_disposed) return;
-
-      await _audioFile!.finalize();
-      await cache.evictIfNeeded();
-
-      _emitState(
-        _state.copyWith(
-          isComplete: true,
-          bufferedDuration: _audioFile!.bufferedDuration,
-          estimatedDuration: _audioFile!.bufferedDuration,
-        ),
-      );
+      if (!_disposed) await _finalizeGeneration();
     } catch (e) {
       if (!_disposed) {
         _emitState(_state.copyWith(error: e.toString()));
@@ -176,6 +154,57 @@ class AudioGenerator {
     }
   }
 
+  /// Sets up or resumes the audio file. Returns the chunk index to start from.
+  Future<int> _initAudioFile() async {
+    final cachePath = await cache.pathForKey(cacheKey);
+    final resumed = GrowingAudioFile.tryResume(cachePath);
+    if (resumed != null) {
+      _audioFile = resumed;
+      return resumed.lastEncodedChunkIndex + 1;
+    }
+    _audioFile = GrowingAudioFile(filePath: cachePath);
+    return 0;
+  }
+
+  /// Restores accumulated seconds and cached timestamps when resuming.
+  Future<void> _restoreResumeState() async {
+    _accumulatedSeconds = _audioFile!.bufferedDuration.inMilliseconds / 1000.0;
+    final cachedTs = await cache.loadTimestamps(cacheKey);
+    if (cachedTs != null) {
+      _wordTimestamps = cachedTs;
+    }
+  }
+
+  /// Offsets chunk-local timestamps by [_accumulatedSeconds] and appends them.
+  void _appendTimestamps(List<WordTimestamp> chunkTimestamps) {
+    for (final wt in chunkTimestamps) {
+      _wordTimestamps.add(
+        WordTimestamp(
+          word: wt.word,
+          start: wt.start + _accumulatedSeconds,
+          end: wt.end + _accumulatedSeconds,
+        ),
+      );
+    }
+  }
+
+  /// Finalizes the audio file, saves timestamps, and emits completion.
+  Future<void> _finalizeGeneration() async {
+    await _audioFile!.finalize();
+    await cache.saveTimestamps(cacheKey, _wordTimestamps);
+    await cache.evictIfNeeded();
+
+    _emitState(
+      _state.copyWith(
+        isComplete: true,
+        bufferedDuration: _audioFile!.bufferedDuration,
+        estimatedDuration: _audioFile!.bufferedDuration,
+      ),
+    );
+  }
+
+  Future<List<WordTimestamp>?> loadCachedTimestamps() => cache.loadTimestamps(cacheKey);
+
   Future<void> _ensurePipeline() async {
     _pipeline ??= await _pipelineFactory(voice);
   }
@@ -183,8 +212,7 @@ class AudioGenerator {
   void _updateEstimation(int processedTokens, int totalTokens) {
     if (_audioFile == null || processedTokens == 0) return;
     final generatedMs = _audioFile!.bufferedDuration.inMilliseconds;
-    final estimatedTotalMs = (generatedMs * totalTokens / processedTokens)
-        .round();
+    final estimatedTotalMs = (generatedMs * totalTokens / processedTokens).round();
     _emitState(
       _state.copyWith(
         estimatedDuration: Duration(milliseconds: estimatedTotalMs),
@@ -215,13 +243,7 @@ List<PhonemeChunk> _protoToChunks(List<PhonemizerData> protoChunks) {
       graphemes: pd.graphemes,
       tokenIds: pd.tokenIds.map((id) => id.toInt()).toList(),
       tokenMeta: pd.tokenMeta
-          .map(
-            (m) => TokenMeta(
-              text: m.text,
-              phonemeLen: m.phonemeLen,
-              hasWhitespace: m.hasWhitespace,
-            ),
-          )
+          .map((m) => TokenMeta(text: m.text, phonemeLen: m.phonemeLen, hasWhitespace: m.hasWhitespace))
           .toList(),
     );
   }).toList();

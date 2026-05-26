@@ -75,11 +75,10 @@ class TTSPipeline {
         throw Exception("ONNX Runtime returned null output");
       }
       audio = Float32List.fromList(_flattenNumList(output[0]!.value));
-      // If the model provides timestamps, they would be in another output tensor
+      // If the model provides predicted durations, convert to word timestamps
       if (output.length > 1 && output[1] != null) {
         final predDur = _flattenNumList(output[1]!.value);
-        timestamps = [];
-        //TODO: We need a bit complex conversion here, described by the author of the timestamped model here: https://gist.github.com/fagenorn/d4aa16704541370d9b9d5f91f1f07b34
+        timestamps = joinTimestamps(chunk.tokenMeta, predDur);
       } else {
         // If no timestamps are provided, create a single timestamp for the whole audio
         timestamps = [WordTimestamp(word: chunk.graphemes, start: 0.0, end: audio.length / 24000.0)];
@@ -101,6 +100,65 @@ class TTSPipeline {
 // ----------------------
 // Helpers
 // ----------------------
+
+/// Converts predicted phoneme durations from the ONNX model into word-level timestamps.
+///
+/// Ported from the reference Python implementation by the Kokoro timestamped model author:
+/// https://gist.github.com/fagenorn/d4aa16704541370d9b9d5f91f1f07b34
+///
+/// [tokens] maps to chunk.tokenMeta — one entry per word/punctuation token.
+/// [predDur] is the flattened predicted duration tensor (output[1]).
+/// MAGIC_DIVISOR = 80 converts half-frames to seconds (hop_size=600, sr=24000).
+List<WordTimestamp> joinTimestamps(List<TokenMeta> tokens, List<double> predDur) {
+  const magicDivisor = 80.0;
+
+  if (tokens.isEmpty || predDur.length < 3) return [];
+
+  // BOS offset: predDur[0] is the begin-of-sequence token
+  double left = 2 * (predDur[0] - 3).clamp(0, double.infinity);
+  double right = left;
+  int i = 1; // Skip BOS token
+
+  final timestamps = <WordTimestamp>[];
+
+  for (final t in tokens) {
+    if (i >= predDur.length - 1) break; // Stop before EOS token
+
+    // Token with no phonemes (e.g., punctuation)
+    if (t.phonemeLen == 0) {
+      if (t.hasWhitespace) {
+        i += 1;
+        if (i >= predDur.length) break;
+        left = right + predDur[i];
+        right = left + predDur[i];
+        i += 1;
+      }
+      continue;
+    }
+
+    final j = i + t.phonemeLen;
+    if (j >= predDur.length) break;
+
+    final startTs = left / magicDivisor;
+
+    // Sum durations for all phonemes in this token
+    double tokenDur = 0;
+    for (int k = i; k < j; k++) {
+      tokenDur += predDur[k];
+    }
+
+    final spaceDur = t.hasWhitespace ? predDur[j] : 0.0;
+    left = right + (2 * tokenDur) + spaceDur;
+    final endTs = left / magicDivisor;
+    right = left + spaceDur;
+
+    i = j + (t.hasWhitespace ? 1 : 0);
+
+    timestamps.add(WordTimestamp(word: t.text, start: startTs, end: endTs));
+  }
+
+  return timestamps;
+}
 
 // Flattens a nested list of numbers into a single list of doubles
 List<double> _flattenNumList(dynamic value) {
