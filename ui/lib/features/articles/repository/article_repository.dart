@@ -194,6 +194,27 @@ class ArticleRepository {
     return ParseArticleResult(queued: true);
   }
 
+  /// Fire-and-forget save of article progress.
+  /// Always updates local DB; also syncs to server when online.
+  void saveArticleProgress({
+    required String articleId,
+    int playerPositionMs = 0,
+    double scrollPosition = 0,
+  }) {
+    final intId = int.tryParse(articleId);
+    if (intId != null) {
+      _db.updateProgress(intId, playerPositionMs, scrollPosition).catchError((_) {});
+    }
+    if (!_isOnline) return;
+    _remote
+        .saveArticleProgress(
+          articleId: articleId,
+          playerPositionMs: playerPositionMs,
+          scrollPosition: scrollPosition,
+        )
+        .catchError((_) {});
+  }
+
   // deleteArticle with distributed transaction if online
   // or optimistic local delete if offline
   Future<void> deleteArticle(String id) async {
@@ -249,6 +270,8 @@ articles_pb.ArticlePreview previewRowToProto(ArticlePreview row) {
     categories: (jsonDecode(row.categories) as List).cast<String>(),
     description: row.description,
     image: row.imageUrl,
+    playerPositionMs: Int64(row.playerPositionMs),
+    scrollPosition: row.scrollPosition,
   );
 }
 
@@ -269,6 +292,8 @@ ArticlePreviewsCompanion previewProtoToCompanion(
     imageUrl: Value(proto.image),
     sortOrder: Value(sortOrder),
     cachedAt: Value(cachedAt),
+    playerPositionMs: Value(proto.playerPositionMs.toInt()),
+    scrollPosition: Value(proto.scrollPosition),
   );
 }
 
@@ -289,6 +314,8 @@ ArticlePreviewsCompanion articleToPreviewCompanion(
     imageUrl: Value(article.image),
     sortOrder: Value(sortOrder),
     cachedAt: Value(cachedAt),
+    playerPositionMs: Value(article.playerPositionMs.toInt()),
+    scrollPosition: Value(article.scrollPosition),
   );
 }
 
@@ -305,6 +332,8 @@ ArticlePreviewsCompanion previewRowToCompanion(ArticlePreview row) {
     imageUrl: Value(row.imageUrl),
     sortOrder: Value(row.sortOrder),
     cachedAt: Value(row.cachedAt),
+    playerPositionMs: Value(row.playerPositionMs),
+    scrollPosition: Value(row.scrollPosition),
   );
 }
 
@@ -345,5 +374,7 @@ articles_pb.Article detailRowToProto(
     extractedHtml: detail.extractedHtml,
     pureText: detail.pureText,
     phonemizerData: phonemizerData,
+    playerPositionMs: Int64(preview.playerPositionMs),
+    scrollPosition: preview.scrollPosition,
   );
 }

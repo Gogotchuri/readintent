@@ -1,18 +1,73 @@
+import "dart:async";
+
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
+import "package:flutter/scheduler.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart";
 import "package:readintent_flutter/features/articles/providers/article_detail_provider.dart";
 import "package:readintent_flutter/features/articles/providers/article_player_provider.dart";
+import "package:readintent_flutter/features/articles/repository/article_repository.dart";
 import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
 
-class ArticleDetailScreen extends ConsumerWidget {
+class ArticleDetailScreen extends ConsumerStatefulWidget {
   final String articleId;
   const ArticleDetailScreen({super.key, required this.articleId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final articleAsync = ref.watch(articleDetailProvider(articleId));
+  ConsumerState<ArticleDetailScreen> createState() => _ArticleDetailScreenState();
+}
+
+class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
+  final ScrollController _scrollController = ScrollController();
+  Timer? _scrollDebounce;
+  bool _scrollRestored = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _saveScrollPosition();
+    _scrollDebounce?.cancel();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    _scrollDebounce?.cancel();
+    _scrollDebounce = Timer(const Duration(seconds: 3), _saveScrollPosition);
+  }
+
+  void _saveScrollPosition() {
+    if (!_scrollController.hasClients) return;
+    final maxExtent = _scrollController.position.maxScrollExtent;
+    if (maxExtent <= 0) return;
+    final fraction = (_scrollController.offset / maxExtent).clamp(0.0, 1.0);
+    ref.read(articleRepositoryProvider).saveArticleProgress(
+      articleId: widget.articleId,
+      scrollPosition: fraction,
+    );
+  }
+
+  void _restoreScrollPosition(double scrollPosition) {
+    if (_scrollRestored || scrollPosition <= 0) return;
+    _scrollRestored = true;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      final maxExtent = _scrollController.position.maxScrollExtent;
+      if (maxExtent <= 0) return;
+      _scrollController.jumpTo(scrollPosition * maxExtent);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final articleAsync = ref.watch(articleDetailProvider(widget.articleId));
 
     return Scaffold(
       appBar: AppBar(title: Text(articleAsync.asData?.value.title ?? "Article")),
@@ -25,7 +80,7 @@ class ArticleDetailScreen extends ConsumerWidget {
               Text("Error: $error"),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () => ref.invalidate(articleDetailProvider(articleId)),
+                onPressed: () => ref.invalidate(articleDetailProvider(widget.articleId)),
                 child: const Text("Retry"),
               ),
             ],
@@ -39,7 +94,11 @@ class ArticleDetailScreen extends ConsumerWidget {
             });
           }
 
+          // Restore scroll position from server
+          _restoreScrollPosition(article.scrollPosition);
+
           return SingleChildScrollView(
+            controller: _scrollController,
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,7 +113,6 @@ class ArticleDetailScreen extends ConsumerWidget {
       ),
     );
   }
-
 }
 
 class _ArticleHeader extends StatelessWidget {

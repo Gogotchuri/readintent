@@ -143,6 +143,24 @@ func (a *ArticlesServer) CheckForUpdates(ctx context.Context, req *connect.Reque
 	}), nil
 }
 
+func (a *ArticlesServer) SaveArticleProgress(ctx context.Context, req *connect.Request[v1.SaveArticleProgressRequest]) (*connect.Response[v1.SaveArticleProgressResponse], error) {
+	session := middlewares.SessionFromCtx(ctx)
+	if session == nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("no valid session"))
+	}
+
+	id, err := strconv.ParseInt(req.Msg.GetArticleId(), 10, 64)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid article id: %w", err))
+	}
+
+	if err := a.service.SaveArticleProgress(ctx, session.Identity.ID, id, req.Msg.GetPlayerPositionMs(), req.Msg.GetScrollPosition()); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("saving article progress: %w", err))
+	}
+
+	return connect.NewResponse(&v1.SaveArticleProgressResponse{}), nil
+}
+
 func protoArticleFromArticle(article *models.Article) *v1.Article {
 	var phonemes []*v1.PhonemizerData
 	if article.PhonemizerData.Valid {
@@ -152,17 +170,19 @@ func protoArticleFromArticle(article *models.Article) *v1.Article {
 		}
 	}
 	protoArticle := &v1.Article{
-		Id:             article.Id,
-		Status:         article.Status,
-		Title:          article.Title.String(),
-		Author:         article.Author.String(),
-		Date:           article.PublishedDate.String(),
-		ExtractedHtml:  article.ExtractedHtml.String(),
-		PureText:       article.PureText.String(),
-		Description:    article.Description.StringRef(),
-		Image:          article.ImageUrl.StringRef(),
-		Url:            article.Url,
-		PhonemizerData: phonemes,
+		Id:               article.Id,
+		Status:           article.Status,
+		Title:            article.Title.String(),
+		Author:           article.Author.String(),
+		Date:             article.PublishedDate.String(),
+		ExtractedHtml:    article.ExtractedHtml.String(),
+		PureText:         article.PureText.String(),
+		Description:      article.Description.StringRef(),
+		Image:            article.ImageUrl.StringRef(),
+		Url:              article.Url,
+		PhonemizerData:   phonemes,
+		PlayerPositionMs: article.PlayerPositionMs,
+		ScrollPosition:   article.ScrollPosition,
 	}
 	return protoArticle
 }
@@ -188,14 +208,16 @@ func protoArticlePreviewsFromArticlePreviews(articles []models.ArticlePreview) [
 	var previews []*v1.ArticlePreview
 	for _, a := range articles {
 		preview := &v1.ArticlePreview{
-			Id:          a.Id,
-			Status:      a.Status,
-			Title:       a.Title.String(),
-			Author:      a.Author.String(),
-			Date:        a.PublishedDate.String(),
-			Description: a.Description.StringRef(),
-			Image:       a.ImageUrl.StringRef(),
-			Url:         a.Url,
+			Id:               a.Id,
+			Status:           a.Status,
+			Title:            a.Title.String(),
+			Author:           a.Author.String(),
+			Date:             a.PublishedDate.String(),
+			Description:      a.Description.StringRef(),
+			Image:            a.ImageUrl.StringRef(),
+			Url:              a.Url,
+			PlayerPositionMs: a.PlayerPositionMs,
+			ScrollPosition:   a.ScrollPosition,
 		}
 		previews = append(previews, preview)
 	}

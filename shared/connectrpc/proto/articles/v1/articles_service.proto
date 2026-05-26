@@ -30,6 +30,8 @@ message ArticlePreview {
   // we should add put the first few hundred characters in
   optional string description = 8;
   optional string image = 9;
+  int64 player_position_ms = 10;
+  double scroll_position = 11;
 }
 
 // Full article with all content
@@ -47,6 +49,8 @@ message Article {
   optional string description = 10;
   optional string image = 11;
   repeated PhonemizerData phonemizer_data = 12;
+  int64 player_position_ms = 13;
+  double scroll_position = 14;
 }
 
 message GetArticlesRequest {
@@ -80,6 +84,13 @@ message DeleteArticleRequest { string id = 1; }
 
 message DeleteArticleResponse {}
 
+message SaveArticleProgressRequest {
+  string article_id = 1;
+  int64 player_position_ms = 2;
+  double scroll_position = 3;
+}
+message SaveArticleProgressResponse {}
+
 message CheckForUpdatesRequest {
   int64 last_checked_at = 1;
 }
@@ -96,4 +107,5 @@ service ArticlesService {
   rpc GetArticle(GetArticleRequest) returns (GetArticleResponse);
   rpc DeleteArticle(DeleteArticleRequest) returns (DeleteArticleResponse);
   rpc CheckForUpdates(CheckForUpdatesRequest) returns (CheckForUpdatesResponse);
+  rpc SaveArticleProgress(SaveArticleProgressRequest) returns (SaveArticleProgressResponse);
 }

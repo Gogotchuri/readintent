@@ -29,7 +29,8 @@ func (p PgArticlesRepository) GetArticles(ctx context.Context, userID string, se
 	var nextPageToken string
 	var previews []models.ArticlePreview
 	query := `
-		SELECT a.id, a.url, a.status, a.title, a.author, a.published_date, a.categories, a.description, a.image_url, a.created_at
+		SELECT a.id, a.url, a.status, a.title, a.author, a.published_date, a.categories, a.description, a.image_url, a.created_at,
+			ua.player_position_ms, ua.scroll_position
 		FROM articles a
 		JOIN user_articles ua ON ua.article_id = a.id
 		WHERE ua.user_id = $1 AND ($2::timestamptz IS NULL OR (a.created_at, a.id) <= ($2, $3))
@@ -92,7 +93,8 @@ func (p PgArticlesRepository) GetArticleForUser(ctx context.Context, userID stri
 	var article models.Article
 	if err := p.db.GetContext(ctx, &article, `
 		SELECT a.id, a.url, a.status, a.title, a.author, a.published_date, a.extracted_html, a.pure_text,
-			a.categories, a.description, a.image_url, a.phonemizer_data, a.created_at
+			a.categories, a.description, a.image_url, a.phonemizer_data, a.created_at,
+			ua.player_position_ms, ua.scroll_position
 		FROM articles a
 		JOIN user_articles ua ON ua.article_id = a.id
 		WHERE ua.user_id = $1 AND a.id = $2
@@ -109,7 +111,8 @@ func (p PgArticlesRepository) GetArticleForUserWithURL(ctx context.Context, user
 	var article models.Article
 	if err := p.db.GetContext(ctx, &article, `
 		SELECT a.id, a.url, a.status, a.title, a.author, a.published_date, a.extracted_html, a.pure_text,
-			a.categories, a.description, a.image_url, a.phonemizer_data, a.created_at
+			a.categories, a.description, a.image_url, a.phonemizer_data, a.created_at,
+			ua.player_position_ms, ua.scroll_position
 		FROM articles a
 		JOIN user_articles ua ON ua.article_id = a.id
 		WHERE ua.user_id = $1 AND a.url = $2
@@ -194,6 +197,20 @@ func (p PgArticlesRepository) DeleteArticle(ctx context.Context, userID string, 
 	`, userID, id)
 	if err != nil {
 		return fmt.Errorf("failed to delete user-article relation for user %s and article %d: %w", userID, id, err)
+	}
+	return nil
+}
+
+func (p PgArticlesRepository) SaveArticleProgress(ctx context.Context, userID string, articleID int64, playerPositionMs int64, scrollPosition float64) error {
+	_, err := p.db.ExecContext(ctx, `
+		UPDATE user_articles SET
+			player_position_ms = CASE WHEN $1 > 0 THEN $1 ELSE player_position_ms END,
+			scroll_position = CASE WHEN $2 > 0 THEN $2 ELSE scroll_position END,
+			position_updated_at = NOW()
+		WHERE user_id = $3 AND article_id = $4
+	`, playerPositionMs, scrollPosition, userID, articleID)
+	if err != nil {
+		return fmt.Errorf("failed to save article progress for user %s and article %d: %w", userID, articleID, err)
 	}
 	return nil
 }

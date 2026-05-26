@@ -133,6 +133,20 @@ class MockArticleRepository extends _i1.Mock implements _i3.ArticleRepository {
           as _i4.Future<_i3.ParseArticleResult>);
 
   @override
+  void saveArticleProgress({
+    required String? articleId,
+    int? playerPositionMs = 0,
+    double? scrollPosition = 0.0,
+  }) => super.noSuchMethod(
+    Invocation.method(#saveArticleProgress, [], {
+      #articleId: articleId,
+      #playerPositionMs: playerPositionMs,
+      #scrollPosition: scrollPosition,
+    }),
+    returnValueForMissingStub: null,
+  );
+
+  @override
   _i4.Future<void> deleteArticle(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#deleteArticle, [id]),

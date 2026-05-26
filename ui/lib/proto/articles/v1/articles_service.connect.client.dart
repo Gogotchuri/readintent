@@ -92,4 +92,21 @@ extension type ArticlesServiceClient (connect.Transport _transport) {
       onTrailer: onTrailer,
     );
   }
+
+  Future<articlesv1articles_service.SaveArticleProgressResponse> saveArticleProgress(
+    articlesv1articles_service.SaveArticleProgressRequest input, {
+    connect.Headers? headers,
+    connect.AbortSignal? signal,
+    Function(connect.Headers)? onHeader,
+    Function(connect.Headers)? onTrailer,
+  }) {
+    return connect.Client(_transport).unary(
+      specs.ArticlesService.saveArticleProgress,
+      input,
+      signal: signal,
+      headers: headers,
+      onHeader: onHeader,
+      onTrailer: onTrailer,
+    );
+  }
 }

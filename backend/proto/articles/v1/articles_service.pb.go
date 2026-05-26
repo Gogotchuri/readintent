@@ -161,10 +161,12 @@ type ArticlePreview struct {
 	Categories []string `protobuf:"bytes,7,rep,name=categories,proto3" json:"categories,omitempty"`
 	// If the description failed to be extracted from the metadata,
 	// we should add put the first few hundred characters in
-	Description   *string `protobuf:"bytes,8,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	Image         *string `protobuf:"bytes,9,opt,name=image,proto3,oneof" json:"image,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Description      *string `protobuf:"bytes,8,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	Image            *string `protobuf:"bytes,9,opt,name=image,proto3,oneof" json:"image,omitempty"`
+	PlayerPositionMs int64   `protobuf:"varint,10,opt,name=player_position_ms,json=playerPositionMs,proto3" json:"player_position_ms,omitempty"`
+	ScrollPosition   float64 `protobuf:"fixed64,11,opt,name=scroll_position,json=scrollPosition,proto3" json:"scroll_position,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *ArticlePreview) Reset() {
@@ -260,24 +262,40 @@ func (x *ArticlePreview) GetImage() string {
 	return ""
 }
 
+func (x *ArticlePreview) GetPlayerPositionMs() int64 {
+	if x != nil {
+		return x.PlayerPositionMs
+	}
+	return 0
+}
+
+func (x *ArticlePreview) GetScrollPosition() float64 {
+	if x != nil {
+		return x.ScrollPosition
+	}
+	return 0
+}
+
 // Full article with all content
 type Article struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Id    int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	// failed, started_gathering, text_ready, ready
-	Status         string            `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
-	Title          string            `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
-	Author         string            `protobuf:"bytes,4,opt,name=author,proto3" json:"author,omitempty"`
-	Date           string            `protobuf:"bytes,5,opt,name=date,proto3" json:"date,omitempty"`
-	ExtractedHtml  string            `protobuf:"bytes,6,opt,name=extracted_html,json=extractedHtml,proto3" json:"extracted_html,omitempty"`
-	PureText       string            `protobuf:"bytes,7,opt,name=pure_text,json=pureText,proto3" json:"pure_text,omitempty"`
-	Url            string            `protobuf:"bytes,8,opt,name=url,proto3" json:"url,omitempty"`
-	Categories     []string          `protobuf:"bytes,9,rep,name=categories,proto3" json:"categories,omitempty"`
-	Description    *string           `protobuf:"bytes,10,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	Image          *string           `protobuf:"bytes,11,opt,name=image,proto3,oneof" json:"image,omitempty"`
-	PhonemizerData []*PhonemizerData `protobuf:"bytes,12,rep,name=phonemizer_data,json=phonemizerData,proto3" json:"phonemizer_data,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	Status           string            `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	Title            string            `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	Author           string            `protobuf:"bytes,4,opt,name=author,proto3" json:"author,omitempty"`
+	Date             string            `protobuf:"bytes,5,opt,name=date,proto3" json:"date,omitempty"`
+	ExtractedHtml    string            `protobuf:"bytes,6,opt,name=extracted_html,json=extractedHtml,proto3" json:"extracted_html,omitempty"`
+	PureText         string            `protobuf:"bytes,7,opt,name=pure_text,json=pureText,proto3" json:"pure_text,omitempty"`
+	Url              string            `protobuf:"bytes,8,opt,name=url,proto3" json:"url,omitempty"`
+	Categories       []string          `protobuf:"bytes,9,rep,name=categories,proto3" json:"categories,omitempty"`
+	Description      *string           `protobuf:"bytes,10,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	Image            *string           `protobuf:"bytes,11,opt,name=image,proto3,oneof" json:"image,omitempty"`
+	PhonemizerData   []*PhonemizerData `protobuf:"bytes,12,rep,name=phonemizer_data,json=phonemizerData,proto3" json:"phonemizer_data,omitempty"`
+	PlayerPositionMs int64             `protobuf:"varint,13,opt,name=player_position_ms,json=playerPositionMs,proto3" json:"player_position_ms,omitempty"`
+	ScrollPosition   float64           `protobuf:"fixed64,14,opt,name=scroll_position,json=scrollPosition,proto3" json:"scroll_position,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *Article) Reset() {
@@ -392,6 +410,20 @@ func (x *Article) GetPhonemizerData() []*PhonemizerData {
 		return x.PhonemizerData
 	}
 	return nil
+}
+
+func (x *Article) GetPlayerPositionMs() int64 {
+	if x != nil {
+		return x.PlayerPositionMs
+	}
+	return 0
+}
+
+func (x *Article) GetScrollPosition() float64 {
+	if x != nil {
+		return x.ScrollPosition
+	}
+	return 0
 }
 
 type GetArticlesRequest struct {
@@ -781,6 +813,102 @@ func (*DeleteArticleResponse) Descriptor() ([]byte, []int) {
 	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{11}
 }
 
+type SaveArticleProgressRequest struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	ArticleId        string                 `protobuf:"bytes,1,opt,name=article_id,json=articleId,proto3" json:"article_id,omitempty"`
+	PlayerPositionMs int64                  `protobuf:"varint,2,opt,name=player_position_ms,json=playerPositionMs,proto3" json:"player_position_ms,omitempty"`
+	ScrollPosition   float64                `protobuf:"fixed64,3,opt,name=scroll_position,json=scrollPosition,proto3" json:"scroll_position,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *SaveArticleProgressRequest) Reset() {
+	*x = SaveArticleProgressRequest{}
+	mi := &file_articles_v1_articles_service_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SaveArticleProgressRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SaveArticleProgressRequest) ProtoMessage() {}
+
+func (x *SaveArticleProgressRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_articles_v1_articles_service_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SaveArticleProgressRequest.ProtoReflect.Descriptor instead.
+func (*SaveArticleProgressRequest) Descriptor() ([]byte, []int) {
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *SaveArticleProgressRequest) GetArticleId() string {
+	if x != nil {
+		return x.ArticleId
+	}
+	return ""
+}
+
+func (x *SaveArticleProgressRequest) GetPlayerPositionMs() int64 {
+	if x != nil {
+		return x.PlayerPositionMs
+	}
+	return 0
+}
+
+func (x *SaveArticleProgressRequest) GetScrollPosition() float64 {
+	if x != nil {
+		return x.ScrollPosition
+	}
+	return 0
+}
+
+type SaveArticleProgressResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SaveArticleProgressResponse) Reset() {
+	*x = SaveArticleProgressResponse{}
+	mi := &file_articles_v1_articles_service_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SaveArticleProgressResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SaveArticleProgressResponse) ProtoMessage() {}
+
+func (x *SaveArticleProgressResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_articles_v1_articles_service_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SaveArticleProgressResponse.ProtoReflect.Descriptor instead.
+func (*SaveArticleProgressResponse) Descriptor() ([]byte, []int) {
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{13}
+}
+
 type CheckForUpdatesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	LastCheckedAt int64                  `protobuf:"varint,1,opt,name=last_checked_at,json=lastCheckedAt,proto3" json:"last_checked_at,omitempty"`
@@ -790,7 +918,7 @@ type CheckForUpdatesRequest struct {
 
 func (x *CheckForUpdatesRequest) Reset() {
 	*x = CheckForUpdatesRequest{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[12]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -802,7 +930,7 @@ func (x *CheckForUpdatesRequest) String() string {
 func (*CheckForUpdatesRequest) ProtoMessage() {}
 
 func (x *CheckForUpdatesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[12]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -815,7 +943,7 @@ func (x *CheckForUpdatesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckForUpdatesRequest.ProtoReflect.Descriptor instead.
 func (*CheckForUpdatesRequest) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{12}
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *CheckForUpdatesRequest) GetLastCheckedAt() int64 {
@@ -836,7 +964,7 @@ type CheckForUpdatesResponse struct {
 
 func (x *CheckForUpdatesResponse) Reset() {
 	*x = CheckForUpdatesResponse{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[13]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -848,7 +976,7 @@ func (x *CheckForUpdatesResponse) String() string {
 func (*CheckForUpdatesResponse) ProtoMessage() {}
 
 func (x *CheckForUpdatesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[13]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -861,7 +989,7 @@ func (x *CheckForUpdatesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckForUpdatesResponse.ProtoReflect.Descriptor instead.
 func (*CheckForUpdatesResponse) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{13}
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *CheckForUpdatesResponse) GetHasUpdates() bool {
@@ -893,7 +1021,7 @@ const file_articles_v1_articles_service_proto_rawDesc = "" +
 	"\bphonemes\x18\x02 \x01(\tR\bphonemes\x12\x1b\n" +
 	"\ttoken_ids\x18\x03 \x03(\x03R\btokenIds\x12?\n" +
 	"\n" +
-	"token_meta\x18\x04 \x03(\v2 .articles.v1.PhonemizerTokenMetaR\ttokenMeta\"\x88\x02\n" +
+	"token_meta\x18\x04 \x03(\v2 .articles.v1.PhonemizerTokenMetaR\ttokenMeta\"\xdf\x02\n" +
 	"\x0eArticlePreview\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\x12\x14\n" +
@@ -905,9 +1033,12 @@ const file_articles_v1_articles_service_proto_rawDesc = "" +
 	"categories\x18\a \x03(\tR\n" +
 	"categories\x12%\n" +
 	"\vdescription\x18\b \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x19\n" +
-	"\x05image\x18\t \x01(\tH\x01R\x05image\x88\x01\x01B\x0e\n" +
+	"\x05image\x18\t \x01(\tH\x01R\x05image\x88\x01\x01\x12,\n" +
+	"\x12player_position_ms\x18\n" +
+	" \x01(\x03R\x10playerPositionMs\x12'\n" +
+	"\x0fscroll_position\x18\v \x01(\x01R\x0escrollPositionB\x0e\n" +
 	"\f_descriptionB\b\n" +
-	"\x06_image\"\x8b\x03\n" +
+	"\x06_image\"\xe2\x03\n" +
 	"\aArticle\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\x12\x14\n" +
@@ -923,7 +1054,9 @@ const file_articles_v1_articles_service_proto_rawDesc = "" +
 	"\vdescription\x18\n" +
 	" \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x19\n" +
 	"\x05image\x18\v \x01(\tH\x01R\x05image\x88\x01\x01\x12D\n" +
-	"\x0fphonemizer_data\x18\f \x03(\v2\x1b.articles.v1.PhonemizerDataR\x0ephonemizerDataB\x0e\n" +
+	"\x0fphonemizer_data\x18\f \x03(\v2\x1b.articles.v1.PhonemizerDataR\x0ephonemizerData\x12,\n" +
+	"\x12player_position_ms\x18\r \x01(\x03R\x10playerPositionMs\x12'\n" +
+	"\x0fscroll_position\x18\x0e \x01(\x01R\x0escrollPositionB\x0e\n" +
 	"\f_descriptionB\b\n" +
 	"\x06_image\"\xd1\x01\n" +
 	"\x12GetArticlesRequest\x12\x1b\n" +
@@ -951,20 +1084,27 @@ const file_articles_v1_articles_service_proto_rawDesc = "" +
 	"\x14ParseArticleResponse\"&\n" +
 	"\x14DeleteArticleRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x17\n" +
-	"\x15DeleteArticleResponse\"@\n" +
+	"\x15DeleteArticleResponse\"\x92\x01\n" +
+	"\x1aSaveArticleProgressRequest\x12\x1d\n" +
+	"\n" +
+	"article_id\x18\x01 \x01(\tR\tarticleId\x12,\n" +
+	"\x12player_position_ms\x18\x02 \x01(\x03R\x10playerPositionMs\x12'\n" +
+	"\x0fscroll_position\x18\x03 \x01(\x01R\x0escrollPosition\"\x1d\n" +
+	"\x1bSaveArticleProgressResponse\"@\n" +
 	"\x16CheckForUpdatesRequest\x12&\n" +
 	"\x0flast_checked_at\x18\x01 \x01(\x03R\rlastCheckedAt\"e\n" +
 	"\x17CheckForUpdatesResponse\x12\x1f\n" +
 	"\vhas_updates\x18\x01 \x01(\bR\n" +
 	"hasUpdates\x12)\n" +
-	"\x10server_timestamp\x18\x02 \x01(\x03R\x0fserverTimestamp2\xbd\x03\n" +
+	"\x10server_timestamp\x18\x02 \x01(\x03R\x0fserverTimestamp2\xa7\x04\n" +
 	"\x0fArticlesService\x12S\n" +
 	"\fParseArticle\x12 .articles.v1.ParseArticleRequest\x1a!.articles.v1.ParseArticleResponse\x12P\n" +
 	"\vGetArticles\x12\x1f.articles.v1.GetArticlesRequest\x1a .articles.v1.GetArticlesResponse\x12M\n" +
 	"\n" +
 	"GetArticle\x12\x1e.articles.v1.GetArticleRequest\x1a\x1f.articles.v1.GetArticleResponse\x12V\n" +
 	"\rDeleteArticle\x12!.articles.v1.DeleteArticleRequest\x1a\".articles.v1.DeleteArticleResponse\x12\\\n" +
-	"\x0fCheckForUpdates\x12#.articles.v1.CheckForUpdatesRequest\x1a$.articles.v1.CheckForUpdatesResponseBGZEgithub.com/gogotchuri/readintent/backend/proto/articles/v1;articlesv1b\x06proto3"
+	"\x0fCheckForUpdates\x12#.articles.v1.CheckForUpdatesRequest\x1a$.articles.v1.CheckForUpdatesResponse\x12h\n" +
+	"\x13SaveArticleProgress\x12'.articles.v1.SaveArticleProgressRequest\x1a(.articles.v1.SaveArticleProgressResponseBGZEgithub.com/gogotchuri/readintent/backend/proto/articles/v1;articlesv1b\x06proto3"
 
 var (
 	file_articles_v1_articles_service_proto_rawDescOnce sync.Once
@@ -978,22 +1118,24 @@ func file_articles_v1_articles_service_proto_rawDescGZIP() []byte {
 	return file_articles_v1_articles_service_proto_rawDescData
 }
 
-var file_articles_v1_articles_service_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_articles_v1_articles_service_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_articles_v1_articles_service_proto_goTypes = []any{
-	(*PhonemizerTokenMeta)(nil),     // 0: articles.v1.PhonemizerTokenMeta
-	(*PhonemizerData)(nil),          // 1: articles.v1.PhonemizerData
-	(*ArticlePreview)(nil),          // 2: articles.v1.ArticlePreview
-	(*Article)(nil),                 // 3: articles.v1.Article
-	(*GetArticlesRequest)(nil),      // 4: articles.v1.GetArticlesRequest
-	(*GetArticlesResponse)(nil),     // 5: articles.v1.GetArticlesResponse
-	(*GetArticleRequest)(nil),       // 6: articles.v1.GetArticleRequest
-	(*GetArticleResponse)(nil),      // 7: articles.v1.GetArticleResponse
-	(*ParseArticleRequest)(nil),     // 8: articles.v1.ParseArticleRequest
-	(*ParseArticleResponse)(nil),    // 9: articles.v1.ParseArticleResponse
-	(*DeleteArticleRequest)(nil),    // 10: articles.v1.DeleteArticleRequest
-	(*DeleteArticleResponse)(nil),   // 11: articles.v1.DeleteArticleResponse
-	(*CheckForUpdatesRequest)(nil),  // 12: articles.v1.CheckForUpdatesRequest
-	(*CheckForUpdatesResponse)(nil), // 13: articles.v1.CheckForUpdatesResponse
+	(*PhonemizerTokenMeta)(nil),         // 0: articles.v1.PhonemizerTokenMeta
+	(*PhonemizerData)(nil),              // 1: articles.v1.PhonemizerData
+	(*ArticlePreview)(nil),              // 2: articles.v1.ArticlePreview
+	(*Article)(nil),                     // 3: articles.v1.Article
+	(*GetArticlesRequest)(nil),          // 4: articles.v1.GetArticlesRequest
+	(*GetArticlesResponse)(nil),         // 5: articles.v1.GetArticlesResponse
+	(*GetArticleRequest)(nil),           // 6: articles.v1.GetArticleRequest
+	(*GetArticleResponse)(nil),          // 7: articles.v1.GetArticleResponse
+	(*ParseArticleRequest)(nil),         // 8: articles.v1.ParseArticleRequest
+	(*ParseArticleResponse)(nil),        // 9: articles.v1.ParseArticleResponse
+	(*DeleteArticleRequest)(nil),        // 10: articles.v1.DeleteArticleRequest
+	(*DeleteArticleResponse)(nil),       // 11: articles.v1.DeleteArticleResponse
+	(*SaveArticleProgressRequest)(nil),  // 12: articles.v1.SaveArticleProgressRequest
+	(*SaveArticleProgressResponse)(nil), // 13: articles.v1.SaveArticleProgressResponse
+	(*CheckForUpdatesRequest)(nil),      // 14: articles.v1.CheckForUpdatesRequest
+	(*CheckForUpdatesResponse)(nil),     // 15: articles.v1.CheckForUpdatesResponse
 }
 var file_articles_v1_articles_service_proto_depIdxs = []int32{
 	0,  // 0: articles.v1.PhonemizerData.token_meta:type_name -> articles.v1.PhonemizerTokenMeta
@@ -1004,14 +1146,16 @@ var file_articles_v1_articles_service_proto_depIdxs = []int32{
 	4,  // 5: articles.v1.ArticlesService.GetArticles:input_type -> articles.v1.GetArticlesRequest
 	6,  // 6: articles.v1.ArticlesService.GetArticle:input_type -> articles.v1.GetArticleRequest
 	10, // 7: articles.v1.ArticlesService.DeleteArticle:input_type -> articles.v1.DeleteArticleRequest
-	12, // 8: articles.v1.ArticlesService.CheckForUpdates:input_type -> articles.v1.CheckForUpdatesRequest
-	9,  // 9: articles.v1.ArticlesService.ParseArticle:output_type -> articles.v1.ParseArticleResponse
-	5,  // 10: articles.v1.ArticlesService.GetArticles:output_type -> articles.v1.GetArticlesResponse
-	7,  // 11: articles.v1.ArticlesService.GetArticle:output_type -> articles.v1.GetArticleResponse
-	11, // 12: articles.v1.ArticlesService.DeleteArticle:output_type -> articles.v1.DeleteArticleResponse
-	13, // 13: articles.v1.ArticlesService.CheckForUpdates:output_type -> articles.v1.CheckForUpdatesResponse
-	9,  // [9:14] is the sub-list for method output_type
-	4,  // [4:9] is the sub-list for method input_type
+	14, // 8: articles.v1.ArticlesService.CheckForUpdates:input_type -> articles.v1.CheckForUpdatesRequest
+	12, // 9: articles.v1.ArticlesService.SaveArticleProgress:input_type -> articles.v1.SaveArticleProgressRequest
+	9,  // 10: articles.v1.ArticlesService.ParseArticle:output_type -> articles.v1.ParseArticleResponse
+	5,  // 11: articles.v1.ArticlesService.GetArticles:output_type -> articles.v1.GetArticlesResponse
+	7,  // 12: articles.v1.ArticlesService.GetArticle:output_type -> articles.v1.GetArticleResponse
+	11, // 13: articles.v1.ArticlesService.DeleteArticle:output_type -> articles.v1.DeleteArticleResponse
+	15, // 14: articles.v1.ArticlesService.CheckForUpdates:output_type -> articles.v1.CheckForUpdatesResponse
+	13, // 15: articles.v1.ArticlesService.SaveArticleProgress:output_type -> articles.v1.SaveArticleProgressResponse
+	10, // [10:16] is the sub-list for method output_type
+	4,  // [4:10] is the sub-list for method input_type
 	4,  // [4:4] is the sub-list for extension type_name
 	4,  // [4:4] is the sub-list for extension extendee
 	0,  // [0:4] is the sub-list for field type_name
@@ -1031,7 +1175,7 @@ func file_articles_v1_articles_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_articles_v1_articles_service_proto_rawDesc), len(file_articles_v1_articles_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

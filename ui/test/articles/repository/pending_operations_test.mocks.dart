@@ -414,6 +414,23 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
           as _i5.Future<void>);
 
   @override
+  _i5.Future<void> updateProgress(
+    int? articleId,
+    int? playerPositionMs,
+    double? scrollPosition,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateProgress, [
+              articleId,
+              playerPositionMs,
+              scrollPosition,
+            ]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
   _i5.Future<List<_i3.PendingOperation>> getPendingOps() =>
       (super.noSuchMethod(
             Invocation.method(#getPendingOps, []),
@@ -1005,4 +1022,21 @@ class MockArticlesClient extends _i1.Mock implements _i8.ArticlesClient {
             ),
           )
           as _i5.Future<_i6.CheckForUpdatesResponse>);
+
+  @override
+  _i5.Future<void> saveArticleProgress({
+    required String? articleId,
+    required int? playerPositionMs,
+    required double? scrollPosition,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#saveArticleProgress, [], {
+              #articleId: articleId,
+              #playerPositionMs: playerPositionMs,
+              #scrollPosition: scrollPosition,
+            }),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
 }

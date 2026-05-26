@@ -23,6 +23,8 @@ class ArticlePreviews extends Table {
   TextColumn get imageUrl => text().withDefault(const Constant(""))();
   IntColumn get sortOrder => integer().withDefault(const Constant(0))();
   IntColumn get cachedAt => integer()();
+  IntColumn get playerPositionMs => integer().withDefault(const Constant(0))();
+  RealColumn get scrollPosition => real().withDefault(const Constant(0.0))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -55,12 +57,19 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (m) async {
+        await m.createAll();
+      },
+      onUpgrade: (m, from, to) async {
+        // Drop and recreate all tables on schema upgrade, we do not store critical data and this keeps migrations simple
+        for (final table in allTables) {
+          await m.deleteTable(table.actualTableName);
+        }
         await m.createAll();
       },
       beforeOpen: (details) async {
@@ -102,6 +111,15 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> upsertDetail(ArticleDetailsCompanion entry) {
     return into(articleDetails).insert(entry, mode: InsertMode.insertOrReplace);
+  }
+
+  Future<void> updateProgress(int articleId, int playerPositionMs, double scrollPosition) {
+    return (update(articlePreviews)..where((t) => t.id.equals(articleId))).write(
+      ArticlePreviewsCompanion(
+        playerPositionMs: playerPositionMs > 0 ? Value(playerPositionMs) : const Value.absent(),
+        scrollPosition: scrollPosition > 0 ? Value(scrollPosition) : const Value.absent(),
+      ),
+    );
   }
 
   // -- PendingOperations --

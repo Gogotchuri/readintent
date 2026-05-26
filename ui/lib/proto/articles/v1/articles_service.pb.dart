@@ -184,6 +184,8 @@ class ArticlePreview extends $pb.GeneratedMessage {
     $core.Iterable<$core.String>? categories,
     $core.String? description,
     $core.String? image,
+    $fixnum.Int64? playerPositionMs,
+    $core.double? scrollPosition,
   }) {
     final $result = create();
     if (id != null) {
@@ -213,6 +215,12 @@ class ArticlePreview extends $pb.GeneratedMessage {
     if (image != null) {
       $result.image = image;
     }
+    if (playerPositionMs != null) {
+      $result.playerPositionMs = playerPositionMs;
+    }
+    if (scrollPosition != null) {
+      $result.scrollPosition = scrollPosition;
+    }
     return $result;
   }
   ArticlePreview._() : super();
@@ -229,6 +237,8 @@ class ArticlePreview extends $pb.GeneratedMessage {
     ..pPS(7, _omitFieldNames ? '' : 'categories')
     ..aOS(8, _omitFieldNames ? '' : 'description')
     ..aOS(9, _omitFieldNames ? '' : 'image')
+    ..aInt64(10, _omitFieldNames ? '' : 'playerPositionMs')
+    ..a<$core.double>(11, _omitFieldNames ? '' : 'scrollPosition', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
   ;
 
@@ -330,6 +340,24 @@ class ArticlePreview extends $pb.GeneratedMessage {
   $core.bool hasImage() => $_has(8);
   @$pb.TagNumber(9)
   void clearImage() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $fixnum.Int64 get playerPositionMs => $_getI64(9);
+  @$pb.TagNumber(10)
+  set playerPositionMs($fixnum.Int64 v) { $_setInt64(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasPlayerPositionMs() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearPlayerPositionMs() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.double get scrollPosition => $_getN(10);
+  @$pb.TagNumber(11)
+  set scrollPosition($core.double v) { $_setDouble(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasScrollPosition() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearScrollPosition() => clearField(11);
 }
 
 /// Full article with all content
@@ -347,6 +375,8 @@ class Article extends $pb.GeneratedMessage {
     $core.String? description,
     $core.String? image,
     $core.Iterable<PhonemizerData>? phonemizerData,
+    $fixnum.Int64? playerPositionMs,
+    $core.double? scrollPosition,
   }) {
     final $result = create();
     if (id != null) {
@@ -385,6 +415,12 @@ class Article extends $pb.GeneratedMessage {
     if (phonemizerData != null) {
       $result.phonemizerData.addAll(phonemizerData);
     }
+    if (playerPositionMs != null) {
+      $result.playerPositionMs = playerPositionMs;
+    }
+    if (scrollPosition != null) {
+      $result.scrollPosition = scrollPosition;
+    }
     return $result;
   }
   Article._() : super();
@@ -404,6 +440,8 @@ class Article extends $pb.GeneratedMessage {
     ..aOS(10, _omitFieldNames ? '' : 'description')
     ..aOS(11, _omitFieldNames ? '' : 'image')
     ..pc<PhonemizerData>(12, _omitFieldNames ? '' : 'phonemizerData', $pb.PbFieldType.PM, subBuilder: PhonemizerData.create)
+    ..aInt64(13, _omitFieldNames ? '' : 'playerPositionMs')
+    ..a<$core.double>(14, _omitFieldNames ? '' : 'scrollPosition', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
   ;
 
@@ -524,6 +562,24 @@ class Article extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(12)
   $core.List<PhonemizerData> get phonemizerData => $_getList(11);
+
+  @$pb.TagNumber(13)
+  $fixnum.Int64 get playerPositionMs => $_getI64(12);
+  @$pb.TagNumber(13)
+  set playerPositionMs($fixnum.Int64 v) { $_setInt64(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasPlayerPositionMs() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearPlayerPositionMs() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.double get scrollPosition => $_getN(13);
+  @$pb.TagNumber(14)
+  set scrollPosition($core.double v) { $_setDouble(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasScrollPosition() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearScrollPosition() => clearField(14);
 }
 
 class GetArticlesRequest extends $pb.GeneratedMessage {
@@ -967,6 +1023,116 @@ class DeleteArticleResponse extends $pb.GeneratedMessage {
   static DeleteArticleResponse? _defaultInstance;
 }
 
+class SaveArticleProgressRequest extends $pb.GeneratedMessage {
+  factory SaveArticleProgressRequest({
+    $core.String? articleId,
+    $fixnum.Int64? playerPositionMs,
+    $core.double? scrollPosition,
+  }) {
+    final $result = create();
+    if (articleId != null) {
+      $result.articleId = articleId;
+    }
+    if (playerPositionMs != null) {
+      $result.playerPositionMs = playerPositionMs;
+    }
+    if (scrollPosition != null) {
+      $result.scrollPosition = scrollPosition;
+    }
+    return $result;
+  }
+  SaveArticleProgressRequest._() : super();
+  factory SaveArticleProgressRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SaveArticleProgressRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SaveArticleProgressRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'articles.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'articleId')
+    ..aInt64(2, _omitFieldNames ? '' : 'playerPositionMs')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'scrollPosition', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SaveArticleProgressRequest clone() => SaveArticleProgressRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SaveArticleProgressRequest copyWith(void Function(SaveArticleProgressRequest) updates) => super.copyWith((message) => updates(message as SaveArticleProgressRequest)) as SaveArticleProgressRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SaveArticleProgressRequest create() => SaveArticleProgressRequest._();
+  SaveArticleProgressRequest createEmptyInstance() => create();
+  static $pb.PbList<SaveArticleProgressRequest> createRepeated() => $pb.PbList<SaveArticleProgressRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SaveArticleProgressRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SaveArticleProgressRequest>(create);
+  static SaveArticleProgressRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get articleId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set articleId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasArticleId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearArticleId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get playerPositionMs => $_getI64(1);
+  @$pb.TagNumber(2)
+  set playerPositionMs($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPlayerPositionMs() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPlayerPositionMs() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get scrollPosition => $_getN(2);
+  @$pb.TagNumber(3)
+  set scrollPosition($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasScrollPosition() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearScrollPosition() => clearField(3);
+}
+
+class SaveArticleProgressResponse extends $pb.GeneratedMessage {
+  factory SaveArticleProgressResponse() => create();
+  SaveArticleProgressResponse._() : super();
+  factory SaveArticleProgressResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SaveArticleProgressResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SaveArticleProgressResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'articles.v1'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SaveArticleProgressResponse clone() => SaveArticleProgressResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SaveArticleProgressResponse copyWith(void Function(SaveArticleProgressResponse) updates) => super.copyWith((message) => updates(message as SaveArticleProgressResponse)) as SaveArticleProgressResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SaveArticleProgressResponse create() => SaveArticleProgressResponse._();
+  SaveArticleProgressResponse createEmptyInstance() => create();
+  static $pb.PbList<SaveArticleProgressResponse> createRepeated() => $pb.PbList<SaveArticleProgressResponse>();
+  @$core.pragma('dart2js:noInline')
+  static SaveArticleProgressResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SaveArticleProgressResponse>(create);
+  static SaveArticleProgressResponse? _defaultInstance;
+}
+
 class CheckForUpdatesRequest extends $pb.GeneratedMessage {
   factory CheckForUpdatesRequest({
     $fixnum.Int64? lastCheckedAt,
@@ -1100,6 +1266,9 @@ class ArticlesServiceApi {
   ;
   $async.Future<CheckForUpdatesResponse> checkForUpdates($pb.ClientContext? ctx, CheckForUpdatesRequest request) =>
     _client.invoke<CheckForUpdatesResponse>(ctx, 'ArticlesService', 'CheckForUpdates', request, CheckForUpdatesResponse())
+  ;
+  $async.Future<SaveArticleProgressResponse> saveArticleProgress($pb.ClientContext? ctx, SaveArticleProgressRequest request) =>
+    _client.invoke<SaveArticleProgressResponse>(ctx, 'ArticlesService', 'SaveArticleProgress', request, SaveArticleProgressResponse())
   ;
 }
 

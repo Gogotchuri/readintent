@@ -60,6 +60,8 @@ const ArticlePreview$json = {
     {'1': 'categories', '3': 7, '4': 3, '5': 9, '10': 'categories'},
     {'1': 'description', '3': 8, '4': 1, '5': 9, '9': 0, '10': 'description', '17': true},
     {'1': 'image', '3': 9, '4': 1, '5': 9, '9': 1, '10': 'image', '17': true},
+    {'1': 'player_position_ms', '3': 10, '4': 1, '5': 3, '10': 'playerPositionMs'},
+    {'1': 'scroll_position', '3': 11, '4': 1, '5': 1, '10': 'scrollPosition'},
   ],
   '8': [
     {'1': '_description'},
@@ -73,7 +75,9 @@ final $typed_data.Uint8List articlePreviewDescriptor = $convert.base64Decode(
     'MSFAoFdGl0bGUYAyABKAlSBXRpdGxlEhYKBmF1dGhvchgEIAEoCVIGYXV0aG9yEhIKBGRhdGUY'
     'BSABKAlSBGRhdGUSEAoDdXJsGAYgASgJUgN1cmwSHgoKY2F0ZWdvcmllcxgHIAMoCVIKY2F0ZW'
     'dvcmllcxIlCgtkZXNjcmlwdGlvbhgIIAEoCUgAUgtkZXNjcmlwdGlvbogBARIZCgVpbWFnZRgJ'
-    'IAEoCUgBUgVpbWFnZYgBAUIOCgxfZGVzY3JpcHRpb25CCAoGX2ltYWdl');
+    'IAEoCUgBUgVpbWFnZYgBARIsChJwbGF5ZXJfcG9zaXRpb25fbXMYCiABKANSEHBsYXllclBvc2'
+    'l0aW9uTXMSJwoPc2Nyb2xsX3Bvc2l0aW9uGAsgASgBUg5zY3JvbGxQb3NpdGlvbkIOCgxfZGVz'
+    'Y3JpcHRpb25CCAoGX2ltYWdl');
 
 @$core.Deprecated('Use articleDescriptor instead')
 const Article$json = {
@@ -91,6 +95,8 @@ const Article$json = {
     {'1': 'description', '3': 10, '4': 1, '5': 9, '9': 0, '10': 'description', '17': true},
     {'1': 'image', '3': 11, '4': 1, '5': 9, '9': 1, '10': 'image', '17': true},
     {'1': 'phonemizer_data', '3': 12, '4': 3, '5': 11, '6': '.articles.v1.PhonemizerData', '10': 'phonemizerData'},
+    {'1': 'player_position_ms', '3': 13, '4': 1, '5': 3, '10': 'playerPositionMs'},
+    {'1': 'scroll_position', '3': 14, '4': 1, '5': 1, '10': 'scrollPosition'},
   ],
   '8': [
     {'1': '_description'},
@@ -106,8 +112,9 @@ final $typed_data.Uint8List articleDescriptor = $convert.base64Decode(
     'QYByABKAlSCHB1cmVUZXh0EhAKA3VybBgIIAEoCVIDdXJsEh4KCmNhdGVnb3JpZXMYCSADKAlS'
     'CmNhdGVnb3JpZXMSJQoLZGVzY3JpcHRpb24YCiABKAlIAFILZGVzY3JpcHRpb26IAQESGQoFaW'
     '1hZ2UYCyABKAlIAVIFaW1hZ2WIAQESRAoPcGhvbmVtaXplcl9kYXRhGAwgAygLMhsuYXJ0aWNs'
-    'ZXMudjEuUGhvbmVtaXplckRhdGFSDnBob25lbWl6ZXJEYXRhQg4KDF9kZXNjcmlwdGlvbkIICg'
-    'ZfaW1hZ2U=');
+    'ZXMudjEuUGhvbmVtaXplckRhdGFSDnBob25lbWl6ZXJEYXRhEiwKEnBsYXllcl9wb3NpdGlvbl'
+    '9tcxgNIAEoA1IQcGxheWVyUG9zaXRpb25NcxInCg9zY3JvbGxfcG9zaXRpb24YDiABKAFSDnNj'
+    'cm9sbFBvc2l0aW9uQg4KDF9kZXNjcmlwdGlvbkIICgZfaW1hZ2U=');
 
 @$core.Deprecated('Use getArticlesRequestDescriptor instead')
 const GetArticlesRequest$json = {
@@ -215,6 +222,31 @@ const DeleteArticleResponse$json = {
 final $typed_data.Uint8List deleteArticleResponseDescriptor = $convert.base64Decode(
     'ChVEZWxldGVBcnRpY2xlUmVzcG9uc2U=');
 
+@$core.Deprecated('Use saveArticleProgressRequestDescriptor instead')
+const SaveArticleProgressRequest$json = {
+  '1': 'SaveArticleProgressRequest',
+  '2': [
+    {'1': 'article_id', '3': 1, '4': 1, '5': 9, '10': 'articleId'},
+    {'1': 'player_position_ms', '3': 2, '4': 1, '5': 3, '10': 'playerPositionMs'},
+    {'1': 'scroll_position', '3': 3, '4': 1, '5': 1, '10': 'scrollPosition'},
+  ],
+};
+
+/// Descriptor for `SaveArticleProgressRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List saveArticleProgressRequestDescriptor = $convert.base64Decode(
+    'ChpTYXZlQXJ0aWNsZVByb2dyZXNzUmVxdWVzdBIdCgphcnRpY2xlX2lkGAEgASgJUglhcnRpY2'
+    'xlSWQSLAoScGxheWVyX3Bvc2l0aW9uX21zGAIgASgDUhBwbGF5ZXJQb3NpdGlvbk1zEicKD3Nj'
+    'cm9sbF9wb3NpdGlvbhgDIAEoAVIOc2Nyb2xsUG9zaXRpb24=');
+
+@$core.Deprecated('Use saveArticleProgressResponseDescriptor instead')
+const SaveArticleProgressResponse$json = {
+  '1': 'SaveArticleProgressResponse',
+};
+
+/// Descriptor for `SaveArticleProgressResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List saveArticleProgressResponseDescriptor = $convert.base64Decode(
+    'ChtTYXZlQXJ0aWNsZVByb2dyZXNzUmVzcG9uc2U=');
+
 @$core.Deprecated('Use checkForUpdatesRequestDescriptor instead')
 const CheckForUpdatesRequest$json = {
   '1': 'CheckForUpdatesRequest',
@@ -250,6 +282,7 @@ const $core.Map<$core.String, $core.dynamic> ArticlesServiceBase$json = {
     {'1': 'GetArticle', '2': '.articles.v1.GetArticleRequest', '3': '.articles.v1.GetArticleResponse'},
     {'1': 'DeleteArticle', '2': '.articles.v1.DeleteArticleRequest', '3': '.articles.v1.DeleteArticleResponse'},
     {'1': 'CheckForUpdates', '2': '.articles.v1.CheckForUpdatesRequest', '3': '.articles.v1.CheckForUpdatesResponse'},
+    {'1': 'SaveArticleProgress', '2': '.articles.v1.SaveArticleProgressRequest', '3': '.articles.v1.SaveArticleProgressResponse'},
   ],
 };
 
@@ -269,6 +302,8 @@ const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> ArticlesSe
   '.articles.v1.DeleteArticleResponse': DeleteArticleResponse$json,
   '.articles.v1.CheckForUpdatesRequest': CheckForUpdatesRequest$json,
   '.articles.v1.CheckForUpdatesResponse': CheckForUpdatesResponse$json,
+  '.articles.v1.SaveArticleProgressRequest': SaveArticleProgressRequest$json,
+  '.articles.v1.SaveArticleProgressResponse': SaveArticleProgressResponse$json,
 };
 
 /// Descriptor for `ArticlesService`. Decode as a `google.protobuf.ServiceDescriptorProto`.
@@ -281,5 +316,6 @@ final $typed_data.Uint8List articlesServiceDescriptor = $convert.base64Decode(
     'NsZRIhLmFydGljbGVzLnYxLkRlbGV0ZUFydGljbGVSZXF1ZXN0GiIuYXJ0aWNsZXMudjEuRGVs'
     'ZXRlQXJ0aWNsZVJlc3BvbnNlElwKD0NoZWNrRm9yVXBkYXRlcxIjLmFydGljbGVzLnYxLkNoZW'
     'NrRm9yVXBkYXRlc1JlcXVlc3QaJC5hcnRpY2xlcy52MS5DaGVja0ZvclVwZGF0ZXNSZXNwb25z'
-    'ZQ==');
+    'ZRJoChNTYXZlQXJ0aWNsZVByb2dyZXNzEicuYXJ0aWNsZXMudjEuU2F2ZUFydGljbGVQcm9ncm'
+    'Vzc1JlcXVlc3QaKC5hcnRpY2xlcy52MS5TYXZlQXJ0aWNsZVByb2dyZXNzUmVzcG9uc2U=');
 
