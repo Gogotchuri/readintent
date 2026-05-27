@@ -35,7 +35,7 @@ class ArticlePlayerWidget extends ConsumerWidget {
               _buildProgressSlider(context, state, controller),
               const SizedBox(height: 4),
               _buildTimeLabels(context, state),
-              _buildControls(context, state, controller),
+              _buildControls(context, ref, state, controller, onArticleDetail),
               if (state.error != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
@@ -130,7 +130,13 @@ class ArticlePlayerWidget extends ConsumerWidget {
     );
   }
 
-  Widget _buildControls(BuildContext context, ActivePlayerState state, ActivePlayer controller) {
+  Widget _buildControls(
+    BuildContext context,
+    WidgetRef ref,
+    ActivePlayerState state,
+    ActivePlayer controller,
+    bool onArticleDetail,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -148,7 +154,21 @@ class ArticlePlayerWidget extends ConsumerWidget {
               : null,
           icon: const Icon(Icons.forward_10),
         ),
+        if (onArticleDetail) ...[
+          const SizedBox(width: 8),
+          _buildSyncButton(ref),
+        ],
       ],
+    );
+  }
+
+  Widget _buildSyncButton(WidgetRef ref) {
+    final syncEnabled = ref.watch(activePlayerProvider.select((s) => s.syncEnabled));
+    return IconButton(
+      icon: Icon(syncEnabled ? Icons.sync : Icons.sync_disabled),
+      color: syncEnabled ? null : Colors.grey,
+      onPressed: () => ref.read(activePlayerProvider.notifier).toggleSync(),
+      tooltip: syncEnabled ? "Disable auto-scroll" : "Enable auto-scroll",
     );
   }
 

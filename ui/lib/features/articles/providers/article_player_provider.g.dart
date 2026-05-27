@@ -41,7 +41,7 @@ final class ActivePlayerProvider
   }
 }
 
-String _$activePlayerHash() => r'41c49a4814a878e0bb749528aa0f678a18828e38';
+String _$activePlayerHash() => r'842f8b6863644d10f79d63a28706c91113c09a52';
 
 abstract class _$ActivePlayer extends $Notifier<ActivePlayerState> {
   ActivePlayerState build();

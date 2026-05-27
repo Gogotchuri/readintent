@@ -8,7 +8,7 @@ import "package:riverpod_annotation/riverpod_annotation.dart";
 
 part "articles_provider.g.dart";
 
-const _minCheckInterval = Duration(seconds: 3);
+const _minCheckInterval = Duration(seconds: 1);
 const _maxCheckInterval = Duration(seconds: 15);
 
 class ArticlesState {
@@ -173,9 +173,9 @@ class Articles extends _$Articles {
           state = AsyncData(freshState);
         }
       } else {
-        // multiply by 1.5 can't exceed max
+        // multiply by 1.3 can't exceed max
         _checkInterval = Duration(
-          milliseconds: min((_checkInterval.inMilliseconds * 1.5).round(), _maxCheckInterval.inMilliseconds),
+          milliseconds: min((_checkInterval.inMilliseconds * 1.3).round(), _maxCheckInterval.inMilliseconds),
         );
       }
     } catch (_) {

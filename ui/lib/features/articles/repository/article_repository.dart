@@ -180,6 +180,8 @@ class ArticleRepository {
         ),
       );
 
+      // Return with processed HTML so the UI gets sentence spans immediately
+      article.extractedHtml = processedHtml;
       return article;
     } catch (_) {
       return null;

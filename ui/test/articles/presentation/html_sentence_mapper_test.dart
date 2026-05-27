@@ -17,6 +17,7 @@ void main() {
       final result = injectSentenceSpans(html, [_sentence(0, "Hello world.")]);
 
       expect(result, contains('data-sentence="0"'));
+      expect(result, contains('id="sentence-0"'));
       expect(result, contains("Hello world."));
     });
 
