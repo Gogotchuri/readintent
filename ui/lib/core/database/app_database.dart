@@ -33,6 +33,7 @@ class ArticlePreviews extends Table {
 class ArticleDetails extends Table {
   IntColumn get id => integer().unique()();
   TextColumn get extractedHtml => text().withDefault(const Constant(""))();
+  TextColumn get processedHtml => text().withDefault(const Constant(""))(); // HTML with injected sentence spans for TTS highlighting
   TextColumn get pureText => text().withDefault(const Constant(""))();
   BlobColumn get phonemizerBlob => blob().nullable()();
   IntColumn get cachedAt => integer()();
@@ -57,7 +58,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {

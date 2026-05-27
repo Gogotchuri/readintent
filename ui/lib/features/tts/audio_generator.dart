@@ -70,7 +70,7 @@ class AudioGenerator {
       speed: speed,
     );
 
-    chunks = _protoToChunks(article.phonemizerData);
+    chunks = protoToChunks(article.phonemizerData);
   }
 
   Stream<TTSSessionState> get stateStream => _stateController.stream;
@@ -236,7 +236,7 @@ class AudioGenerator {
   }
 }
 
-List<PhonemeChunk> _protoToChunks(List<PhonemizerData> protoChunks) {
+List<PhonemeChunk> protoToChunks(List<PhonemizerData> protoChunks) {
   //TODO investigate why some token ids are empty
   return protoChunks.where((pd) => pd.tokenIds.isNotEmpty).map((pd) {
     return PhonemeChunk(
