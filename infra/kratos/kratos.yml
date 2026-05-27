@@ -20,6 +20,25 @@ selfservice:
   methods:
     password:
       enabled: true
+    oidc:
+      enabled: true
+      config:
+        providers:
+          - id: google
+            provider: google
+            client_id: $GOOGLE_OAUTH_CLIENT_ID
+            client_secret: $GOOGLE_OAUTH_CLIENT_SECRET
+            mapper_url: "file:///etc/config/kratos/oidc.google.jsonnet"
+            scope:
+              - email
+              - profile
+              - openid
+            requested_claims:
+              id_token:
+                email:
+                  essential: true
+                email_verified:
+                  essential: true
     totp:
       config:
         issuer: Kratos
@@ -68,6 +87,9 @@ selfservice:
           hooks:
             - hook: session
             - hook: show_verification_ui
+        oidc:
+          hooks:
+            - hook: session
 
 log:
   # TODO configure this on env basis

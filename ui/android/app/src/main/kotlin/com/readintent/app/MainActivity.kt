@@ -1,4 +1,4 @@
-package com.example.readintent_flutter
+package com.readintent.app
 
 import com.ryanheise.audioservice.AudioServiceFragmentActivity
 

@@ -1,17 +1,57 @@
-# readintent_flutter
+# ReadIntent
 
-A new Flutter project.
+Flutter client for ReadIntent.
 
-## Getting Started
+## Setup
 
-This project is a starting point for a Flutter application.
+```bash
+flutter pub get
+dart run build_runner build
+```
 
-A few resources to get you started if this is your first Flutter project:
+## Development
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```bash
+flutter run            # debug on connected device
+flutter run -d linux   # debug on linux desktop
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Release Build (Android)
+
+### 1. Create upload keystore (one-time)
+
+```bash
+keytool -genkey -v -keystore ~/upload-keystore.jks \
+  -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+```
+
+### 2. Create `android/key.properties`
+
+```properties
+storePassword=<your-password>
+keyPassword=<your-password>
+keyAlias=upload
+storeFile=/absolute/path/to/upload-keystore.jks
+```
+
+This file is gitignored. Do not commit it.
+
+### 3. Build the app bundle
+
+```bash
+flutter build appbundle --release
+```
+
+Output: `build/app/outputs/bundle/release/app-release.aab`
+
+## Google Play Store
+
+- **Application ID:** `com.readintent.app`
+- **App name:** ReadIntent
+
+### Publishing a new version
+
+1. Bump `version` in `pubspec.yaml` (e.g. `1.1.0+2` — the `+N` build number must increase each upload)
+2. Build the release bundle (step 3 above)
+3. Upload the `.aab` to Google Play Console > Release > Production (or testing track)
+4. Submit for review
