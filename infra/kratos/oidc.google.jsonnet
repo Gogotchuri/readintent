@@ -1,0 +1,12 @@
+local claims = std.extVar('claims');
+{
+  identity: {
+    traits: {
+      email: claims.email,
+      [if 'given_name' in claims then 'name']: {
+        [if 'given_name' in claims then 'first']: claims.given_name,
+        [if 'family_name' in claims then 'last']: claims.family_name,
+      },
+    },
+  },
+}

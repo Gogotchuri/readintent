@@ -25,11 +25,14 @@ resource "hcloud_server" "main" {
       domain = var.domain
     })
     kratos_config = templatefile("${path.module}/files/kratos.yml.tpl", {
-      domain               = var.domain
-      kratos_secret        = data.sops_file.secrets.data["kratos_secret"]
-      kratos_cookie_secret = data.sops_file.secrets.data["kratos_cookie_secret"]
+      domain                    = var.domain
+      kratos_secret             = data.sops_file.secrets.data["kratos_secret"]
+      kratos_cookie_secret      = data.sops_file.secrets.data["kratos_cookie_secret"]
+      google_oauth_client_id     = data.sops_file.secrets.data["google_oauth_client_id"]
+      google_oauth_client_secret = data.sops_file.secrets.data["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google_oauth_client_secret"]
     })
     kratos_identity_schema = file("${path.module}/../../infra/kratos/identity.schema.json")
+    kratos_oidc_google_mapper = file("${path.module}/../../infra/kratos/oidc.google.jsonnet")
     db_init_sql            = file("${path.module}/../../infra/database/docker-initdb/01-databases.sql")
     db_init_users_sh       = file("${path.module}/../../infra/database/docker-initdb/02-users.sh")
     db_init_perms_sql      = file("${path.module}/../../infra/database/docker-initdb/03-permissions.sql")

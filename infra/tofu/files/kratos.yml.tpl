@@ -18,6 +18,25 @@ selfservice:
   methods:
     password:
       enabled: true
+    oidc:
+      enabled: true
+      config:
+        providers:
+          - id: google
+            provider: google
+            client_id: ${google_oauth_client_id}
+            client_secret: ${google_oauth_client_secret}
+            mapper_url: "file:///etc/config/kratos/oidc.google.jsonnet"
+            scope:
+              - email
+              - profile
+              - openid
+            requested_claims:
+              id_token:
+                email:
+                  essential: true
+                email_verified:
+                  essential: true
     totp:
       config:
         issuer: ReadIntent
@@ -66,6 +85,9 @@ selfservice:
           hooks:
             - hook: session
             - hook: show_verification_ui
+        oidc:
+          hooks:
+            - hook: session
 
 log:
   level: warning

@@ -94,6 +94,12 @@ write_files:
     content: |
       ${indent(6, kratos_identity_schema)}
 
+  # Kratos OIDC Google claims mapper
+  - path: /opt/readintent/kratos/oidc.google.jsonnet
+    permissions: "0644"
+    content: |
+      ${indent(6, kratos_oidc_google_mapper)}
+
   # Database init scripts
   - path: /opt/readintent/database/docker-initdb/01-databases.sql
     permissions: "0644"
