@@ -757,6 +757,18 @@ class $ArticleDetailsTable extends ArticleDetails
     requiredDuringInsert: false,
     defaultValue: const Constant(""),
   );
+  static const VerificationMeta _processedHtmlMeta = const VerificationMeta(
+    'processedHtml',
+  );
+  @override
+  late final GeneratedColumn<String> processedHtml = GeneratedColumn<String>(
+    'processed_html',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(""),
+  );
   static const VerificationMeta _pureTextMeta = const VerificationMeta(
     'pureText',
   );
@@ -796,6 +808,7 @@ class $ArticleDetailsTable extends ArticleDetails
   List<GeneratedColumn> get $columns => [
     id,
     extractedHtml,
+    processedHtml,
     pureText,
     phonemizerBlob,
     cachedAt,
@@ -821,6 +834,15 @@ class $ArticleDetailsTable extends ArticleDetails
         extractedHtml.isAcceptableOrUnknown(
           data['extracted_html']!,
           _extractedHtmlMeta,
+        ),
+      );
+    }
+    if (data.containsKey('processed_html')) {
+      context.handle(
+        _processedHtmlMeta,
+        processedHtml.isAcceptableOrUnknown(
+          data['processed_html']!,
+          _processedHtmlMeta,
         ),
       );
     }
@@ -864,6 +886,10 @@ class $ArticleDetailsTable extends ArticleDetails
         DriftSqlType.string,
         data['${effectivePrefix}extracted_html'],
       )!,
+      processedHtml: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}processed_html'],
+      )!,
       pureText: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}pure_text'],
@@ -888,12 +914,14 @@ class $ArticleDetailsTable extends ArticleDetails
 class ArticleDetail extends DataClass implements Insertable<ArticleDetail> {
   final int id;
   final String extractedHtml;
+  final String processedHtml;
   final String pureText;
   final Uint8List? phonemizerBlob;
   final int cachedAt;
   const ArticleDetail({
     required this.id,
     required this.extractedHtml,
+    required this.processedHtml,
     required this.pureText,
     this.phonemizerBlob,
     required this.cachedAt,
@@ -903,6 +931,7 @@ class ArticleDetail extends DataClass implements Insertable<ArticleDetail> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['extracted_html'] = Variable<String>(extractedHtml);
+    map['processed_html'] = Variable<String>(processedHtml);
     map['pure_text'] = Variable<String>(pureText);
     if (!nullToAbsent || phonemizerBlob != null) {
       map['phonemizer_blob'] = Variable<Uint8List>(phonemizerBlob);
@@ -915,6 +944,7 @@ class ArticleDetail extends DataClass implements Insertable<ArticleDetail> {
     return ArticleDetailsCompanion(
       id: Value(id),
       extractedHtml: Value(extractedHtml),
+      processedHtml: Value(processedHtml),
       pureText: Value(pureText),
       phonemizerBlob: phonemizerBlob == null && nullToAbsent
           ? const Value.absent()
@@ -931,6 +961,7 @@ class ArticleDetail extends DataClass implements Insertable<ArticleDetail> {
     return ArticleDetail(
       id: serializer.fromJson<int>(json['id']),
       extractedHtml: serializer.fromJson<String>(json['extractedHtml']),
+      processedHtml: serializer.fromJson<String>(json['processedHtml']),
       pureText: serializer.fromJson<String>(json['pureText']),
       phonemizerBlob: serializer.fromJson<Uint8List?>(json['phonemizerBlob']),
       cachedAt: serializer.fromJson<int>(json['cachedAt']),
@@ -942,6 +973,7 @@ class ArticleDetail extends DataClass implements Insertable<ArticleDetail> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'extractedHtml': serializer.toJson<String>(extractedHtml),
+      'processedHtml': serializer.toJson<String>(processedHtml),
       'pureText': serializer.toJson<String>(pureText),
       'phonemizerBlob': serializer.toJson<Uint8List?>(phonemizerBlob),
       'cachedAt': serializer.toJson<int>(cachedAt),
@@ -951,12 +983,14 @@ class ArticleDetail extends DataClass implements Insertable<ArticleDetail> {
   ArticleDetail copyWith({
     int? id,
     String? extractedHtml,
+    String? processedHtml,
     String? pureText,
     Value<Uint8List?> phonemizerBlob = const Value.absent(),
     int? cachedAt,
   }) => ArticleDetail(
     id: id ?? this.id,
     extractedHtml: extractedHtml ?? this.extractedHtml,
+    processedHtml: processedHtml ?? this.processedHtml,
     pureText: pureText ?? this.pureText,
     phonemizerBlob: phonemizerBlob.present
         ? phonemizerBlob.value
@@ -969,6 +1003,9 @@ class ArticleDetail extends DataClass implements Insertable<ArticleDetail> {
       extractedHtml: data.extractedHtml.present
           ? data.extractedHtml.value
           : this.extractedHtml,
+      processedHtml: data.processedHtml.present
+          ? data.processedHtml.value
+          : this.processedHtml,
       pureText: data.pureText.present ? data.pureText.value : this.pureText,
       phonemizerBlob: data.phonemizerBlob.present
           ? data.phonemizerBlob.value
@@ -982,6 +1019,7 @@ class ArticleDetail extends DataClass implements Insertable<ArticleDetail> {
     return (StringBuffer('ArticleDetail(')
           ..write('id: $id, ')
           ..write('extractedHtml: $extractedHtml, ')
+          ..write('processedHtml: $processedHtml, ')
           ..write('pureText: $pureText, ')
           ..write('phonemizerBlob: $phonemizerBlob, ')
           ..write('cachedAt: $cachedAt')
@@ -993,6 +1031,7 @@ class ArticleDetail extends DataClass implements Insertable<ArticleDetail> {
   int get hashCode => Object.hash(
     id,
     extractedHtml,
+    processedHtml,
     pureText,
     $driftBlobEquality.hash(phonemizerBlob),
     cachedAt,
@@ -1003,6 +1042,7 @@ class ArticleDetail extends DataClass implements Insertable<ArticleDetail> {
       (other is ArticleDetail &&
           other.id == this.id &&
           other.extractedHtml == this.extractedHtml &&
+          other.processedHtml == this.processedHtml &&
           other.pureText == this.pureText &&
           $driftBlobEquality.equals(
             other.phonemizerBlob,
@@ -1014,12 +1054,14 @@ class ArticleDetail extends DataClass implements Insertable<ArticleDetail> {
 class ArticleDetailsCompanion extends UpdateCompanion<ArticleDetail> {
   final Value<int> id;
   final Value<String> extractedHtml;
+  final Value<String> processedHtml;
   final Value<String> pureText;
   final Value<Uint8List?> phonemizerBlob;
   final Value<int> cachedAt;
   const ArticleDetailsCompanion({
     this.id = const Value.absent(),
     this.extractedHtml = const Value.absent(),
+    this.processedHtml = const Value.absent(),
     this.pureText = const Value.absent(),
     this.phonemizerBlob = const Value.absent(),
     this.cachedAt = const Value.absent(),
@@ -1027,6 +1069,7 @@ class ArticleDetailsCompanion extends UpdateCompanion<ArticleDetail> {
   ArticleDetailsCompanion.insert({
     this.id = const Value.absent(),
     this.extractedHtml = const Value.absent(),
+    this.processedHtml = const Value.absent(),
     this.pureText = const Value.absent(),
     this.phonemizerBlob = const Value.absent(),
     required int cachedAt,
@@ -1034,6 +1077,7 @@ class ArticleDetailsCompanion extends UpdateCompanion<ArticleDetail> {
   static Insertable<ArticleDetail> custom({
     Expression<int>? id,
     Expression<String>? extractedHtml,
+    Expression<String>? processedHtml,
     Expression<String>? pureText,
     Expression<Uint8List>? phonemizerBlob,
     Expression<int>? cachedAt,
@@ -1041,6 +1085,7 @@ class ArticleDetailsCompanion extends UpdateCompanion<ArticleDetail> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (extractedHtml != null) 'extracted_html': extractedHtml,
+      if (processedHtml != null) 'processed_html': processedHtml,
       if (pureText != null) 'pure_text': pureText,
       if (phonemizerBlob != null) 'phonemizer_blob': phonemizerBlob,
       if (cachedAt != null) 'cached_at': cachedAt,
@@ -1050,6 +1095,7 @@ class ArticleDetailsCompanion extends UpdateCompanion<ArticleDetail> {
   ArticleDetailsCompanion copyWith({
     Value<int>? id,
     Value<String>? extractedHtml,
+    Value<String>? processedHtml,
     Value<String>? pureText,
     Value<Uint8List?>? phonemizerBlob,
     Value<int>? cachedAt,
@@ -1057,6 +1103,7 @@ class ArticleDetailsCompanion extends UpdateCompanion<ArticleDetail> {
     return ArticleDetailsCompanion(
       id: id ?? this.id,
       extractedHtml: extractedHtml ?? this.extractedHtml,
+      processedHtml: processedHtml ?? this.processedHtml,
       pureText: pureText ?? this.pureText,
       phonemizerBlob: phonemizerBlob ?? this.phonemizerBlob,
       cachedAt: cachedAt ?? this.cachedAt,
@@ -1071,6 +1118,9 @@ class ArticleDetailsCompanion extends UpdateCompanion<ArticleDetail> {
     }
     if (extractedHtml.present) {
       map['extracted_html'] = Variable<String>(extractedHtml.value);
+    }
+    if (processedHtml.present) {
+      map['processed_html'] = Variable<String>(processedHtml.value);
     }
     if (pureText.present) {
       map['pure_text'] = Variable<String>(pureText.value);
@@ -1089,6 +1139,7 @@ class ArticleDetailsCompanion extends UpdateCompanion<ArticleDetail> {
     return (StringBuffer('ArticleDetailsCompanion(')
           ..write('id: $id, ')
           ..write('extractedHtml: $extractedHtml, ')
+          ..write('processedHtml: $processedHtml, ')
           ..write('pureText: $pureText, ')
           ..write('phonemizerBlob: $phonemizerBlob, ')
           ..write('cachedAt: $cachedAt')
@@ -1924,6 +1975,7 @@ typedef $$ArticleDetailsTableCreateCompanionBuilder =
     ArticleDetailsCompanion Function({
       Value<int> id,
       Value<String> extractedHtml,
+      Value<String> processedHtml,
       Value<String> pureText,
       Value<Uint8List?> phonemizerBlob,
       required int cachedAt,
@@ -1932,6 +1984,7 @@ typedef $$ArticleDetailsTableUpdateCompanionBuilder =
     ArticleDetailsCompanion Function({
       Value<int> id,
       Value<String> extractedHtml,
+      Value<String> processedHtml,
       Value<String> pureText,
       Value<Uint8List?> phonemizerBlob,
       Value<int> cachedAt,
@@ -1953,6 +2006,11 @@ class $$ArticleDetailsTableFilterComposer
 
   ColumnFilters<String> get extractedHtml => $composableBuilder(
     column: $table.extractedHtml,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get processedHtml => $composableBuilder(
+    column: $table.processedHtml,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1991,6 +2049,11 @@ class $$ArticleDetailsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get processedHtml => $composableBuilder(
+    column: $table.processedHtml,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get pureText => $composableBuilder(
     column: $table.pureText,
     builder: (column) => ColumnOrderings(column),
@@ -2021,6 +2084,11 @@ class $$ArticleDetailsTableAnnotationComposer
 
   GeneratedColumn<String> get extractedHtml => $composableBuilder(
     column: $table.extractedHtml,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get processedHtml => $composableBuilder(
+    column: $table.processedHtml,
     builder: (column) => column,
   );
 
@@ -2071,12 +2139,14 @@ class $$ArticleDetailsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> extractedHtml = const Value.absent(),
+                Value<String> processedHtml = const Value.absent(),
                 Value<String> pureText = const Value.absent(),
                 Value<Uint8List?> phonemizerBlob = const Value.absent(),
                 Value<int> cachedAt = const Value.absent(),
               }) => ArticleDetailsCompanion(
                 id: id,
                 extractedHtml: extractedHtml,
+                processedHtml: processedHtml,
                 pureText: pureText,
                 phonemizerBlob: phonemizerBlob,
                 cachedAt: cachedAt,
@@ -2085,12 +2155,14 @@ class $$ArticleDetailsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> extractedHtml = const Value.absent(),
+                Value<String> processedHtml = const Value.absent(),
                 Value<String> pureText = const Value.absent(),
                 Value<Uint8List?> phonemizerBlob = const Value.absent(),
                 required int cachedAt,
               }) => ArticleDetailsCompanion.insert(
                 id: id,
                 extractedHtml: extractedHtml,
+                processedHtml: processedHtml,
                 pureText: pureText,
                 phonemizerBlob: phonemizerBlob,
                 cachedAt: cachedAt,

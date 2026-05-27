@@ -5,7 +5,9 @@ import "package:just_audio/just_audio.dart";
 import "package:readintent_flutter/core/player_persistence.dart";
 import "package:readintent_flutter/features/articles/repository/article_repository.dart";
 import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
+import "package:readintent_flutter/features/tts/phoneme.dart";
 import "package:readintent_flutter/features/tts/pipeline.dart";
+import "package:readintent_flutter/features/tts/sentence_builder.dart";
 import "package:readintent_flutter/models/auth_state.dart";
 import "package:riverpod_annotation/riverpod_annotation.dart";
 
@@ -37,6 +39,8 @@ class ActivePlayerState {
   final bool isLoading;
   final bool ttsComplete;
   final String? error;
+  final int? activeSentenceIndex;
+  final int totalSentences;
 
   const ActivePlayerState({
     this.articleId,
@@ -50,6 +54,8 @@ class ActivePlayerState {
     this.isLoading = false,
     this.ttsComplete = false,
     this.error,
+    this.activeSentenceIndex,
+    this.totalSentences = 0,
   });
 
   bool get hasActiveArticle => articleId != null;
@@ -66,6 +72,8 @@ class ActivePlayerState {
     bool? isLoading,
     bool? ttsComplete,
     Object? error = _sentinel,
+    Object? activeSentenceIndex = _sentinel,
+    int? totalSentences,
   }) {
     return ActivePlayerState(
       articleId: _resolve(articleId, this.articleId),
@@ -79,6 +87,8 @@ class ActivePlayerState {
       isLoading: isLoading ?? this.isLoading,
       ttsComplete: ttsComplete ?? this.ttsComplete,
       error: _resolve(error, this.error),
+      activeSentenceIndex: _resolve(activeSentenceIndex, this.activeSentenceIndex),
+      totalSentences: totalSentences ?? this.totalSentences,
     );
   }
 }
@@ -103,6 +113,9 @@ class ActivePlayer extends _$ActivePlayer {
   articles_pb.Article? _loadedArticle;
   Duration _resumePosition = Duration.zero;
   DateTime _lastPersistTime = DateTime.fromMillisecondsSinceEpoch(0);
+
+  List<SentenceText>? _sentenceTexts;
+  List<SentenceTimestamp>? _sentenceTimestamps;
 
   @override
   ActivePlayerState build() {
@@ -137,6 +150,8 @@ class ActivePlayer extends _$ActivePlayer {
     _mediaItem = null;
     _loadedArticle = null;
     _lastPersistTime = DateTime.fromMillisecondsSinceEpoch(0);
+    _sentenceTexts = null;
+    _sentenceTimestamps = null;
   }
 
   MediaItem _buildMediaItem(articles_pb.Article article) {
@@ -174,6 +189,7 @@ class ActivePlayer extends _$ActivePlayer {
     _cleanup();
     await _handler.stop();
     _loadedArticle = article;
+    _buildSentenceTexts(article);
     _wirePlayerListeners();
 
     state = ActivePlayerState(
@@ -207,6 +223,11 @@ class ActivePlayer extends _$ActivePlayer {
 
       // Listen to session state updates (buffered duration, TTS completion)
       _sessionStateSub = _session!.stateStream.listen((sessionState) {
+        // Incrementally update sentence timestamps as new chunks are generated
+        if (_session != null) {
+          _updateSentenceTimestamps(_session!.wordTimestamps);
+        }
+
         state = state.copyWith(
           bufferedDuration: sessionState.bufferedDuration,
           estimatedDuration: sessionState.estimatedDuration,
@@ -258,6 +279,7 @@ class ActivePlayer extends _$ActivePlayer {
 
     if (state.articleId == newArticleId) {
       _loadedArticle = article;
+      if (_sentenceTexts == null) _buildSentenceTexts(article);
       return;
     }
 
@@ -265,12 +287,14 @@ class ActivePlayer extends _$ActivePlayer {
     _cleanup();
     _handler.stop();
     _loadedArticle = article;
+    _buildSentenceTexts(article);
 
     state = ActivePlayerState(
       articleId: newArticleId,
       articleTitle: article.title,
       articleAuthor: article.author.isNotEmpty ? article.author : null,
       articleImageUrl: article.image.isNotEmpty ? article.image : null,
+      totalSentences: _sentenceTexts?.length ?? 0,
     );
   }
 
@@ -292,6 +316,11 @@ class ActivePlayer extends _$ActivePlayer {
       await _handler.seek(_resumePosition);
     }
     _playerStarted = true;
+
+    // Load cached timestamps and build sentence mappings
+    final cachedTs = await _session?.loadCachedTimestamps();
+    if (cachedTs != null) _updateSentenceTimestamps(cachedTs);
+
     state = state.copyWith(
       isLoading: false,
       ttsComplete: true,
@@ -360,6 +389,7 @@ class ActivePlayer extends _$ActivePlayer {
     _positionSub = _handler.positionStream.listen((p) {
       if (_reloading || !_playerStarted) return;
       state = state.copyWith(position: p);
+      _updateActiveSentence(p);
 
       // Persist position every ~5 seconds
       final now = DateTime.now();
@@ -526,6 +556,53 @@ class ActivePlayer extends _$ActivePlayer {
       // Best-effort restore — don't crash on corrupt/missing data
     } finally {
       _restoring = false;
+    }
+  }
+
+  /// Pre-compute sentence text boundaries from phonemizer data.
+  /// Called when the article is loaded (before TTS starts).
+  void _buildSentenceTexts(articles_pb.Article article) {
+    if (article.phonemizerData.isEmpty) return;
+    _sentenceTexts = buildSentenceTexts(protoToChunks(article.phonemizerData));
+    state = state.copyWith(totalSentences: _sentenceTexts!.length);
+  }
+
+  /// Assign timestamps to sentences using word timestamps.
+  /// Called when word timestamps become available (from cache or generation).
+  void _updateSentenceTimestamps(List<WordTimestamp> wordTimestamps) {
+    if (_sentenceTexts == null || wordTimestamps.isEmpty) return;
+    _sentenceTimestamps = assignSentenceTimestamps(_sentenceTexts!, wordTimestamps);
+  }
+
+  /// Finds the sentence containing [position] via binary search.
+  /// Only emits a state update when the active sentence actually changes.
+  void _updateActiveSentence(Duration position) {
+    if (_sentenceTimestamps == null || _sentenceTimestamps!.isEmpty) return;
+
+    final sentences = _sentenceTimestamps!;
+    final pos = position.inMilliseconds / 1000.0;
+
+    int lo = 0, hi = sentences.length - 1;
+    int? newIndex;
+
+    while (lo <= hi) {
+      final mid = (lo + hi) ~/ 2;
+      if (pos >= sentences[mid].startSeconds) {
+        if (pos < sentences[mid].endSeconds) {
+          newIndex = mid;
+          break;
+        }
+        lo = mid + 1;
+      } else {
+        hi = mid - 1;
+      }
+    }
+
+    // Past the last sentence — clamp to it
+    newIndex ??= pos >= sentences.last.endSeconds ? sentences.length - 1 : null;
+
+    if (newIndex != state.activeSentenceIndex) {
+      state = state.copyWith(activeSentenceIndex: newIndex);
     }
   }
 }

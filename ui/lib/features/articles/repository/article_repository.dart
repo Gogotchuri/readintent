@@ -6,6 +6,9 @@ import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:readintent_flutter/core/connectivity.dart";
 import "package:readintent_flutter/core/database/app_database.dart";
 import "package:readintent_flutter/features/articles/api/articles_client.dart";
+import "package:readintent_flutter/features/articles/presentation/html_sentence_mapper.dart";
+import "package:readintent_flutter/features/tts/audio_generator.dart";
+import "package:readintent_flutter/features/tts/sentence_builder.dart";
 import "package:readintent_flutter/models/operation.dart";
 import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
     as articles_pb;
@@ -152,6 +155,7 @@ class ArticleRepository {
 
       // Cache detail
       Uint8List? phonemizerBlob;
+      String processedHtml = article.extractedHtml;
       if (article.phonemizerData.isNotEmpty) {
         // Wrap repeated PhonemizerData in a container message for serialization
         final container = articles_pb.Article()
@@ -159,12 +163,17 @@ class ArticleRepository {
         // We serialize only the phonemizerData field - extract the bytes from the full message
         // and store them. On read, we deserialize the same way.
         phonemizerBlob = Uint8List.fromList(container.writeToBuffer());
+
+        // Pre-compute sentence-annotated HTML for highlighting during TTS playback
+        final sentenceTexts = buildSentenceTexts(protoToChunks(article.phonemizerData));
+        processedHtml = injectSentenceSpans(article.extractedHtml, sentenceTexts);
       }
 
       await _db.upsertDetail(
         ArticleDetailsCompanion(
           id: Value(intId),
           extractedHtml: Value(article.extractedHtml),
+          processedHtml: Value(processedHtml),
           pureText: Value(article.pureText),
           phonemizerBlob: Value(phonemizerBlob),
           cachedAt: Value(now),
@@ -341,6 +350,7 @@ ArticleDetailsCompanion detailRowToCompanion(ArticleDetail row) {
   return ArticleDetailsCompanion(
     id: Value(row.id),
     extractedHtml: Value(row.extractedHtml),
+    processedHtml: Value(row.processedHtml),
     pureText: Value(row.pureText),
     phonemizerBlob: Value(row.phonemizerBlob),
     cachedAt: Value(row.cachedAt),
@@ -361,6 +371,9 @@ articles_pb.Article detailRowToProto(
     }
   }
 
+  // Use processedHtml (with sentence spans) if available, fall back to raw
+  final html = detail.processedHtml.isNotEmpty ? detail.processedHtml : detail.extractedHtml;
+
   return articles_pb.Article(
     id: Int64(preview.id),
     status: preview.status,
@@ -371,7 +384,7 @@ articles_pb.Article detailRowToProto(
     categories: (jsonDecode(preview.categories) as List).cast<String>(),
     description: preview.description,
     image: preview.imageUrl,
-    extractedHtml: detail.extractedHtml,
+    extractedHtml: html,
     pureText: detail.pureText,
     phonemizerData: phonemizerData,
     playerPositionMs: Int64(preview.playerPositionMs),
