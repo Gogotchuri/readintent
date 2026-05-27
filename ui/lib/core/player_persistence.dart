@@ -15,6 +15,7 @@ class PlayerPersistence {
     required int positionMs,
     required int? estimatedDurationMs,
     required bool ttsComplete,
+    required bool syncEnabled,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setString(
@@ -27,6 +28,7 @@ class PlayerPersistence {
         "positionMs": positionMs,
         "estimatedDurationMs": estimatedDurationMs,
         "ttsComplete": ttsComplete,
+        "syncEnabled": syncEnabled,
         "timestamp": DateTime.now().millisecondsSinceEpoch,
       }),
     );

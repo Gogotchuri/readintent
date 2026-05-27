@@ -20,8 +20,11 @@ class ArticleDetailScreen extends ConsumerStatefulWidget {
 
 class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
   final ScrollController _scrollController = ScrollController();
+  final WidgetFactory _htmlWidgetFactory = WidgetFactory();
   Timer? _scrollDebounce;
+  Timer? _manualScrollPause;
   bool _scrollRestored = false;
+  bool _isAutoScrolling = false;
 
   @override
   void initState() {
@@ -33,14 +36,34 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
   void dispose() {
     _saveScrollPosition();
     _scrollDebounce?.cancel();
+    _manualScrollPause?.cancel();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
   }
 
   void _onScroll() {
+    // User scrolled manually — pause auto-scroll for 5 seconds
+    if (!_isAutoScrolling) {
+      _manualScrollPause?.cancel();
+      _manualScrollPause = Timer(const Duration(seconds: 5), () {
+        _manualScrollPause = null;
+      });
+    }
+
     _scrollDebounce?.cancel();
     _scrollDebounce = Timer(const Duration(seconds: 3), _saveScrollPosition);
+  }
+
+  void _autoScrollToSentence(int sentenceIndex) {
+    if (_manualScrollPause?.isActive ?? false) return;
+    if (!_scrollController.hasClients) return;
+    if (sentenceIndex <= 3) sentenceIndex = 0; // Show a few sentences before the current one for context
+
+    _isAutoScrolling = true;
+    _htmlWidgetFactory
+        .onTapAnchorWrapper("sentence-${sentenceIndex - 3}")
+        .then((_) => _isAutoScrolling = false);
   }
 
   void _saveScrollPosition() {
@@ -48,10 +71,9 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
     final maxExtent = _scrollController.position.maxScrollExtent;
     if (maxExtent <= 0) return;
     final fraction = (_scrollController.offset / maxExtent).clamp(0.0, 1.0);
-    ref.read(articleRepositoryProvider).saveArticleProgress(
-      articleId: widget.articleId,
-      scrollPosition: fraction,
-    );
+    ref
+        .read(articleRepositoryProvider)
+        .saveArticleProgress(articleId: widget.articleId, scrollPosition: fraction);
   }
 
   void _restoreScrollPosition(double scrollPosition) {
@@ -68,6 +90,15 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final articleAsync = ref.watch(articleDetailProvider(widget.articleId));
+    final activeSentenceIndex = ref.watch(activePlayerProvider.select((s) => s.activeSentenceIndex));
+    final syncEnabled = ref.watch(activePlayerProvider.select((s) => s.syncEnabled));
+
+    // Auto-scroll when sentence changes and sync is enabled
+    ref.listen(activePlayerProvider.select((s) => s.activeSentenceIndex), (prev, next) {
+      if (syncEnabled && next != null) {
+        _autoScrollToSentence(next);
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(title: Text(articleAsync.asData?.value.title ?? "Article")),
@@ -105,7 +136,18 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
               children: [
                 _ArticleHeader(article: article),
                 const Divider(height: 32),
-                HtmlWidget(article.extractedHtml),
+                HtmlWidget(
+                  article.extractedHtml,
+                  factoryBuilder: () => _htmlWidgetFactory,
+                  rebuildTriggers: [activeSentenceIndex],
+                  customStylesBuilder: (element) {
+                    final attr = element.attributes["data-sentence"];
+                    if (attr != null && int.tryParse(attr) == activeSentenceIndex) {
+                      return {"background-color": "rgba(255, 255, 20, 0.4)"};
+                    }
+                    return null;
+                  },
+                ),
               ],
             ),
           );

@@ -114,7 +114,9 @@ _Cursor? _findAndWrapSentence(
   final wrappedNodes = nodeRanges.keys.toList()..sort((a, b) => b.compareTo(a));
   for (final ni in wrappedNodes) {
     final (start, end) = nodeRanges[ni]!;
-    final afterNode = _wrapTextRange(textNodes[ni], start, end, sentenceIndex);
+    // Add an id anchor only on the first span of each sentence
+    final anchorId = ni == firstNode ? "sentence-$sentenceIndex" : null;
+    final afterNode = _wrapTextRange(textNodes[ni], start, end, sentenceIndex, anchorId: anchorId);
     // Replace the old (now detached) text node reference with the leftover
     // "after" text node so the next sentence can find remaining text.
     if (afterNode != null) {
@@ -162,7 +164,7 @@ _Cursor? _findWord(List<dom.Text> textNodes, int nodeIdx, int charIdx, String wo
 /// `<span data-sentence="N">` element.
 /// Returns the "after" [dom.Text] node if one was created, so the caller
 /// can update its text node list for subsequent matching.
-dom.Text? _wrapTextRange(dom.Text textNode, int start, int end, int sentenceIndex) {
+dom.Text? _wrapTextRange(dom.Text textNode, int start, int end, int sentenceIndex, {String? anchorId}) {
   final text = textNode.data;
   final parent = textNode.parentNode;
   if (parent == null) return null;
@@ -188,8 +190,11 @@ dom.Text? _wrapTextRange(dom.Text textNode, int start, int end, int sentenceInde
   }
 
   final span = dom.Element.tag("span")
-    ..attributes["data-sentence"] = sentenceIndex.toString()
-    ..append(dom.Text(matched));
+    ..attributes["data-sentence"] = sentenceIndex.toString();
+  if (anchorId != null) {
+    span.attributes["id"] = anchorId;
+  }
+  span.append(dom.Text(matched));
   parent.nodes.insert(insertAt, span);
   insertAt++;
 

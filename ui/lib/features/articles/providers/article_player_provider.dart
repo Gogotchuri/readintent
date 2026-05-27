@@ -15,8 +15,7 @@ import "package:readintent_flutter/features/tts/audio_cache.dart";
 import "package:readintent_flutter/features/tts/audio_handler.dart";
 import "package:readintent_flutter/features/tts/audio_generator.dart";
 import "package:readintent_flutter/features/tts/voice_style.dart";
-import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
-    as articles_pb;
+import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
 
 part "article_player_provider.g.dart";
 
@@ -24,8 +23,7 @@ const Object _sentinel = Object();
 
 /// Resolves a sentinel-guarded copyWith parameter:
 /// returns [current] if [value] was not passed, otherwise casts [value] to T.
-T _resolve<T>(Object? value, T current) =>
-    identical(value, _sentinel) ? current : value as T;
+T _resolve<T>(Object? value, T current) => identical(value, _sentinel) ? current : value as T;
 
 class ActivePlayerState {
   final String? articleId;
@@ -41,6 +39,7 @@ class ActivePlayerState {
   final String? error;
   final int? activeSentenceIndex;
   final int totalSentences;
+  final bool syncEnabled;
 
   const ActivePlayerState({
     this.articleId,
@@ -56,6 +55,7 @@ class ActivePlayerState {
     this.error,
     this.activeSentenceIndex,
     this.totalSentences = 0,
+    this.syncEnabled = true,
   });
 
   bool get hasActiveArticle => articleId != null;
@@ -74,6 +74,7 @@ class ActivePlayerState {
     Object? error = _sentinel,
     Object? activeSentenceIndex = _sentinel,
     int? totalSentences,
+    bool? syncEnabled,
   }) {
     return ActivePlayerState(
       articleId: _resolve(articleId, this.articleId),
@@ -89,6 +90,7 @@ class ActivePlayerState {
       error: _resolve(error, this.error),
       activeSentenceIndex: _resolve(activeSentenceIndex, this.activeSentenceIndex),
       totalSentences: totalSentences ?? this.totalSentences,
+      syncEnabled: syncEnabled ?? this.syncEnabled,
     );
   }
 }
@@ -199,6 +201,7 @@ class ActivePlayer extends _$ActivePlayer {
       articleImageUrl: article.image.isNotEmpty ? article.image : null,
       position: _resumePosition,
       isLoading: true,
+      totalSentences: _sentenceTexts?.length ?? 0,
     );
 
     persistState();
@@ -234,9 +237,7 @@ class ActivePlayer extends _$ActivePlayer {
         );
 
         if (sessionState.estimatedDuration != null && _mediaItem != null) {
-          _handler.updateMediaItem(
-            _mediaItem!.copyWith(duration: sessionState.estimatedDuration),
-          );
+          _handler.updateMediaItem(_mediaItem!.copyWith(duration: sessionState.estimatedDuration));
         }
 
         if (sessionState.isComplete) {
@@ -247,9 +248,7 @@ class ActivePlayer extends _$ActivePlayer {
             bufferedDuration: actualDuration,
           );
           if (_mediaItem != null) {
-            _handler.updateMediaItem(
-              _mediaItem!.copyWith(duration: actualDuration),
-            );
+            _handler.updateMediaItem(_mediaItem!.copyWith(duration: actualDuration));
           }
           _reloadPlayer();
         }
@@ -305,10 +304,7 @@ class ActivePlayer extends _$ActivePlayer {
     await _persistence.clear();
   }
 
-  Future<void> _playFromFile(
-    String path,
-    articles_pb.Article article,
-  ) async {
+  Future<void> _playFromFile(String path, articles_pb.Article article) async {
     final tag = _buildMediaItem(article);
     final duration = await _handler.setSource(path, tag: tag);
     // Seek to restored position if resuming a previously played article
@@ -343,9 +339,7 @@ class ActivePlayer extends _$ActivePlayer {
 
   Future<void> _loadPlayerSource() async {
     if (_session?.filePath == null) return;
-    final tag = _mediaItem?.copyWith(
-      duration: state.estimatedDuration ?? state.bufferedDuration,
-    );
+    final tag = _mediaItem?.copyWith(duration: state.estimatedDuration ?? state.bufferedDuration);
     try {
       await _handler.setSource(_session!.filePath!, tag: tag);
       _loadedDuration = state.bufferedDuration;
@@ -423,14 +417,15 @@ class ActivePlayer extends _$ActivePlayer {
 
       state = state.copyWith(
         isPlaying: s.playing,
-        isLoading: s.processingState == ProcessingState.loading ||
-            s.processingState == ProcessingState.buffering,
+        isLoading:
+            s.processingState == ProcessingState.loading || s.processingState == ProcessingState.buffering,
       );
     });
   }
 
   Future<void> pause() async => _handler.pause();
   Future<void> resume() async => _handler.play();
+  void toggleSync() => state = state.copyWith(syncEnabled: !state.syncEnabled);
 
   Future<void> togglePlayPause() async {
     if (!_playerStarted) {
@@ -478,15 +473,15 @@ class ActivePlayer extends _$ActivePlayer {
       await _reloadPlayer();
     }
 
-    final maxMs = (state.bufferedDuration - const Duration(milliseconds: 500))
-        .inMilliseconds
-        .clamp(0, state.bufferedDuration.inMilliseconds);
+    final maxMs = (state.bufferedDuration - const Duration(milliseconds: 500)).inMilliseconds.clamp(
+      0,
+      state.bufferedDuration.inMilliseconds,
+    );
     final clampedMs = target.inMilliseconds.clamp(0, maxMs);
     await _handler.seek(Duration(milliseconds: clampedMs));
   }
 
-  Future<void> jumpForward() async =>
-      seekTo(state.position + const Duration(seconds: 15));
+  Future<void> jumpForward() async => seekTo(state.position + const Duration(seconds: 15));
 
   Future<void> jumpBackward() async {
     final target = state.position - const Duration(seconds: 15);
@@ -503,13 +498,13 @@ class ActivePlayer extends _$ActivePlayer {
       positionMs: state.position.inMilliseconds,
       estimatedDurationMs: state.estimatedDuration?.inMilliseconds,
       ttsComplete: state.ttsComplete,
+      syncEnabled: state.syncEnabled,
     );
     // Fire-and-forget server sync
     try {
-      ref.read(articleRepositoryProvider).saveArticleProgress(
-        articleId: state.articleId!,
-        playerPositionMs: state.position.inMilliseconds,
-      );
+      ref
+          .read(articleRepositoryProvider)
+          .saveArticleProgress(articleId: state.articleId!, playerPositionMs: state.position.inMilliseconds);
     } catch (_) {
       // Skip server sync if repository is not available
     }
@@ -534,6 +529,7 @@ class ActivePlayer extends _$ActivePlayer {
             ? Duration(milliseconds: data["estimatedDurationMs"] as int)
             : null,
         ttsComplete: data["ttsComplete"] as bool? ?? false,
+        syncEnabled: data["syncEnabled"] as bool? ?? true,
         isPlaying: false,
       );
 
@@ -543,11 +539,9 @@ class ActivePlayer extends _$ActivePlayer {
         final repository = ref.read(articleRepositoryProvider);
         final article = await repository.getArticle(articleId);
         if (!_restoring) return; // play() was called in the meantime
-        // Take the largest position between local and server, to avoid regressions 
+        // Take the largest position between local and server, to avoid regressions
         if (article != null && article.playerPositionMs.toInt() > localPositionMs) {
-          state = state.copyWith(
-            position: Duration(milliseconds: article.playerPositionMs.toInt()),
-          );
+          state = state.copyWith(position: Duration(milliseconds: article.playerPositionMs.toInt()));
         }
       } catch (_) {
         // Best-effort — server position is optional and won't interfere with local restore if it fails
@@ -564,7 +558,6 @@ class ActivePlayer extends _$ActivePlayer {
   void _buildSentenceTexts(articles_pb.Article article) {
     if (article.phonemizerData.isEmpty) return;
     _sentenceTexts = buildSentenceTexts(protoToChunks(article.phonemizerData));
-    state = state.copyWith(totalSentences: _sentenceTexts!.length);
   }
 
   /// Assign timestamps to sentences using word timestamps.
@@ -581,6 +574,14 @@ class ActivePlayer extends _$ActivePlayer {
 
     final sentences = _sentenceTimestamps!;
     final pos = position.inMilliseconds / 1000.0;
+
+    if (pos < sentences.first.startSeconds) {
+      // Before the first sentence — snap to it
+      if (state.activeSentenceIndex != 0) {
+        state = state.copyWith(activeSentenceIndex: 0);
+      }
+      return;
+    }
 
     int lo = 0, hi = sentences.length - 1;
     int? newIndex;
