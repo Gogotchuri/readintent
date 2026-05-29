@@ -12,6 +12,7 @@ abstract class AuthServiceClientI {
   Future<auth_pb.GetSessionResponse> getSession(auth_pb.GetSessionRequest input);
   Future<auth_pb.LogoutResponse> logout(auth_pb.LogoutRequest input);
   Future<auth_pb.HealthResponse> health(auth_pb.HealthRequest input);
+  Future<auth_pb.OIDCLoginResponse> oIDCLogin(auth_pb.OIDCLoginRequest input);
 }
 
 // Concrete implementation of the AuthServiceClientI that uses the generated connectRPC client.
@@ -40,4 +41,8 @@ class ConnecAuthServiceClient implements AuthServiceClientI {
 
   @override
   Future<auth_pb.HealthResponse> health(auth_pb.HealthRequest input) => _client.health(input);
+
+  @override
+  Future<auth_pb.OIDCLoginResponse> oIDCLogin(auth_pb.OIDCLoginRequest input) =>
+      _client.oIDCLogin(input);
 }

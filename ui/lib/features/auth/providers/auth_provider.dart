@@ -1,5 +1,7 @@
 import "dart:async";
+import "dart:developer" as developer;
 
+import "package:google_sign_in/google_sign_in.dart";
 import "package:readintent_flutter/core/connectivity.dart";
 import "package:readintent_flutter/core/session_storage.dart";
 import "package:readintent_flutter/features/auth/api/auth_client.dart";
@@ -8,6 +10,10 @@ import "package:readintent_flutter/models/auth_state.dart";
 import "package:riverpod_annotation/riverpod_annotation.dart";
 
 part "auth_provider.g.dart";
+const _googleServerClientId = String.fromEnvironment(
+  "GOOGLE_WEB_CLIENT_ID",
+  defaultValue: "1036129511964-3s27nho51k8fsukpkgmbqr7lha7pvq1k.apps.googleusercontent.com",
+);
 
 /// AuthProvider is the main provider for authentication state management
 @riverpod
@@ -131,6 +137,45 @@ class Auth extends _$Auth {
       state = AuthError(message: e.message, fieldErrors: e.fieldErrors);
       _scheduleErrorClear(const Duration(seconds: 5));
     } catch (e) {
+      state = AuthError(message: e.toString());
+      _scheduleErrorClear(const Duration(seconds: 5));
+    }
+  }
+
+  /// googleSignIn attempts to sign in with Google via OIDC
+  Future<void> googleSignIn() async {
+    state = const AuthLoading();
+    try {
+      developer.log("GoogleSignIn: starting with serverClientId=$_googleServerClientId", name: "auth");
+      final gSignIn = GoogleSignIn(serverClientId: _googleServerClientId);
+      final account = await gSignIn.signIn();
+      if (account == null) {
+        developer.log("GoogleSignIn: user cancelled", name: "auth");
+        state = const AuthUnauthenticated();
+        return;
+      }
+      developer.log("GoogleSignIn: account=${account.email}", name: "auth");
+      final authentication = await account.authentication;
+      final idToken = authentication.idToken;
+      developer.log("GoogleSignIn: idToken=${idToken != null ? '${idToken.substring(0, 20)}...' : 'null'}", name: "auth");
+      if (idToken == null) {
+        state = const AuthError(message: "Failed to obtain ID token from Google");
+        _scheduleErrorClear(const Duration(seconds: 5));
+        return;
+      }
+      final session = await _authClient.oidcLogin("google", idToken);
+      developer.log("GoogleSignIn: oidcLogin succeeded", name: "auth");
+      await _sessionStorage.saveToken(session.sessionToken);
+      await _sessionStorage.saveUser(session.user);
+      _sessionValidated = true;
+      _errorTimer?.cancel();
+      state = AuthAuthenticated(sessionToken: session.sessionToken, user: session.user);
+    } on ValidationException catch (e) {
+      developer.log("GoogleSignIn: ValidationException: ${e.message}", name: "auth");
+      state = AuthError(message: e.message, fieldErrors: e.fieldErrors);
+      _scheduleErrorClear(const Duration(seconds: 5));
+    } catch (e, st) {
+      developer.log("GoogleSignIn: error: $e\n$st", name: "auth");
       state = AuthError(message: e.toString());
       _scheduleErrorClear(const Duration(seconds: 5));
     }

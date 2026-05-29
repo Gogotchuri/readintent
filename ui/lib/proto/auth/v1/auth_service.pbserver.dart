@@ -27,6 +27,7 @@ abstract class AuthServiceBase extends $pb.GeneratedService {
   $async.Future<$0.GetSessionResponse> getSession($pb.ServerContext ctx, $0.GetSessionRequest request);
   $async.Future<$0.HealthResponse> health($pb.ServerContext ctx, $0.HealthRequest request);
   $async.Future<$0.ClaimGrantCodeResponse> claimGrantCode($pb.ServerContext ctx, $0.ClaimGrantCodeRequest request);
+  $async.Future<$0.OIDCLoginResponse> oIDCLogin($pb.ServerContext ctx, $0.OIDCLoginRequest request);
 
   $pb.GeneratedMessage createRequest($core.String methodName) {
     switch (methodName) {
@@ -36,6 +37,7 @@ abstract class AuthServiceBase extends $pb.GeneratedService {
       case 'GetSession': return $0.GetSessionRequest();
       case 'Health': return $0.HealthRequest();
       case 'ClaimGrantCode': return $0.ClaimGrantCodeRequest();
+      case 'OIDCLogin': return $0.OIDCLoginRequest();
       default: throw $core.ArgumentError('Unknown method: $methodName');
     }
   }
@@ -48,6 +50,7 @@ abstract class AuthServiceBase extends $pb.GeneratedService {
       case 'GetSession': return this.getSession(ctx, request as $0.GetSessionRequest);
       case 'Health': return this.health(ctx, request as $0.HealthRequest);
       case 'ClaimGrantCode': return this.claimGrantCode(ctx, request as $0.ClaimGrantCodeRequest);
+      case 'OIDCLogin': return this.oIDCLogin(ctx, request as $0.OIDCLoginRequest);
       default: throw $core.ArgumentError('Unknown method: $methodName');
     }
   }

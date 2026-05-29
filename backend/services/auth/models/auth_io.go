@@ -20,6 +20,11 @@ type LoginResponse struct {
 	Session Session `json:"session"`
 }
 
+type OIDCLoginRequest struct {
+	Provider string
+	IDToken  string
+}
+
 type SessionResponse struct {
 	Session Session `json:"session"`
 }

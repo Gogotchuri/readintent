@@ -211,6 +211,33 @@ const ClaimGrantCodeResponse$json = {
 final $typed_data.Uint8List claimGrantCodeResponseDescriptor = $convert.base64Decode(
     'ChZDbGFpbUdyYW50Q29kZVJlc3BvbnNl');
 
+@$core.Deprecated('Use oIDCLoginRequestDescriptor instead')
+const OIDCLoginRequest$json = {
+  '1': 'OIDCLoginRequest',
+  '2': [
+    {'1': 'provider', '3': 1, '4': 1, '5': 9, '10': 'provider'},
+    {'1': 'id_token', '3': 2, '4': 1, '5': 9, '10': 'idToken'},
+  ],
+};
+
+/// Descriptor for `OIDCLoginRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List oIDCLoginRequestDescriptor = $convert.base64Decode(
+    'ChBPSURDTG9naW5SZXF1ZXN0EhoKCHByb3ZpZGVyGAEgASgJUghwcm92aWRlchIZCghpZF90b2'
+    'tlbhgCIAEoCVIHaWRUb2tlbg==');
+
+@$core.Deprecated('Use oIDCLoginResponseDescriptor instead')
+const OIDCLoginResponse$json = {
+  '1': 'OIDCLoginResponse',
+  '2': [
+    {'1': 'session', '3': 1, '4': 1, '5': 11, '6': '.auth.v1.Session', '10': 'session'},
+  ],
+};
+
+/// Descriptor for `OIDCLoginResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List oIDCLoginResponseDescriptor = $convert.base64Decode(
+    'ChFPSURDTG9naW5SZXNwb25zZRIqCgdzZXNzaW9uGAEgASgLMhAuYXV0aC52MS5TZXNzaW9uUg'
+    'dzZXNzaW9u');
+
 const $core.Map<$core.String, $core.dynamic> AuthServiceBase$json = {
   '1': 'AuthService',
   '2': [
@@ -220,6 +247,7 @@ const $core.Map<$core.String, $core.dynamic> AuthServiceBase$json = {
     {'1': 'GetSession', '2': '.auth.v1.GetSessionRequest', '3': '.auth.v1.GetSessionResponse'},
     {'1': 'Health', '2': '.auth.v1.HealthRequest', '3': '.auth.v1.HealthResponse'},
     {'1': 'ClaimGrantCode', '2': '.auth.v1.ClaimGrantCodeRequest', '3': '.auth.v1.ClaimGrantCodeResponse'},
+    {'1': 'OIDCLogin', '2': '.auth.v1.OIDCLoginRequest', '3': '.auth.v1.OIDCLoginResponse'},
   ],
 };
 
@@ -240,6 +268,8 @@ const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> AuthServic
   '.auth.v1.HealthResponse': HealthResponse$json,
   '.auth.v1.ClaimGrantCodeRequest': ClaimGrantCodeRequest$json,
   '.auth.v1.ClaimGrantCodeResponse': ClaimGrantCodeResponse$json,
+  '.auth.v1.OIDCLoginRequest': OIDCLoginRequest$json,
+  '.auth.v1.OIDCLoginResponse': OIDCLoginResponse$json,
 };
 
 /// Descriptor for `AuthService`. Decode as a `google.protobuf.ServiceDescriptorProto`.
@@ -252,5 +282,6 @@ final $typed_data.Uint8List authServiceDescriptor = $convert.base64Decode(
     '5HZXRTZXNzaW9uUmVxdWVzdBobLmF1dGgudjEuR2V0U2Vzc2lvblJlc3BvbnNlEjkKBkhlYWx0'
     'aBIWLmF1dGgudjEuSGVhbHRoUmVxdWVzdBoXLmF1dGgudjEuSGVhbHRoUmVzcG9uc2USUQoOQ2'
     'xhaW1HcmFudENvZGUSHi5hdXRoLnYxLkNsYWltR3JhbnRDb2RlUmVxdWVzdBofLmF1dGgudjEu'
-    'Q2xhaW1HcmFudENvZGVSZXNwb25zZQ==');
+    'Q2xhaW1HcmFudENvZGVSZXNwb25zZRJCCglPSURDTG9naW4SGS5hdXRoLnYxLk9JRENMb2dpbl'
+    'JlcXVlc3QaGi5hdXRoLnYxLk9JRENMb2dpblJlc3BvbnNl');
 

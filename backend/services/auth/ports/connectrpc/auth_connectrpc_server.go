@@ -95,6 +95,20 @@ func (a *AuthServer) Logout(ctx context.Context, req *connect.Request[authv1.Log
 	return connect.NewResponse(&authv1.LogoutResponse{}), nil
 }
 
+// OIDCLogin implements authv1connect.AuthServiceHandler.
+func (a *AuthServer) OIDCLogin(ctx context.Context, req *connect.Request[authv1.OIDCLoginRequest]) (*connect.Response[authv1.OIDCLoginResponse], error) {
+	loginRes, err := a.service.OIDCLogin(ctx, authmodels.OIDCLoginRequest{
+		Provider: req.Msg.Provider,
+		IDToken:  req.Msg.IdToken,
+	})
+	if err != nil {
+		return nil, newConnectError(connect.CodeUnauthenticated, err)
+	}
+	return connect.NewResponse(&authv1.OIDCLoginResponse{
+		Session: rpcSessionFromSession(&loginRes.Session),
+	}), nil
+}
+
 // PasswordLogin implements authv1connect.AuthServiceHandler.
 func (a *AuthServer) PasswordLogin(ctx context.Context, req *connect.Request[authv1.PasswordLoginRequest]) (*connect.Response[authv1.PasswordLoginResponse], error) {
 	loginRes, err := a.service.PasswordLogin(ctx, authmodels.PasswordLoginRequest{

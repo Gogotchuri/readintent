@@ -16,6 +16,6 @@ func NewUserRepository(db *sqlx.DB) UserRepository {
 	}
 }
 func (r UserRepository) CreateUser(ctx context.Context, id string) error {
-	_, err := r.db.ExecContext(ctx, "INSERT INTO users (id) VALUES ($1)", id)
+	_, err := r.db.ExecContext(ctx, "INSERT INTO users (id) VALUES ($1) ON CONFLICT (id) DO NOTHING", id)
 	return err
 }

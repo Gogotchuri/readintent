@@ -48,6 +48,8 @@ const (
 	// AuthServiceClaimGrantCodeProcedure is the fully-qualified name of the AuthService's
 	// ClaimGrantCode RPC.
 	AuthServiceClaimGrantCodeProcedure = "/auth.v1.AuthService/ClaimGrantCode"
+	// AuthServiceOIDCLoginProcedure is the fully-qualified name of the AuthService's OIDCLogin RPC.
+	AuthServiceOIDCLoginProcedure = "/auth.v1.AuthService/OIDCLogin"
 )
 
 // AuthServiceClient is a client for the auth.v1.AuthService service.
@@ -58,6 +60,7 @@ type AuthServiceClient interface {
 	GetSession(context.Context, *connect.Request[v1.GetSessionRequest]) (*connect.Response[v1.GetSessionResponse], error)
 	Health(context.Context, *connect.Request[v1.HealthRequest]) (*connect.Response[v1.HealthResponse], error)
 	ClaimGrantCode(context.Context, *connect.Request[v1.ClaimGrantCodeRequest]) (*connect.Response[v1.ClaimGrantCodeResponse], error)
+	OIDCLogin(context.Context, *connect.Request[v1.OIDCLoginRequest]) (*connect.Response[v1.OIDCLoginResponse], error)
 }
 
 // NewAuthServiceClient constructs a client for the auth.v1.AuthService service. By default, it uses
@@ -107,6 +110,12 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(authServiceMethods.ByName("ClaimGrantCode")),
 			connect.WithClientOptions(opts...),
 		),
+		oIDCLogin: connect.NewClient[v1.OIDCLoginRequest, v1.OIDCLoginResponse](
+			httpClient,
+			baseURL+AuthServiceOIDCLoginProcedure,
+			connect.WithSchema(authServiceMethods.ByName("OIDCLogin")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -118,6 +127,7 @@ type authServiceClient struct {
 	getSession           *connect.Client[v1.GetSessionRequest, v1.GetSessionResponse]
 	health               *connect.Client[v1.HealthRequest, v1.HealthResponse]
 	claimGrantCode       *connect.Client[v1.ClaimGrantCodeRequest, v1.ClaimGrantCodeResponse]
+	oIDCLogin            *connect.Client[v1.OIDCLoginRequest, v1.OIDCLoginResponse]
 }
 
 // PasswordLogin calls auth.v1.AuthService.PasswordLogin.
@@ -150,6 +160,11 @@ func (c *authServiceClient) ClaimGrantCode(ctx context.Context, req *connect.Req
 	return c.claimGrantCode.CallUnary(ctx, req)
 }
 
+// OIDCLogin calls auth.v1.AuthService.OIDCLogin.
+func (c *authServiceClient) OIDCLogin(ctx context.Context, req *connect.Request[v1.OIDCLoginRequest]) (*connect.Response[v1.OIDCLoginResponse], error) {
+	return c.oIDCLogin.CallUnary(ctx, req)
+}
+
 // AuthServiceHandler is an implementation of the auth.v1.AuthService service.
 type AuthServiceHandler interface {
 	PasswordLogin(context.Context, *connect.Request[v1.PasswordLoginRequest]) (*connect.Response[v1.PasswordLoginResponse], error)
@@ -158,6 +173,7 @@ type AuthServiceHandler interface {
 	GetSession(context.Context, *connect.Request[v1.GetSessionRequest]) (*connect.Response[v1.GetSessionResponse], error)
 	Health(context.Context, *connect.Request[v1.HealthRequest]) (*connect.Response[v1.HealthResponse], error)
 	ClaimGrantCode(context.Context, *connect.Request[v1.ClaimGrantCodeRequest]) (*connect.Response[v1.ClaimGrantCodeResponse], error)
+	OIDCLogin(context.Context, *connect.Request[v1.OIDCLoginRequest]) (*connect.Response[v1.OIDCLoginResponse], error)
 }
 
 // NewAuthServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -203,6 +219,12 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(authServiceMethods.ByName("ClaimGrantCode")),
 		connect.WithHandlerOptions(opts...),
 	)
+	authServiceOIDCLoginHandler := connect.NewUnaryHandler(
+		AuthServiceOIDCLoginProcedure,
+		svc.OIDCLogin,
+		connect.WithSchema(authServiceMethods.ByName("OIDCLogin")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/auth.v1.AuthService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AuthServicePasswordLoginProcedure:
@@ -217,6 +239,8 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 			authServiceHealthHandler.ServeHTTP(w, r)
 		case AuthServiceClaimGrantCodeProcedure:
 			authServiceClaimGrantCodeHandler.ServeHTTP(w, r)
+		case AuthServiceOIDCLoginProcedure:
+			authServiceOIDCLoginHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -248,4 +272,8 @@ func (UnimplementedAuthServiceHandler) Health(context.Context, *connect.Request[
 
 func (UnimplementedAuthServiceHandler) ClaimGrantCode(context.Context, *connect.Request[v1.ClaimGrantCodeRequest]) (*connect.Response[v1.ClaimGrantCodeResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.ClaimGrantCode is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) OIDCLogin(context.Context, *connect.Request[v1.OIDCLoginRequest]) (*connect.Response[v1.OIDCLoginResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.OIDCLogin is not implemented"))
 }

@@ -16,9 +16,6 @@
             "credentials": {
               "password": {
                 "identifier": true
-              },
-              "oidc": {
-                "identifier": true
               }
             },
             "verification": {

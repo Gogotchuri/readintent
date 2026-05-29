@@ -45,6 +45,7 @@ func NewSessionInterceptor(service SessionGetter) *SessionInterceptor {
 			authv1connect.AuthServicePasswordLoginProcedure:        true,
 			authv1connect.AuthServicePasswordRegistrationProcedure: true,
 			authv1connect.AuthServiceHealthProcedure:               true,
+			authv1connect.AuthServiceOIDCLoginProcedure:            true,
 		},
 	}
 }

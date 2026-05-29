@@ -79,6 +79,15 @@ message ClaimGrantCodeRequest {
 }
 message ClaimGrantCodeResponse {}
 
+message OIDCLoginRequest {
+  string provider = 1;
+  string id_token = 2;
+}
+
+message OIDCLoginResponse {
+  Session session = 1;
+}
+
 service AuthService {
   rpc PasswordLogin(PasswordLoginRequest) returns (PasswordLoginResponse);
   rpc PasswordRegistration(PasswordRegistrationRequest)
@@ -87,4 +96,5 @@ service AuthService {
   rpc GetSession(GetSessionRequest) returns (GetSessionResponse);
   rpc Health(HealthRequest) returns (HealthResponse);
   rpc ClaimGrantCode(ClaimGrantCodeRequest) returns (ClaimGrantCodeResponse);
+  rpc OIDCLogin(OIDCLoginRequest) returns (OIDCLoginResponse);
 }
