@@ -3,6 +3,7 @@ package authmodels
 import "time"
 
 const MethodPassword = "password"
+const MethodOIDC = "oidc"
 
 type Identity struct {
 	ID        string `json:"id"`

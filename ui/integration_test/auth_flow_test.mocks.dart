@@ -65,6 +65,12 @@ class _FakeHealthResponse_5 extends _i1.SmartFake
     : super(parent, parentInvocation);
 }
 
+class _FakeOIDCLoginResponse_6 extends _i1.SmartFake
+    implements _i2.OIDCLoginResponse {
+  _FakeOIDCLoginResponse_6(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
 /// A class which mocks [AuthServiceClientI].
 ///
 /// See the documentation for Mockito's code generation for more information.
@@ -151,6 +157,19 @@ class MockAuthServiceClientI extends _i1.Mock
             ),
           )
           as _i4.Future<_i2.HealthResponse>);
+
+  @override
+  _i4.Future<_i2.OIDCLoginResponse> oidcLogin(_i2.OIDCLoginRequest? input) =>
+      (super.noSuchMethod(
+            Invocation.method(#oidcLogin, [input]),
+            returnValue: _i4.Future<_i2.OIDCLoginResponse>.value(
+              _FakeOIDCLoginResponse_6(
+                this,
+                Invocation.method(#oidcLogin, [input]),
+              ),
+            ),
+          )
+          as _i4.Future<_i2.OIDCLoginResponse>);
 }
 
 /// A class which mocks [SessionStorage].

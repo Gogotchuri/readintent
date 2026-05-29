@@ -79,6 +79,19 @@ class MockAuthClient extends _i1.Mock implements _i2.AuthClient {
           as _i3.Future<_i2.Session>);
 
   @override
+  _i3.Future<_i2.Session> oidcLogin(String? provider, String? idToken) =>
+      (super.noSuchMethod(
+            Invocation.method(#oidcLogin, [provider, idToken]),
+            returnValue: _i3.Future<_i2.Session>.value(
+              _FakeSession_0(
+                this,
+                Invocation.method(#oidcLogin, [provider, idToken]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Session>);
+
+  @override
   _i3.Future<_i2.Session> passwordRegistration(
     String? email,
     String? password,

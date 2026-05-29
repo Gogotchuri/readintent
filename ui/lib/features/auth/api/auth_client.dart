@@ -66,6 +66,19 @@ class AuthClient {
     }
   }
 
+  Future<Session> oidcLogin(String provider, String idToken) async {
+    try {
+      final response = await _client.oIDCLogin(
+        auth_pb.OIDCLoginRequest(provider: provider, idToken: idToken),
+      );
+      return Session.fromRpcSession(response.session);
+    } on ConnectException catch (e) {
+      handleConnectException(e, "sign in with Google");
+    } catch (e) {
+      throw AuthException("Failed to sign in with Google: $e");
+    }
+  }
+
   Future<Session> passwordRegistration(
     String email,
     String password,

@@ -42,6 +42,19 @@ func (s *Service) PasswordRegistration(ctx context.Context, r authmodels.Passwor
 	return resp, nil
 }
 
+func (s *Service) OIDCLogin(ctx context.Context, r authmodels.OIDCLoginRequest) (*authmodels.LoginResponse, error) {
+	resp, isNewUser, err := s.authClient.OIDCLogin(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+	if isNewUser {
+		if err := s.userRepo.CreateUser(ctx, resp.Session.Identity.ID); err != nil {
+			return nil, fmt.Errorf("creating user in database after OIDC registration: %w", err)
+		}
+	}
+	return resp, nil
+}
+
 func (s *Service) PasswordLogin(ctx context.Context, r authmodels.PasswordLoginRequest) (*authmodels.LoginResponse, error) {
 	return s.authClient.PasswordLogin(ctx, r)
 }

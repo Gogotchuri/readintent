@@ -51,4 +51,11 @@ abstract final class AuthService {
     authv1auth_service.ClaimGrantCodeRequest.new,
     authv1auth_service.ClaimGrantCodeResponse.new,
   );
+
+  static const oIDCLogin = connect.Spec(
+    '/$name/OIDCLogin',
+    connect.StreamType.unary,
+    authv1auth_service.OIDCLoginRequest.new,
+    authv1auth_service.OIDCLoginResponse.new,
+  );
 }

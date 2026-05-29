@@ -821,6 +821,122 @@ class ClaimGrantCodeResponse extends $pb.GeneratedMessage {
   static ClaimGrantCodeResponse? _defaultInstance;
 }
 
+class OIDCLoginRequest extends $pb.GeneratedMessage {
+  factory OIDCLoginRequest({
+    $core.String? provider,
+    $core.String? idToken,
+  }) {
+    final $result = create();
+    if (provider != null) {
+      $result.provider = provider;
+    }
+    if (idToken != null) {
+      $result.idToken = idToken;
+    }
+    return $result;
+  }
+  OIDCLoginRequest._() : super();
+  factory OIDCLoginRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory OIDCLoginRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'OIDCLoginRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'provider')
+    ..aOS(2, _omitFieldNames ? '' : 'idToken')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  OIDCLoginRequest clone() => OIDCLoginRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  OIDCLoginRequest copyWith(void Function(OIDCLoginRequest) updates) => super.copyWith((message) => updates(message as OIDCLoginRequest)) as OIDCLoginRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static OIDCLoginRequest create() => OIDCLoginRequest._();
+  OIDCLoginRequest createEmptyInstance() => create();
+  static $pb.PbList<OIDCLoginRequest> createRepeated() => $pb.PbList<OIDCLoginRequest>();
+  @$core.pragma('dart2js:noInline')
+  static OIDCLoginRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<OIDCLoginRequest>(create);
+  static OIDCLoginRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get provider => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set provider($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasProvider() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearProvider() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get idToken => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set idToken($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasIdToken() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearIdToken() => clearField(2);
+}
+
+class OIDCLoginResponse extends $pb.GeneratedMessage {
+  factory OIDCLoginResponse({
+    Session? session,
+  }) {
+    final $result = create();
+    if (session != null) {
+      $result.session = session;
+    }
+    return $result;
+  }
+  OIDCLoginResponse._() : super();
+  factory OIDCLoginResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory OIDCLoginResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'OIDCLoginResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth.v1'), createEmptyInstance: create)
+    ..aOM<Session>(1, _omitFieldNames ? '' : 'session', subBuilder: Session.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  OIDCLoginResponse clone() => OIDCLoginResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  OIDCLoginResponse copyWith(void Function(OIDCLoginResponse) updates) => super.copyWith((message) => updates(message as OIDCLoginResponse)) as OIDCLoginResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static OIDCLoginResponse create() => OIDCLoginResponse._();
+  OIDCLoginResponse createEmptyInstance() => create();
+  static $pb.PbList<OIDCLoginResponse> createRepeated() => $pb.PbList<OIDCLoginResponse>();
+  @$core.pragma('dart2js:noInline')
+  static OIDCLoginResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<OIDCLoginResponse>(create);
+  static OIDCLoginResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Session get session => $_getN(0);
+  @$pb.TagNumber(1)
+  set session(Session v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSession() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSession() => clearField(1);
+  @$pb.TagNumber(1)
+  Session ensureSession() => $_ensure(0);
+}
+
 class AuthServiceApi {
   $pb.RpcClient _client;
   AuthServiceApi(this._client);
@@ -842,6 +958,9 @@ class AuthServiceApi {
   ;
   $async.Future<ClaimGrantCodeResponse> claimGrantCode($pb.ClientContext? ctx, ClaimGrantCodeRequest request) =>
     _client.invoke<ClaimGrantCodeResponse>(ctx, 'AuthService', 'ClaimGrantCode', request, ClaimGrantCodeResponse())
+  ;
+  $async.Future<OIDCLoginResponse> oIDCLogin($pb.ClientContext? ctx, OIDCLoginRequest request) =>
+    _client.invoke<OIDCLoginResponse>(ctx, 'AuthService', 'OIDCLogin', request, OIDCLoginResponse())
   ;
 }
 
