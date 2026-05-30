@@ -97,6 +97,7 @@ const Article$json = {
     {'1': 'phonemizer_data', '3': 12, '4': 3, '5': 11, '6': '.articles.v1.PhonemizerData', '10': 'phonemizerData'},
     {'1': 'player_position_ms', '3': 13, '4': 1, '5': 3, '10': 'playerPositionMs'},
     {'1': 'scroll_position', '3': 14, '4': 1, '5': 1, '10': 'scrollPosition'},
+    {'1': 'playback_speed', '3': 15, '4': 1, '5': 1, '10': 'playbackSpeed'},
   ],
   '8': [
     {'1': '_description'},
@@ -114,7 +115,8 @@ final $typed_data.Uint8List articleDescriptor = $convert.base64Decode(
     '1hZ2UYCyABKAlIAVIFaW1hZ2WIAQESRAoPcGhvbmVtaXplcl9kYXRhGAwgAygLMhsuYXJ0aWNs'
     'ZXMudjEuUGhvbmVtaXplckRhdGFSDnBob25lbWl6ZXJEYXRhEiwKEnBsYXllcl9wb3NpdGlvbl'
     '9tcxgNIAEoA1IQcGxheWVyUG9zaXRpb25NcxInCg9zY3JvbGxfcG9zaXRpb24YDiABKAFSDnNj'
-    'cm9sbFBvc2l0aW9uQg4KDF9kZXNjcmlwdGlvbkIICgZfaW1hZ2U=');
+    'cm9sbFBvc2l0aW9uEiUKDnBsYXliYWNrX3NwZWVkGA8gASgBUg1wbGF5YmFja1NwZWVkQg4KDF'
+    '9kZXNjcmlwdGlvbkIICgZfaW1hZ2U=');
 
 @$core.Deprecated('Use getArticlesRequestDescriptor instead')
 const GetArticlesRequest$json = {
@@ -229,6 +231,7 @@ const SaveArticleProgressRequest$json = {
     {'1': 'article_id', '3': 1, '4': 1, '5': 9, '10': 'articleId'},
     {'1': 'player_position_ms', '3': 2, '4': 1, '5': 3, '10': 'playerPositionMs'},
     {'1': 'scroll_position', '3': 3, '4': 1, '5': 1, '10': 'scrollPosition'},
+    {'1': 'playback_speed', '3': 4, '4': 1, '5': 1, '10': 'playbackSpeed'},
   ],
 };
 
@@ -236,7 +239,8 @@ const SaveArticleProgressRequest$json = {
 final $typed_data.Uint8List saveArticleProgressRequestDescriptor = $convert.base64Decode(
     'ChpTYXZlQXJ0aWNsZVByb2dyZXNzUmVxdWVzdBIdCgphcnRpY2xlX2lkGAEgASgJUglhcnRpY2'
     'xlSWQSLAoScGxheWVyX3Bvc2l0aW9uX21zGAIgASgDUhBwbGF5ZXJQb3NpdGlvbk1zEicKD3Nj'
-    'cm9sbF9wb3NpdGlvbhgDIAEoAVIOc2Nyb2xsUG9zaXRpb24=');
+    'cm9sbF9wb3NpdGlvbhgDIAEoAVIOc2Nyb2xsUG9zaXRpb24SJQoOcGxheWJhY2tfc3BlZWQYBC'
+    'ABKAFSDXBsYXliYWNrU3BlZWQ=');
 
 @$core.Deprecated('Use saveArticleProgressResponseDescriptor instead')
 const SaveArticleProgressResponse$json = {

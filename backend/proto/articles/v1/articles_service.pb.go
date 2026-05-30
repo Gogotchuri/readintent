@@ -294,6 +294,7 @@ type Article struct {
 	PhonemizerData   []*PhonemizerData `protobuf:"bytes,12,rep,name=phonemizer_data,json=phonemizerData,proto3" json:"phonemizer_data,omitempty"`
 	PlayerPositionMs int64             `protobuf:"varint,13,opt,name=player_position_ms,json=playerPositionMs,proto3" json:"player_position_ms,omitempty"`
 	ScrollPosition   float64           `protobuf:"fixed64,14,opt,name=scroll_position,json=scrollPosition,proto3" json:"scroll_position,omitempty"`
+	PlaybackSpeed    float64           `protobuf:"fixed64,15,opt,name=playback_speed,json=playbackSpeed,proto3" json:"playback_speed,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -422,6 +423,13 @@ func (x *Article) GetPlayerPositionMs() int64 {
 func (x *Article) GetScrollPosition() float64 {
 	if x != nil {
 		return x.ScrollPosition
+	}
+	return 0
+}
+
+func (x *Article) GetPlaybackSpeed() float64 {
+	if x != nil {
+		return x.PlaybackSpeed
 	}
 	return 0
 }
@@ -818,6 +826,7 @@ type SaveArticleProgressRequest struct {
 	ArticleId        string                 `protobuf:"bytes,1,opt,name=article_id,json=articleId,proto3" json:"article_id,omitempty"`
 	PlayerPositionMs int64                  `protobuf:"varint,2,opt,name=player_position_ms,json=playerPositionMs,proto3" json:"player_position_ms,omitempty"`
 	ScrollPosition   float64                `protobuf:"fixed64,3,opt,name=scroll_position,json=scrollPosition,proto3" json:"scroll_position,omitempty"`
+	PlaybackSpeed    float64                `protobuf:"fixed64,4,opt,name=playback_speed,json=playbackSpeed,proto3" json:"playback_speed,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -869,6 +878,13 @@ func (x *SaveArticleProgressRequest) GetPlayerPositionMs() int64 {
 func (x *SaveArticleProgressRequest) GetScrollPosition() float64 {
 	if x != nil {
 		return x.ScrollPosition
+	}
+	return 0
+}
+
+func (x *SaveArticleProgressRequest) GetPlaybackSpeed() float64 {
+	if x != nil {
+		return x.PlaybackSpeed
 	}
 	return 0
 }
@@ -1038,7 +1054,7 @@ const file_articles_v1_articles_service_proto_rawDesc = "" +
 	" \x01(\x03R\x10playerPositionMs\x12'\n" +
 	"\x0fscroll_position\x18\v \x01(\x01R\x0escrollPositionB\x0e\n" +
 	"\f_descriptionB\b\n" +
-	"\x06_image\"\xe2\x03\n" +
+	"\x06_image\"\x89\x04\n" +
 	"\aArticle\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\x12\x14\n" +
@@ -1056,7 +1072,8 @@ const file_articles_v1_articles_service_proto_rawDesc = "" +
 	"\x05image\x18\v \x01(\tH\x01R\x05image\x88\x01\x01\x12D\n" +
 	"\x0fphonemizer_data\x18\f \x03(\v2\x1b.articles.v1.PhonemizerDataR\x0ephonemizerData\x12,\n" +
 	"\x12player_position_ms\x18\r \x01(\x03R\x10playerPositionMs\x12'\n" +
-	"\x0fscroll_position\x18\x0e \x01(\x01R\x0escrollPositionB\x0e\n" +
+	"\x0fscroll_position\x18\x0e \x01(\x01R\x0escrollPosition\x12%\n" +
+	"\x0eplayback_speed\x18\x0f \x01(\x01R\rplaybackSpeedB\x0e\n" +
 	"\f_descriptionB\b\n" +
 	"\x06_image\"\xd1\x01\n" +
 	"\x12GetArticlesRequest\x12\x1b\n" +
@@ -1084,12 +1101,13 @@ const file_articles_v1_articles_service_proto_rawDesc = "" +
 	"\x14ParseArticleResponse\"&\n" +
 	"\x14DeleteArticleRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x17\n" +
-	"\x15DeleteArticleResponse\"\x92\x01\n" +
+	"\x15DeleteArticleResponse\"\xb9\x01\n" +
 	"\x1aSaveArticleProgressRequest\x12\x1d\n" +
 	"\n" +
 	"article_id\x18\x01 \x01(\tR\tarticleId\x12,\n" +
 	"\x12player_position_ms\x18\x02 \x01(\x03R\x10playerPositionMs\x12'\n" +
-	"\x0fscroll_position\x18\x03 \x01(\x01R\x0escrollPosition\"\x1d\n" +
+	"\x0fscroll_position\x18\x03 \x01(\x01R\x0escrollPosition\x12%\n" +
+	"\x0eplayback_speed\x18\x04 \x01(\x01R\rplaybackSpeed\"\x1d\n" +
 	"\x1bSaveArticleProgressResponse\"@\n" +
 	"\x16CheckForUpdatesRequest\x12&\n" +
 	"\x0flast_checked_at\x18\x01 \x01(\x03R\rlastCheckedAt\"e\n" +

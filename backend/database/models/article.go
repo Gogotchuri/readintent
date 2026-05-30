@@ -44,6 +44,7 @@ type Article struct {
 	CreatedAt        time.Time               `db:"created_at" json:"created_at"`
 	PlayerPositionMs int64                   `db:"player_position_ms" json:"player_position_ms"`
 	ScrollPosition   float64                 `db:"scroll_position" json:"scroll_position"`
+	PlaybackSpeed    float64                 `db:"playback_speed" json:"playback_speed"`
 }
 
 func (a *Article) GenerateDescriptionIfNone(l int) {

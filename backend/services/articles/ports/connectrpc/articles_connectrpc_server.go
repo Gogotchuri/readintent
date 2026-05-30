@@ -154,7 +154,7 @@ func (a *ArticlesServer) SaveArticleProgress(ctx context.Context, req *connect.R
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid article id: %w", err))
 	}
 
-	if err := a.service.SaveArticleProgress(ctx, session.Identity.ID, id, req.Msg.GetPlayerPositionMs(), req.Msg.GetScrollPosition()); err != nil {
+	if err := a.service.SaveArticleProgress(ctx, session.Identity.ID, id, req.Msg.GetPlayerPositionMs(), req.Msg.GetScrollPosition(), req.Msg.GetPlaybackSpeed()); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("saving article progress: %w", err))
 	}
 
@@ -183,6 +183,7 @@ func protoArticleFromArticle(article *models.Article) *v1.Article {
 		PhonemizerData:   phonemes,
 		PlayerPositionMs: article.PlayerPositionMs,
 		ScrollPosition:   article.ScrollPosition,
+		PlaybackSpeed:    article.PlaybackSpeed,
 	}
 	return protoArticle
 }

@@ -51,6 +51,7 @@ message Article {
   repeated PhonemizerData phonemizer_data = 12;
   int64 player_position_ms = 13;
   double scroll_position = 14;
+  double playback_speed = 15;
 }
 
 message GetArticlesRequest {
@@ -88,6 +89,7 @@ message SaveArticleProgressRequest {
   string article_id = 1;
   int64 player_position_ms = 2;
   double scroll_position = 3;
+  double playback_speed = 4;
 }
 message SaveArticleProgressResponse {}
 

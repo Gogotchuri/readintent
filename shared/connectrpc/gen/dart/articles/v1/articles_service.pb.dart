@@ -377,6 +377,7 @@ class Article extends $pb.GeneratedMessage {
     $core.Iterable<PhonemizerData>? phonemizerData,
     $fixnum.Int64? playerPositionMs,
     $core.double? scrollPosition,
+    $core.double? playbackSpeed,
   }) {
     final $result = create();
     if (id != null) {
@@ -421,6 +422,9 @@ class Article extends $pb.GeneratedMessage {
     if (scrollPosition != null) {
       $result.scrollPosition = scrollPosition;
     }
+    if (playbackSpeed != null) {
+      $result.playbackSpeed = playbackSpeed;
+    }
     return $result;
   }
   Article._() : super();
@@ -442,6 +446,7 @@ class Article extends $pb.GeneratedMessage {
     ..pc<PhonemizerData>(12, _omitFieldNames ? '' : 'phonemizerData', $pb.PbFieldType.PM, subBuilder: PhonemizerData.create)
     ..aInt64(13, _omitFieldNames ? '' : 'playerPositionMs')
     ..a<$core.double>(14, _omitFieldNames ? '' : 'scrollPosition', $pb.PbFieldType.OD)
+    ..a<$core.double>(15, _omitFieldNames ? '' : 'playbackSpeed', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
   ;
 
@@ -580,6 +585,15 @@ class Article extends $pb.GeneratedMessage {
   $core.bool hasScrollPosition() => $_has(13);
   @$pb.TagNumber(14)
   void clearScrollPosition() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.double get playbackSpeed => $_getN(14);
+  @$pb.TagNumber(15)
+  set playbackSpeed($core.double v) { $_setDouble(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasPlaybackSpeed() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearPlaybackSpeed() => clearField(15);
 }
 
 class GetArticlesRequest extends $pb.GeneratedMessage {
@@ -1028,6 +1042,7 @@ class SaveArticleProgressRequest extends $pb.GeneratedMessage {
     $core.String? articleId,
     $fixnum.Int64? playerPositionMs,
     $core.double? scrollPosition,
+    $core.double? playbackSpeed,
   }) {
     final $result = create();
     if (articleId != null) {
@@ -1039,6 +1054,9 @@ class SaveArticleProgressRequest extends $pb.GeneratedMessage {
     if (scrollPosition != null) {
       $result.scrollPosition = scrollPosition;
     }
+    if (playbackSpeed != null) {
+      $result.playbackSpeed = playbackSpeed;
+    }
     return $result;
   }
   SaveArticleProgressRequest._() : super();
@@ -1049,6 +1067,7 @@ class SaveArticleProgressRequest extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'articleId')
     ..aInt64(2, _omitFieldNames ? '' : 'playerPositionMs')
     ..a<$core.double>(3, _omitFieldNames ? '' : 'scrollPosition', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'playbackSpeed', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
   ;
 
@@ -1099,6 +1118,15 @@ class SaveArticleProgressRequest extends $pb.GeneratedMessage {
   $core.bool hasScrollPosition() => $_has(2);
   @$pb.TagNumber(3)
   void clearScrollPosition() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get playbackSpeed => $_getN(3);
+  @$pb.TagNumber(4)
+  set playbackSpeed($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPlaybackSpeed() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPlaybackSpeed() => clearField(4);
 }
 
 class SaveArticleProgressResponse extends $pb.GeneratedMessage {
