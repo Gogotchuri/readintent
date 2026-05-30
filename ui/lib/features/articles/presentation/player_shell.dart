@@ -2,6 +2,9 @@ import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:readintent_flutter/features/articles/presentation/article_player_widget.dart";
 import "package:readintent_flutter/features/articles/providers/article_player_provider.dart";
+import "package:readintent_flutter/features/tts/download_status_provider.dart";
+import "package:readintent_flutter/features/tts/model_downloader.dart";
+import "package:readintent_flutter/features/tts/presentation/download_status_bar.dart";
 
 class PlayerShell extends ConsumerStatefulWidget {
   final Widget child;
@@ -17,6 +20,23 @@ class _PlayerShellState extends ConsumerState<PlayerShell>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _preloadModel();
+  }
+
+  void _preloadModel() async {
+    final notifier = ref.read(downloadStatusProvider.notifier);
+    try {
+      await KokoroDownloader.preloadAll(
+        modelType: ModelType.q4,
+        onProgress: (name, progress) {
+          notifier.set(DownloadStatus("Downloading $name", progress));
+        },
+      );
+      notifier.set(null);
+    } catch (_) {
+      notifier.set(null);
+      // Silent fail - download retried when user plays
+    }
   }
 
   @override
@@ -37,13 +57,17 @@ class _PlayerShellState extends ConsumerState<PlayerShell>
     final hasActiveArticle = ref.watch(
       activePlayerProvider.select((s) => s.hasActiveArticle),
     );
+    final hasDownloadStatus = ref.watch(
+      downloadStatusProvider.select((s) => s != null),
+    );
 
-    if (!hasActiveArticle) return widget.child;
+    if (!hasActiveArticle && !hasDownloadStatus) return widget.child;
 
     return Column(
       children: [
         Expanded(child: widget.child),
-        const ArticlePlayerWidget(),
+        if (hasDownloadStatus) const DownloadStatusBar(),
+        if (hasActiveArticle && !hasDownloadStatus) const ArticlePlayerWidget(),
       ],
     );
   }

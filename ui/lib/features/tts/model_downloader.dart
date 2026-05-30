@@ -41,6 +41,7 @@ class KokoroAssetPaths {
 
 class KokoroDownloader {
   static KokoroAssetPaths? _cachedPaths;
+  static final Map<String, Future<String>> _inFlight = {};
 
   static Future<KokoroAssetPaths> ensureAssets({
     required ModelType modelType,
@@ -68,6 +69,17 @@ class KokoroDownloader {
     }
   }
 
+  static Future<void> preloadAll({
+    required ModelType modelType,
+    DownloadProgressCallback? onProgress,
+  }) async {
+    final voices = VoiceStyle.values.where((v) => v != VoiceStyle.unknown);
+    await Future.wait([
+      _downloadModel(modelType, onProgress),
+      ...voices.map((v) => _downloadVoice(v, onProgress)),
+    ]);
+  }
+
   static Future<String> _downloadVoice(VoiceStyle voiceStyle, DownloadProgressCallback? onProgress) async {
     // Each is around 0.5MB in size
     return _ensureFile(voiceStyle.url, voiceStyle.filepath, 0.5, onProgress);
@@ -85,12 +97,33 @@ class KokoroDownloader {
   ) async {
     final dir = await getApplicationSupportDirectory();
     final filePath = "${dir.path}/$filepath";
-    final filename = filepath.split("/").last;
 
     if (await File(filePath).exists()) {
       return filePath; // File already exists, return the path
     }
 
+    // Prevent concurrent downloads to the same file path
+    if (_inFlight.containsKey(filePath)) {
+      return _inFlight[filePath]!;
+    }
+
+    final future = _doDownload(url, filePath, filepath, fallbackSizeInMb, onProgress);
+    _inFlight[filePath] = future;
+    try {
+      return await future;
+    } finally {
+      _inFlight.remove(filePath);
+    }
+  }
+
+  static Future<String> _doDownload(
+    String url,
+    String filePath,
+    String filepath,
+    double fallbackSizeInMb,
+    DownloadProgressCallback? onProgress,
+  ) async {
+    final filename = filepath.split("/").last;
     final dio = Dio();
     await dio.download(
       url,
