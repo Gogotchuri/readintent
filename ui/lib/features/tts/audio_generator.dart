@@ -61,8 +61,8 @@ class AudioGenerator {
     required this.voice,
     required this.speed,
     required this.cache,
-    PipelineFactory? pipelineFactory,
-  }) : _pipelineFactory = pipelineFactory ?? defaultPipelineFactory {
+    required PipelineFactory pipelineFactory,
+  }) : _pipelineFactory = pipelineFactory {
     cacheKey = cache.cacheKey(
       articleId: article.id.toString(),
       articleText: article.pureText,
