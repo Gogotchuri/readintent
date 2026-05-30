@@ -26,7 +26,6 @@ final pipelineFactoryProvider = Provider<PipelineFactory>((ref) {
           notifier.set(DownloadStatus("Downloading $name", progress));
         },
       );
-      notifier.set(const DownloadStatus("Initializing model...", -1));
       final pipeline = await TTSPipeline.create(assetPaths);
       notifier.set(null);
       return pipeline;

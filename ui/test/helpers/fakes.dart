@@ -77,6 +77,11 @@ class FakeAudioHandler implements AudioHandlerInterface {
   }
 
   @override
+  Future<void> setSpeed(double speed) async {
+    calls.add("setSpeed");
+  }
+
+  @override
   Future<void> updateMediaItem(MediaItem mediaItem) async {
     calls.add("updateMediaItem");
     lastMediaItem = mediaItem;

@@ -40,6 +40,7 @@ class ActivePlayerState {
   final int? activeSentenceIndex;
   final int totalSentences;
   final bool syncEnabled;
+  final double playbackSpeed;
 
   const ActivePlayerState({
     this.articleId,
@@ -56,6 +57,7 @@ class ActivePlayerState {
     this.activeSentenceIndex,
     this.totalSentences = 0,
     this.syncEnabled = true,
+    this.playbackSpeed = 1.0,
   });
 
   bool get hasActiveArticle => articleId != null;
@@ -75,6 +77,7 @@ class ActivePlayerState {
     Object? activeSentenceIndex = _sentinel,
     int? totalSentences,
     bool? syncEnabled,
+    double? playbackSpeed,
   }) {
     return ActivePlayerState(
       articleId: _resolve(articleId, this.articleId),
@@ -91,6 +94,7 @@ class ActivePlayerState {
       activeSentenceIndex: _resolve(activeSentenceIndex, this.activeSentenceIndex),
       totalSentences: totalSentences ?? this.totalSentences,
       syncEnabled: syncEnabled ?? this.syncEnabled,
+      playbackSpeed: playbackSpeed ?? this.playbackSpeed,
     );
   }
 }
@@ -317,6 +321,11 @@ class ActivePlayer extends _$ActivePlayer {
     final cachedTs = await _session?.loadCachedTimestamps();
     if (cachedTs != null) _updateSentenceTimestamps(cachedTs);
 
+    // Apply persisted playback speed
+    if (state.playbackSpeed != 1.0) {
+      await _handler.setSpeed(state.playbackSpeed);
+    }
+
     state = state.copyWith(
       isLoading: false,
       ttsComplete: true,
@@ -331,6 +340,9 @@ class ActivePlayer extends _$ActivePlayer {
     await _loadPlayerSource();
     if (_resumePosition > Duration.zero) {
       await _handler.seek(_resumePosition);
+    }
+    if (state.playbackSpeed != 1.0) {
+      await _handler.setSpeed(state.playbackSpeed);
     }
     _playerStarted = true;
     state = state.copyWith(isLoading: false, position: _resumePosition);
@@ -423,6 +435,12 @@ class ActivePlayer extends _$ActivePlayer {
     });
   }
 
+  Future<void> setPlaybackSpeed(double speed) async {
+    await _handler.setSpeed(speed);
+    state = state.copyWith(playbackSpeed: speed);
+    persistState();
+  }
+
   Future<void> pause() async => _handler.pause();
   Future<void> resume() async => _handler.play();
   void toggleSync() => state = state.copyWith(syncEnabled: !state.syncEnabled);
@@ -499,6 +517,7 @@ class ActivePlayer extends _$ActivePlayer {
       estimatedDurationMs: state.estimatedDuration?.inMilliseconds,
       ttsComplete: state.ttsComplete,
       syncEnabled: state.syncEnabled,
+      playbackSpeed: state.playbackSpeed,
     );
     // Fire-and-forget server sync
     try {
@@ -530,6 +549,7 @@ class ActivePlayer extends _$ActivePlayer {
             : null,
         ttsComplete: data["ttsComplete"] as bool? ?? false,
         syncEnabled: data["syncEnabled"] as bool? ?? true,
+        playbackSpeed: (data["playbackSpeed"] as num?)?.toDouble() ?? 1.0,
         isPlaying: false,
       );
 

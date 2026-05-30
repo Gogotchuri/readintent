@@ -12,6 +12,7 @@ abstract class AudioHandlerInterface {
   Future<void> pause();
   Future<void> stop();
   Future<void> seek(Duration position);
+  Future<void> setSpeed(double speed);
   Future<void> updateMediaItem(MediaItem mediaItem);
 
   Stream<Duration> get positionStream;
@@ -63,6 +64,9 @@ class AppAudioHandler extends BaseAudioHandler with SeekHandler implements Audio
 
   @override
   Future<void> seek(Duration position) => _player.seek(position);
+
+  @override
+  Future<void> setSpeed(double speed) => _player.setSpeed(speed);
 
   void _broadcastState() {
     final playing = _player.playing;
