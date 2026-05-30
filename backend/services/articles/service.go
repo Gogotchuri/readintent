@@ -163,8 +163,8 @@ func (s Service) DeleteArticle(ctx context.Context, userID string, id int64) err
 	return s.articleRepo.DeleteArticle(ctx, userID, id)
 }
 
-func (s Service) SaveArticleProgress(ctx context.Context, userID string, articleID int64, playerPositionMs int64, scrollPosition float64) error {
-	return s.articleRepo.SaveArticleProgress(ctx, userID, articleID, playerPositionMs, scrollPosition)
+func (s Service) SaveArticleProgress(ctx context.Context, userID string, articleID int64, playerPositionMs int64, scrollPosition float64, playbackSpeed float64) error {
+	return s.articleRepo.SaveArticleProgress(ctx, userID, articleID, playerPositionMs, scrollPosition, playbackSpeed)
 }
 
 func (s Service) CheckForUpdates(ctx context.Context, userID string, since time.Time) (bool, time.Time, error) {

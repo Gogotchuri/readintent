@@ -74,6 +74,7 @@ class ArticlesClient {
     required String articleId,
     required int playerPositionMs,
     required double scrollPosition,
+    double playbackSpeed = 0,
   }) async {
     try {
       await _client.saveArticleProgress(
@@ -81,6 +82,7 @@ class ArticlesClient {
           articleId: articleId,
           playerPositionMs: Int64(playerPositionMs),
           scrollPosition: scrollPosition,
+          playbackSpeed: playbackSpeed,
         ),
       );
     } on ConnectException catch (e) {

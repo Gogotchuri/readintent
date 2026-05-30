@@ -191,6 +191,11 @@ class ActivePlayer extends _$ActivePlayer {
       _resumePosition = Duration(milliseconds: article.playerPositionMs.toInt());
     }
 
+    // Use server's playback speed if available and no local override
+    if (speed == 1.0 && article.playbackSpeed > 0) {
+      speed = article.playbackSpeed;
+    }
+
     // Different article or first play - tear down current session
     _cleanup();
     await _handler.stop();
@@ -206,6 +211,7 @@ class ActivePlayer extends _$ActivePlayer {
       position: _resumePosition,
       isLoading: true,
       totalSentences: _sentenceTexts?.length ?? 0,
+      playbackSpeed: speed,
     );
 
     persistState();
@@ -521,9 +527,11 @@ class ActivePlayer extends _$ActivePlayer {
     );
     // Fire-and-forget server sync
     try {
-      ref
-          .read(articleRepositoryProvider)
-          .saveArticleProgress(articleId: state.articleId!, playerPositionMs: state.position.inMilliseconds);
+      ref.read(articleRepositoryProvider).saveArticleProgress(
+            articleId: state.articleId!,
+            playerPositionMs: state.position.inMilliseconds,
+            playbackSpeed: state.playbackSpeed,
+          );
     } catch (_) {
       // Skip server sync if repository is not available
     }
@@ -559,9 +567,15 @@ class ActivePlayer extends _$ActivePlayer {
         final repository = ref.read(articleRepositoryProvider);
         final article = await repository.getArticle(articleId);
         if (!_restoring) return; // play() was called in the meantime
-        // Take the largest position between local and server, to avoid regressions
-        if (article != null && article.playerPositionMs.toInt() > localPositionMs) {
-          state = state.copyWith(position: Duration(milliseconds: article.playerPositionMs.toInt()));
+        if (article != null) {
+          // Take the largest position between local and server, to avoid regressions
+          if (article.playerPositionMs.toInt() > localPositionMs) {
+            state = state.copyWith(position: Duration(milliseconds: article.playerPositionMs.toInt()));
+          }
+          // Use server's playback speed if it's set and local is default
+          if (article.playbackSpeed > 0 && state.playbackSpeed == 1.0) {
+            state = state.copyWith(playbackSpeed: article.playbackSpeed);
+          }
         }
       } catch (_) {
         // Best-effort — server position is optional and won't interfere with local restore if it fails

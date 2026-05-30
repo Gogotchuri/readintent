@@ -211,6 +211,7 @@ class ArticleRepository {
     required String articleId,
     int playerPositionMs = 0,
     double scrollPosition = 0,
+    double playbackSpeed = 0,
   }) {
     final intId = int.tryParse(articleId);
     if (intId != null) {
@@ -222,6 +223,7 @@ class ArticleRepository {
           articleId: articleId,
           playerPositionMs: playerPositionMs,
           scrollPosition: scrollPosition,
+          playbackSpeed: playbackSpeed,
         )
         .catchError((_) {});
   }

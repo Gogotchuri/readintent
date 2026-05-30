@@ -22,7 +22,7 @@ type Repository interface {
 	DeleteArticle(ctx context.Context, userID string, id int64) error
 
 	HasUpdatedArticles(ctx context.Context, userID string, since time.Time) (bool, error)
-	SaveArticleProgress(ctx context.Context, userID string, articleID int64, playerPositionMs int64, scrollPosition float64) error
+	SaveArticleProgress(ctx context.Context, userID string, articleID int64, playerPositionMs int64, scrollPosition float64, playbackSpeed float64) error
 }
 
 type ArticleSubmitter interface {

@@ -425,6 +425,7 @@ type mockRepository struct {
 	UpdateArticleFn            func(ctx context.Context, article models.Article) error
 	DeleteArticleFn            func(ctx context.Context, userID string, id int64) error
 	HasUpdatedArticlesFn       func(ctx context.Context, userID string, since time.Time) (bool, error)
+	SaveArticleProgressFn      func(ctx context.Context, userID string, articleID int64, playerPositionMs int64, scrollPosition float64, playbackSpeed float64) error
 }
 
 func (m *mockRepository) GetArticles(ctx context.Context, userID string, searchQ iomodels.GetArticlesRequest) (*iomodels.GetArticlesResponse, error) {
@@ -453,6 +454,12 @@ func (m *mockRepository) UpdateArticle(ctx context.Context, article models.Artic
 }
 func (m *mockRepository) DeleteArticle(ctx context.Context, userID string, id int64) error {
 	return m.DeleteArticleFn(ctx, userID, id)
+}
+func (m *mockRepository) SaveArticleProgress(ctx context.Context, userID string, articleID int64, playerPositionMs int64, scrollPosition float64, playbackSpeed float64) error {
+	if m.SaveArticleProgressFn != nil {
+		return m.SaveArticleProgressFn(ctx, userID, articleID, playerPositionMs, scrollPosition, playbackSpeed)
+	}
+	return nil
 }
 func (m *mockRepository) HasUpdatedArticles(ctx context.Context, userID string, since time.Time) (bool, error) {
 	if m.HasUpdatedArticlesFn != nil {
