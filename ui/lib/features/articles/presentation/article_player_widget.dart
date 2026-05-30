@@ -140,6 +140,8 @@ class ArticlePlayerWidget extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        _buildSpeedButton(context, ref),
+        const SizedBox(width: 8),
         IconButton(
           onPressed: state.position > Duration.zero ? controller.jumpBackward : null,
           icon: const Icon(Icons.replay_10),
@@ -159,6 +161,58 @@ class ArticlePlayerWidget extends ConsumerWidget {
           _buildSyncButton(ref),
         ],
       ],
+    );
+  }
+
+  static const _speedOptions = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+
+  Widget _buildSpeedButton(BuildContext context, WidgetRef ref) {
+    final speed = ref.watch(activePlayerProvider.select((s) => s.playbackSpeed));
+    final label = speed == speed.truncateToDouble()
+        ? "${speed.toInt()}.0x"
+        : "${speed}x";
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: () => _showSpeedSheet(context, ref),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(label, style: Theme.of(context).textTheme.labelLarge),
+            Text("Speed", style: Theme.of(context).textTheme.labelSmall),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSpeedSheet(BuildContext context, WidgetRef ref) {
+    final currentSpeed = ref.read(activePlayerProvider).playbackSpeed;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text("Playback Speed", style: Theme.of(context).textTheme.titleMedium),
+            ),
+            for (final speed in _speedOptions)
+              ListTile(
+                title: Text("${speed}x"),
+                trailing: speed == currentSpeed ? const Icon(Icons.check) : null,
+                selected: speed == currentSpeed,
+                onTap: () {
+                  ref.read(activePlayerProvider.notifier).setPlaybackSpeed(speed);
+                  Navigator.pop(ctx);
+                },
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
     );
   }
 
