@@ -1,6 +1,5 @@
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
-import "package:go_router/go_router.dart";
 import "package:marquee/marquee.dart";
 
 import "package:readintent_flutter/features/articles/providers/article_player_provider.dart";
@@ -12,48 +11,40 @@ class ArticlePlayerWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(activePlayerProvider);
     final controller = ref.read(activePlayerProvider.notifier);
-    String? routeArticleId;
-    try {
-      routeArticleId = GoRouterState.of(context).pathParameters["id"];
-    } catch (_) {}
-    final onArticleDetail = routeArticleId != null && routeArticleId == state.articleId;
 
-    return GestureDetector(
-      onTap: onArticleDetail ? null : () => context.push("/articles/${state.articleId}"),
-      child: Material(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildTitleRow(context, state.articleTitle ?? "", onArticleDetail ? null : controller),
-              const SizedBox(height: 4),
-              _buildProgressSlider(context, state, controller),
-              const SizedBox(height: 4),
-              _buildTimeLabels(context, state),
-              _buildControls(context, ref, state, controller, onArticleDetail),
-              if (state.error != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(
-                    state.error!,
-                    style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+    return Material(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildTitleRow(context, state.articleTitle ?? "", controller),
+            const SizedBox(height: 4),
+            _buildProgressSlider(context, state, controller),
+            const SizedBox(height: 4),
+            _buildTimeLabels(context, state),
+            _buildControls(context, ref, state, controller),
+            if (state.error != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  state.error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildTitleRow(BuildContext context, String title, ActivePlayer? controller) {
+  Widget _buildTitleRow(BuildContext context, String title, ActivePlayer controller) {
     final style = Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)
         ?? const TextStyle(fontWeight: FontWeight.w500);
     final fontSize = style.fontSize ?? 14.0;
@@ -67,14 +58,13 @@ class ArticlePlayerWidget extends ConsumerWidget {
             child: _AutoMarquee(text: title, style: style),
           ),
         ),
-        if (controller != null)
-          IconButton(
-            icon: const Icon(Icons.close, size: 20),
-            onPressed: controller.stop,
-            tooltip: "Stop playback",
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-          ),
+        IconButton(
+          icon: const Icon(Icons.close, size: 20),
+          onPressed: controller.stop,
+          tooltip: "Stop playback",
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
       ],
     );
   }
@@ -135,7 +125,6 @@ class ArticlePlayerWidget extends ConsumerWidget {
     WidgetRef ref,
     ActivePlayerState state,
     ActivePlayer controller,
-    bool onArticleDetail,
   ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -156,10 +145,8 @@ class ArticlePlayerWidget extends ConsumerWidget {
               : null,
           icon: const Icon(Icons.forward_10),
         ),
-        if (onArticleDetail) ...[
-          const SizedBox(width: 8),
-          _buildSyncButton(ref),
-        ],
+        const SizedBox(width: 8),
+        _buildSyncButton(ref),
       ],
     );
   }
