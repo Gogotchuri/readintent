@@ -9,7 +9,7 @@ import "package:riverpod_annotation/riverpod_annotation.dart";
 part "articles_provider.g.dart";
 
 const _minCheckInterval = Duration(seconds: 1);
-const _maxCheckInterval = Duration(seconds: 15);
+const _maxCheckInterval = Duration(seconds: 5);
 
 class ArticlesState {
   final List<articles_pb.ArticlePreview> articles;
