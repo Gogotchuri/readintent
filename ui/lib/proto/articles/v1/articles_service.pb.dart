@@ -1276,6 +1276,105 @@ class CheckForUpdatesResponse extends $pb.GeneratedMessage {
   void clearServerTimestamp() => clearField(2);
 }
 
+class StreamArticleUpdatesRequest extends $pb.GeneratedMessage {
+  factory StreamArticleUpdatesRequest() => create();
+  StreamArticleUpdatesRequest._() : super();
+  factory StreamArticleUpdatesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory StreamArticleUpdatesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'StreamArticleUpdatesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'articles.v1'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  StreamArticleUpdatesRequest clone() => StreamArticleUpdatesRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  StreamArticleUpdatesRequest copyWith(void Function(StreamArticleUpdatesRequest) updates) => super.copyWith((message) => updates(message as StreamArticleUpdatesRequest)) as StreamArticleUpdatesRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static StreamArticleUpdatesRequest create() => StreamArticleUpdatesRequest._();
+  StreamArticleUpdatesRequest createEmptyInstance() => create();
+  static $pb.PbList<StreamArticleUpdatesRequest> createRepeated() => $pb.PbList<StreamArticleUpdatesRequest>();
+  @$core.pragma('dart2js:noInline')
+  static StreamArticleUpdatesRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<StreamArticleUpdatesRequest>(create);
+  static StreamArticleUpdatesRequest? _defaultInstance;
+}
+
+class StreamArticleUpdatesResponse extends $pb.GeneratedMessage {
+  factory StreamArticleUpdatesResponse({
+    ArticlePreview? article,
+    $core.String? eventType,
+  }) {
+    final $result = create();
+    if (article != null) {
+      $result.article = article;
+    }
+    if (eventType != null) {
+      $result.eventType = eventType;
+    }
+    return $result;
+  }
+  StreamArticleUpdatesResponse._() : super();
+  factory StreamArticleUpdatesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory StreamArticleUpdatesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'StreamArticleUpdatesResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'articles.v1'), createEmptyInstance: create)
+    ..aOM<ArticlePreview>(1, _omitFieldNames ? '' : 'article', subBuilder: ArticlePreview.create)
+    ..aOS(2, _omitFieldNames ? '' : 'eventType')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  StreamArticleUpdatesResponse clone() => StreamArticleUpdatesResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  StreamArticleUpdatesResponse copyWith(void Function(StreamArticleUpdatesResponse) updates) => super.copyWith((message) => updates(message as StreamArticleUpdatesResponse)) as StreamArticleUpdatesResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static StreamArticleUpdatesResponse create() => StreamArticleUpdatesResponse._();
+  StreamArticleUpdatesResponse createEmptyInstance() => create();
+  static $pb.PbList<StreamArticleUpdatesResponse> createRepeated() => $pb.PbList<StreamArticleUpdatesResponse>();
+  @$core.pragma('dart2js:noInline')
+  static StreamArticleUpdatesResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<StreamArticleUpdatesResponse>(create);
+  static StreamArticleUpdatesResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  ArticlePreview get article => $_getN(0);
+  @$pb.TagNumber(1)
+  set article(ArticlePreview v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasArticle() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearArticle() => clearField(1);
+  @$pb.TagNumber(1)
+  ArticlePreview ensureArticle() => $_ensure(0);
+
+  /// "updated" | "heartbeat" (room for "deleted" later)
+  @$pb.TagNumber(2)
+  $core.String get eventType => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set eventType($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasEventType() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearEventType() => clearField(2);
+}
+
 class ArticlesServiceApi {
   $pb.RpcClient _client;
   ArticlesServiceApi(this._client);
@@ -1297,6 +1396,9 @@ class ArticlesServiceApi {
   ;
   $async.Future<SaveArticleProgressResponse> saveArticleProgress($pb.ClientContext? ctx, SaveArticleProgressRequest request) =>
     _client.invoke<SaveArticleProgressResponse>(ctx, 'ArticlesService', 'SaveArticleProgress', request, SaveArticleProgressResponse())
+  ;
+  $async.Future<StreamArticleUpdatesResponse> streamArticleUpdates($pb.ClientContext? ctx, StreamArticleUpdatesRequest request) =>
+    _client.invoke<StreamArticleUpdatesResponse>(ctx, 'ArticlesService', 'StreamArticleUpdates', request, StreamArticleUpdatesResponse())
   ;
 }
 

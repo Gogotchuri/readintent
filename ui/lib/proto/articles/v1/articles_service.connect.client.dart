@@ -109,4 +109,24 @@ extension type ArticlesServiceClient (connect.Transport _transport) {
       onTrailer: onTrailer,
     );
   }
+
+  /// StreamArticleUpdates pushes the full updated ArticlePreview whenever an
+  /// article's status changes for the authenticated user. Periodic heartbeat
+  /// events keep the connection alive through idle proxy timeouts.
+  Stream<articlesv1articles_service.StreamArticleUpdatesResponse> streamArticleUpdates(
+    articlesv1articles_service.StreamArticleUpdatesRequest input, {
+    connect.Headers? headers,
+    connect.AbortSignal? signal,
+    Function(connect.Headers)? onHeader,
+    Function(connect.Headers)? onTrailer,
+  }) {
+    return connect.Client(_transport).server(
+      specs.ArticlesService.streamArticleUpdates,
+      input,
+      signal: signal,
+      headers: headers,
+      onHeader: onHeader,
+      onTrailer: onTrailer,
+    );
+  }
 }

@@ -27,6 +27,7 @@ abstract class ArticlesServiceBase extends $pb.GeneratedService {
   $async.Future<$0.DeleteArticleResponse> deleteArticle($pb.ServerContext ctx, $0.DeleteArticleRequest request);
   $async.Future<$0.CheckForUpdatesResponse> checkForUpdates($pb.ServerContext ctx, $0.CheckForUpdatesRequest request);
   $async.Future<$0.SaveArticleProgressResponse> saveArticleProgress($pb.ServerContext ctx, $0.SaveArticleProgressRequest request);
+  $async.Future<$0.StreamArticleUpdatesResponse> streamArticleUpdates($pb.ServerContext ctx, $0.StreamArticleUpdatesRequest request);
 
   $pb.GeneratedMessage createRequest($core.String methodName) {
     switch (methodName) {
@@ -36,6 +37,7 @@ abstract class ArticlesServiceBase extends $pb.GeneratedService {
       case 'DeleteArticle': return $0.DeleteArticleRequest();
       case 'CheckForUpdates': return $0.CheckForUpdatesRequest();
       case 'SaveArticleProgress': return $0.SaveArticleProgressRequest();
+      case 'StreamArticleUpdates': return $0.StreamArticleUpdatesRequest();
       default: throw $core.ArgumentError('Unknown method: $methodName');
     }
   }
@@ -48,6 +50,7 @@ abstract class ArticlesServiceBase extends $pb.GeneratedService {
       case 'DeleteArticle': return this.deleteArticle(ctx, request as $0.DeleteArticleRequest);
       case 'CheckForUpdates': return this.checkForUpdates(ctx, request as $0.CheckForUpdatesRequest);
       case 'SaveArticleProgress': return this.saveArticleProgress(ctx, request as $0.SaveArticleProgressRequest);
+      case 'StreamArticleUpdates': return this.streamArticleUpdates(ctx, request as $0.StreamArticleUpdatesRequest);
       default: throw $core.ArgumentError('Unknown method: $methodName');
     }
   }

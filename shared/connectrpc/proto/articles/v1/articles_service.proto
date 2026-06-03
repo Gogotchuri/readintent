@@ -93,14 +93,20 @@ message SaveArticleProgressRequest {
 }
 message SaveArticleProgressResponse {}
 
-message CheckForUpdatesRequest {
-  int64 last_checked_at = 1;
-}
+message CheckForUpdatesRequest { int64 last_checked_at = 1; }
 
 message CheckForUpdatesResponse {
   bool has_updates = 1;
   // Current server time - use this as next last_checked_at
   int64 server_timestamp = 2;
+}
+
+message StreamArticleUpdatesRequest {}
+
+message StreamArticleUpdatesResponse {
+  ArticlePreview article = 1;
+  // "updated" | "heartbeat"
+  string event_type = 2;
 }
 
 service ArticlesService {
@@ -109,5 +115,11 @@ service ArticlesService {
   rpc GetArticle(GetArticleRequest) returns (GetArticleResponse);
   rpc DeleteArticle(DeleteArticleRequest) returns (DeleteArticleResponse);
   rpc CheckForUpdates(CheckForUpdatesRequest) returns (CheckForUpdatesResponse);
-  rpc SaveArticleProgress(SaveArticleProgressRequest) returns (SaveArticleProgressResponse);
+  rpc SaveArticleProgress(SaveArticleProgressRequest)
+      returns (SaveArticleProgressResponse);
+  // StreamArticleUpdates pushes the full updated ArticlePreview whenever an
+  // article's status changes for the authenticated user.
+  // Or send a Periodic heartbeat events tp keep the connection alive
+  rpc StreamArticleUpdates(StreamArticleUpdatesRequest)
+      returns (stream StreamArticleUpdatesResponse);
 }

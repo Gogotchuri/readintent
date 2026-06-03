@@ -15,6 +15,7 @@ import (
 	"github.com/gogotchuri/readintent/backend/database"
 	"github.com/gogotchuri/readintent/backend/services/articles"
 	articlesadapters "github.com/gogotchuri/readintent/backend/services/articles/adapters"
+	"github.com/gogotchuri/readintent/backend/services/articles/broker"
 	articlesconnectrpc "github.com/gogotchuri/readintent/backend/services/articles/ports/connectrpc"
 	articlesrepo "github.com/gogotchuri/readintent/backend/services/articles/repositories"
 	"github.com/gogotchuri/readintent/backend/services/auth"
@@ -44,9 +45,12 @@ func main() {
 
 	articlesHub := articlesadapters.NewArticlesHub(redisClient, cfg.RedisStreams)
 
+	// In-memory broker fans out article updates to open streams (single replica).
+	articleBroker := broker.NewMemoryBroker()
+
 	// Articles service
 	articleRepo := articlesrepo.NewPgArticlesRepository(db)
-	articleService := articles.NewService(articleRepo, articlesHub)
+	articleService := articles.NewService(articleRepo, articlesHub, articleBroker)
 	articlesHub.AddListener(articlesadapters.ScrapeResultStream, articleService.HandleScrapeResult)
 	articlesHub.AddListener(articlesadapters.PhonemizerResultStream, articleService.HandlePhonemizerResult)
 
@@ -64,7 +68,7 @@ func main() {
 	authServer.BindAuthServerToMux(mux)
 
 	// Articles ConnectRPC server
-	articlesServer := articlesconnectrpc.NewArticlesServer(articleService, authService)
+	articlesServer := articlesconnectrpc.NewArticlesServer(ctx, articleService, authService, articleBroker)
 	articlesServer.BindArticlesServerToMux(mux)
 
 	// Extension HTTP server

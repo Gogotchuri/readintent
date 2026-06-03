@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
 
 	"connectrpc.com/connect"
 
@@ -50,26 +51,53 @@ func NewSessionInterceptor(service SessionGetter) *SessionInterceptor {
 	}
 }
 
-func (a *SessionInterceptor) NewUnaryInterceptor() connect.UnaryInterceptorFunc {
-	return func(next connect.UnaryFunc) connect.UnaryFunc {
-		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
-			// No need to apply the interceptor on a public procedure
-			if a.publicProcedures[req.Spec().Procedure] {
-				return next(ctx, req)
-			}
+var _ connect.Interceptor = (*SessionInterceptor)(nil)
 
-			sessionToken := req.Header().Get(tokenHeader)
-			if sessionToken == "" {
-				return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("please provide the X-Session-Token header for authenticated routes"))
-			}
-
-			session, err := a.sg.GetSession(ctx, sessionToken)
-			if err != nil {
-				return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("unauthenticated: %w", err))
-			}
-
-			ctx = context.WithValue(ctx, sessionKey, session)
-			return next(ctx, req)
-		}
+// authenticate validates the session token for a procedure and returns a
+// context carrying the resolved session. Public procedures are passed through
+// unchanged.
+func (a *SessionInterceptor) authenticate(ctx context.Context, procedure string, header http.Header) (context.Context, error) {
+	// No need to apply the interceptor on a public procedure
+	if a.publicProcedures[procedure] {
+		return ctx, nil
 	}
+
+	sessionToken := header.Get(tokenHeader)
+	if sessionToken == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("please provide the X-Session-Token header for authenticated routes"))
+	}
+
+	session, err := a.sg.GetSession(ctx, sessionToken)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("unauthenticated: %w", err))
+	}
+
+	return context.WithValue(ctx, sessionKey, session), nil
+}
+
+// WrapUnary authenticates unary RPCs.
+func (a *SessionInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
+	return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
+		ctx, err := a.authenticate(ctx, req.Spec().Procedure, req.Header())
+		if err != nil {
+			return nil, err
+		}
+		return next(ctx, req)
+	}
+}
+
+// WrapStreamingHandler authenticates streaming RPCs
+func (a *SessionInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc) connect.StreamingHandlerFunc {
+	return func(ctx context.Context, conn connect.StreamingHandlerConn) error {
+		ctx, err := a.authenticate(ctx, conn.Spec().Procedure, conn.RequestHeader())
+		if err != nil {
+			return err
+		}
+		return next(ctx, conn)
+	}
+}
+
+// WrapStreamingClient is a pass-through; this interceptor is server-side only.
+func (a *SessionInterceptor) WrapStreamingClient(next connect.StreamingClientFunc) connect.StreamingClientFunc {
+	return next
 }

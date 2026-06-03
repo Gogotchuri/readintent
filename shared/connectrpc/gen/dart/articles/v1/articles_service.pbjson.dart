@@ -278,6 +278,30 @@ final $typed_data.Uint8List checkForUpdatesResponseDescriptor = $convert.base64D
     'ChdDaGVja0ZvclVwZGF0ZXNSZXNwb25zZRIfCgtoYXNfdXBkYXRlcxgBIAEoCFIKaGFzVXBkYX'
     'RlcxIpChBzZXJ2ZXJfdGltZXN0YW1wGAIgASgDUg9zZXJ2ZXJUaW1lc3RhbXA=');
 
+@$core.Deprecated('Use streamArticleUpdatesRequestDescriptor instead')
+const StreamArticleUpdatesRequest$json = {
+  '1': 'StreamArticleUpdatesRequest',
+};
+
+/// Descriptor for `StreamArticleUpdatesRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List streamArticleUpdatesRequestDescriptor = $convert.base64Decode(
+    'ChtTdHJlYW1BcnRpY2xlVXBkYXRlc1JlcXVlc3Q=');
+
+@$core.Deprecated('Use streamArticleUpdatesResponseDescriptor instead')
+const StreamArticleUpdatesResponse$json = {
+  '1': 'StreamArticleUpdatesResponse',
+  '2': [
+    {'1': 'article', '3': 1, '4': 1, '5': 11, '6': '.articles.v1.ArticlePreview', '10': 'article'},
+    {'1': 'event_type', '3': 2, '4': 1, '5': 9, '10': 'eventType'},
+  ],
+};
+
+/// Descriptor for `StreamArticleUpdatesResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List streamArticleUpdatesResponseDescriptor = $convert.base64Decode(
+    'ChxTdHJlYW1BcnRpY2xlVXBkYXRlc1Jlc3BvbnNlEjUKB2FydGljbGUYASABKAsyGy5hcnRpY2'
+    'xlcy52MS5BcnRpY2xlUHJldmlld1IHYXJ0aWNsZRIdCgpldmVudF90eXBlGAIgASgJUglldmVu'
+    'dFR5cGU=');
+
 const $core.Map<$core.String, $core.dynamic> ArticlesServiceBase$json = {
   '1': 'ArticlesService',
   '2': [
@@ -287,6 +311,7 @@ const $core.Map<$core.String, $core.dynamic> ArticlesServiceBase$json = {
     {'1': 'DeleteArticle', '2': '.articles.v1.DeleteArticleRequest', '3': '.articles.v1.DeleteArticleResponse'},
     {'1': 'CheckForUpdates', '2': '.articles.v1.CheckForUpdatesRequest', '3': '.articles.v1.CheckForUpdatesResponse'},
     {'1': 'SaveArticleProgress', '2': '.articles.v1.SaveArticleProgressRequest', '3': '.articles.v1.SaveArticleProgressResponse'},
+    {'1': 'StreamArticleUpdates', '2': '.articles.v1.StreamArticleUpdatesRequest', '3': '.articles.v1.StreamArticleUpdatesResponse', '6': true},
   ],
 };
 
@@ -308,6 +333,8 @@ const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> ArticlesSe
   '.articles.v1.CheckForUpdatesResponse': CheckForUpdatesResponse$json,
   '.articles.v1.SaveArticleProgressRequest': SaveArticleProgressRequest$json,
   '.articles.v1.SaveArticleProgressResponse': SaveArticleProgressResponse$json,
+  '.articles.v1.StreamArticleUpdatesRequest': StreamArticleUpdatesRequest$json,
+  '.articles.v1.StreamArticleUpdatesResponse': StreamArticleUpdatesResponse$json,
 };
 
 /// Descriptor for `ArticlesService`. Decode as a `google.protobuf.ServiceDescriptorProto`.
@@ -321,5 +348,7 @@ final $typed_data.Uint8List articlesServiceDescriptor = $convert.base64Decode(
     'ZXRlQXJ0aWNsZVJlc3BvbnNlElwKD0NoZWNrRm9yVXBkYXRlcxIjLmFydGljbGVzLnYxLkNoZW'
     'NrRm9yVXBkYXRlc1JlcXVlc3QaJC5hcnRpY2xlcy52MS5DaGVja0ZvclVwZGF0ZXNSZXNwb25z'
     'ZRJoChNTYXZlQXJ0aWNsZVByb2dyZXNzEicuYXJ0aWNsZXMudjEuU2F2ZUFydGljbGVQcm9ncm'
-    'Vzc1JlcXVlc3QaKC5hcnRpY2xlcy52MS5TYXZlQXJ0aWNsZVByb2dyZXNzUmVzcG9uc2U=');
+    'Vzc1JlcXVlc3QaKC5hcnRpY2xlcy52MS5TYXZlQXJ0aWNsZVByb2dyZXNzUmVzcG9uc2USbQoU'
+    'U3RyZWFtQXJ0aWNsZVVwZGF0ZXMSKC5hcnRpY2xlcy52MS5TdHJlYW1BcnRpY2xlVXBkYXRlc1'
+    'JlcXVlc3QaKS5hcnRpY2xlcy52MS5TdHJlYW1BcnRpY2xlVXBkYXRlc1Jlc3BvbnNlMAE=');
 

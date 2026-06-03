@@ -51,6 +51,9 @@ const (
 	// ArticlesServiceSaveArticleProgressProcedure is the fully-qualified name of the ArticlesService's
 	// SaveArticleProgress RPC.
 	ArticlesServiceSaveArticleProgressProcedure = "/articles.v1.ArticlesService/SaveArticleProgress"
+	// ArticlesServiceStreamArticleUpdatesProcedure is the fully-qualified name of the ArticlesService's
+	// StreamArticleUpdates RPC.
+	ArticlesServiceStreamArticleUpdatesProcedure = "/articles.v1.ArticlesService/StreamArticleUpdates"
 )
 
 // ArticlesServiceClient is a client for the articles.v1.ArticlesService service.
@@ -61,6 +64,10 @@ type ArticlesServiceClient interface {
 	DeleteArticle(context.Context, *connect.Request[v1.DeleteArticleRequest]) (*connect.Response[v1.DeleteArticleResponse], error)
 	CheckForUpdates(context.Context, *connect.Request[v1.CheckForUpdatesRequest]) (*connect.Response[v1.CheckForUpdatesResponse], error)
 	SaveArticleProgress(context.Context, *connect.Request[v1.SaveArticleProgressRequest]) (*connect.Response[v1.SaveArticleProgressResponse], error)
+	// StreamArticleUpdates pushes the full updated ArticlePreview whenever an
+	// article's status changes for the authenticated user. Periodic heartbeat
+	// events keep the connection alive through idle proxy timeouts.
+	StreamArticleUpdates(context.Context, *connect.Request[v1.StreamArticleUpdatesRequest]) (*connect.ServerStreamForClient[v1.StreamArticleUpdatesResponse], error)
 }
 
 // NewArticlesServiceClient constructs a client for the articles.v1.ArticlesService service. By
@@ -110,17 +117,24 @@ func NewArticlesServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(articlesServiceMethods.ByName("SaveArticleProgress")),
 			connect.WithClientOptions(opts...),
 		),
+		streamArticleUpdates: connect.NewClient[v1.StreamArticleUpdatesRequest, v1.StreamArticleUpdatesResponse](
+			httpClient,
+			baseURL+ArticlesServiceStreamArticleUpdatesProcedure,
+			connect.WithSchema(articlesServiceMethods.ByName("StreamArticleUpdates")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // articlesServiceClient implements ArticlesServiceClient.
 type articlesServiceClient struct {
-	parseArticle        *connect.Client[v1.ParseArticleRequest, v1.ParseArticleResponse]
-	getArticles         *connect.Client[v1.GetArticlesRequest, v1.GetArticlesResponse]
-	getArticle          *connect.Client[v1.GetArticleRequest, v1.GetArticleResponse]
-	deleteArticle       *connect.Client[v1.DeleteArticleRequest, v1.DeleteArticleResponse]
-	checkForUpdates     *connect.Client[v1.CheckForUpdatesRequest, v1.CheckForUpdatesResponse]
-	saveArticleProgress *connect.Client[v1.SaveArticleProgressRequest, v1.SaveArticleProgressResponse]
+	parseArticle         *connect.Client[v1.ParseArticleRequest, v1.ParseArticleResponse]
+	getArticles          *connect.Client[v1.GetArticlesRequest, v1.GetArticlesResponse]
+	getArticle           *connect.Client[v1.GetArticleRequest, v1.GetArticleResponse]
+	deleteArticle        *connect.Client[v1.DeleteArticleRequest, v1.DeleteArticleResponse]
+	checkForUpdates      *connect.Client[v1.CheckForUpdatesRequest, v1.CheckForUpdatesResponse]
+	saveArticleProgress  *connect.Client[v1.SaveArticleProgressRequest, v1.SaveArticleProgressResponse]
+	streamArticleUpdates *connect.Client[v1.StreamArticleUpdatesRequest, v1.StreamArticleUpdatesResponse]
 }
 
 // ParseArticle calls articles.v1.ArticlesService.ParseArticle.
@@ -153,6 +167,11 @@ func (c *articlesServiceClient) SaveArticleProgress(ctx context.Context, req *co
 	return c.saveArticleProgress.CallUnary(ctx, req)
 }
 
+// StreamArticleUpdates calls articles.v1.ArticlesService.StreamArticleUpdates.
+func (c *articlesServiceClient) StreamArticleUpdates(ctx context.Context, req *connect.Request[v1.StreamArticleUpdatesRequest]) (*connect.ServerStreamForClient[v1.StreamArticleUpdatesResponse], error) {
+	return c.streamArticleUpdates.CallServerStream(ctx, req)
+}
+
 // ArticlesServiceHandler is an implementation of the articles.v1.ArticlesService service.
 type ArticlesServiceHandler interface {
 	ParseArticle(context.Context, *connect.Request[v1.ParseArticleRequest]) (*connect.Response[v1.ParseArticleResponse], error)
@@ -161,6 +180,10 @@ type ArticlesServiceHandler interface {
 	DeleteArticle(context.Context, *connect.Request[v1.DeleteArticleRequest]) (*connect.Response[v1.DeleteArticleResponse], error)
 	CheckForUpdates(context.Context, *connect.Request[v1.CheckForUpdatesRequest]) (*connect.Response[v1.CheckForUpdatesResponse], error)
 	SaveArticleProgress(context.Context, *connect.Request[v1.SaveArticleProgressRequest]) (*connect.Response[v1.SaveArticleProgressResponse], error)
+	// StreamArticleUpdates pushes the full updated ArticlePreview whenever an
+	// article's status changes for the authenticated user. Periodic heartbeat
+	// events keep the connection alive through idle proxy timeouts.
+	StreamArticleUpdates(context.Context, *connect.Request[v1.StreamArticleUpdatesRequest], *connect.ServerStream[v1.StreamArticleUpdatesResponse]) error
 }
 
 // NewArticlesServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -206,6 +229,12 @@ func NewArticlesServiceHandler(svc ArticlesServiceHandler, opts ...connect.Handl
 		connect.WithSchema(articlesServiceMethods.ByName("SaveArticleProgress")),
 		connect.WithHandlerOptions(opts...),
 	)
+	articlesServiceStreamArticleUpdatesHandler := connect.NewServerStreamHandler(
+		ArticlesServiceStreamArticleUpdatesProcedure,
+		svc.StreamArticleUpdates,
+		connect.WithSchema(articlesServiceMethods.ByName("StreamArticleUpdates")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/articles.v1.ArticlesService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case ArticlesServiceParseArticleProcedure:
@@ -220,6 +249,8 @@ func NewArticlesServiceHandler(svc ArticlesServiceHandler, opts ...connect.Handl
 			articlesServiceCheckForUpdatesHandler.ServeHTTP(w, r)
 		case ArticlesServiceSaveArticleProgressProcedure:
 			articlesServiceSaveArticleProgressHandler.ServeHTTP(w, r)
+		case ArticlesServiceStreamArticleUpdatesProcedure:
+			articlesServiceStreamArticleUpdatesHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -251,4 +282,8 @@ func (UnimplementedArticlesServiceHandler) CheckForUpdates(context.Context, *con
 
 func (UnimplementedArticlesServiceHandler) SaveArticleProgress(context.Context, *connect.Request[v1.SaveArticleProgressRequest]) (*connect.Response[v1.SaveArticleProgressResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("articles.v1.ArticlesService.SaveArticleProgress is not implemented"))
+}
+
+func (UnimplementedArticlesServiceHandler) StreamArticleUpdates(context.Context, *connect.Request[v1.StreamArticleUpdatesRequest], *connect.ServerStream[v1.StreamArticleUpdatesResponse]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("articles.v1.ArticlesService.StreamArticleUpdates is not implemented"))
 }

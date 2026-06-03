@@ -6,6 +6,7 @@ import "package:readintent_flutter/features/articles/presentation/article_player
 import "package:readintent_flutter/features/articles/presentation/articles_screen.dart";
 import "package:readintent_flutter/features/articles/presentation/mini_player_widget.dart";
 import "package:readintent_flutter/features/articles/providers/article_player_provider.dart";
+import "package:readintent_flutter/features/articles/providers/articles_provider.dart";
 import "package:readintent_flutter/features/settings/presentation/settings_screen.dart";
 import "package:readintent_flutter/features/tts/download_status_provider.dart";
 import "package:readintent_flutter/features/tts/model_downloader.dart";
@@ -56,6 +57,9 @@ class _PlayerShellState extends ConsumerState<PlayerShell>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused) {
       ref.read(activePlayerProvider.notifier).persistState();
+      ref.read(articlesProvider.notifier).suspendStream();
+    } else if (state == AppLifecycleState.resumed) {
+      ref.read(articlesProvider.notifier).resumeStream();
     }
   }
 

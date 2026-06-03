@@ -107,6 +107,37 @@ func (p PgArticlesRepository) GetArticleForUser(ctx context.Context, userID stri
 	return &article, nil
 }
 
+// GetUserIDsForArticle returns the IDs of all users the article is shared with.
+func (p PgArticlesRepository) GetUserIDsForArticle(ctx context.Context, articleID int64) ([]string, error) {
+	var userIDs []string
+	if err := p.db.SelectContext(ctx, &userIDs, `
+		SELECT user_id FROM user_articles WHERE article_id = $1
+	`, articleID); err != nil {
+		return nil, fmt.Errorf("failed to get user ids for article %d: %w", articleID, err)
+	}
+	return userIDs, nil
+}
+
+// GetArticlePreviewForUser returns the same ArticlePreview projection as
+// GetArticles, scoped to a single (user_id, article_id) pair, so a pushed
+// preview is byte-identical to the one served in the list.
+func (p PgArticlesRepository) GetArticlePreviewForUser(ctx context.Context, userID string, articleID int64) (*models.ArticlePreview, error) {
+	var preview models.ArticlePreview
+	if err := p.db.GetContext(ctx, &preview, `
+		SELECT a.id, a.url, a.status, a.title, a.author, a.published_date, a.categories, a.description, a.image_url, a.created_at,
+			ua.player_position_ms, ua.scroll_position
+		FROM articles a
+		JOIN user_articles ua ON ua.article_id = a.id
+		WHERE ua.user_id = $1 AND a.id = $2
+	`, userID, articleID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, articles.ErrArticleNotFound
+		}
+		return nil, err
+	}
+	return &preview, nil
+}
+
 func (p PgArticlesRepository) GetArticleForUserWithURL(ctx context.Context, userID, url string) (*models.Article, error) {
 	var article models.Article
 	if err := p.db.GetContext(ctx, &article, `
