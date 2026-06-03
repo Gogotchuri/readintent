@@ -51,4 +51,14 @@ abstract final class ArticlesService {
     articlesv1articles_service.SaveArticleProgressRequest.new,
     articlesv1articles_service.SaveArticleProgressResponse.new,
   );
+
+  /// StreamArticleUpdates pushes the full updated ArticlePreview whenever an
+  /// article's status changes for the authenticated user. Periodic heartbeat
+  /// events keep the connection alive through idle proxy timeouts.
+  static const streamArticleUpdates = connect.Spec(
+    '/$name/StreamArticleUpdates',
+    connect.StreamType.server,
+    articlesv1articles_service.StreamArticleUpdatesRequest.new,
+    articlesv1articles_service.StreamArticleUpdatesResponse.new,
+  );
 }

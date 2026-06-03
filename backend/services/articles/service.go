@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gogotchuri/readintent/backend/database/models"
+	"github.com/gogotchuri/readintent/backend/services/articles/broker"
 	iomodels "github.com/gogotchuri/readintent/backend/services/articles/models"
 	"github.com/gogotchuri/readintent/backend/services/articles/urlutil"
 )
@@ -19,12 +20,14 @@ var ErrArticleNotFound = errors.New("article not found")
 type Service struct {
 	articleRepo Repository
 	eventHub    ArticleSubmitter
+	broker      broker.ArticleBroker
 }
 
-func NewService(articleRepo Repository, eventHub ArticleSubmitter) *Service {
+func NewService(articleRepo Repository, eventHub ArticleSubmitter, articleBroker broker.ArticleBroker) *Service {
 	return &Service{
 		articleRepo: articleRepo,
 		eventHub:    eventHub,
+		broker:      articleBroker,
 	}
 }
 
@@ -76,7 +79,30 @@ func (s Service) handleScrapeError(ctx context.Context, articleID int64, errMsg 
 	if err := s.articleRepo.UpdateArticle(ctx, *article); err != nil {
 		return fmt.Errorf("updating article status to failed for id %d: %w", articleID, err)
 	}
+	s.publishArticleUpdate(ctx, articleID)
 	return nil
+}
+
+// publishArticleUpdate pushes the freshly updated preview to every user the
+// article is shared with. Best-effort - failures only log, since a missed push
+// is recovered by the client's reconnect-refetch.
+func (s Service) publishArticleUpdate(ctx context.Context, articleID int64) {
+	if s.broker == nil {
+		return
+	}
+	userIDs, err := s.articleRepo.GetUserIDsForArticle(ctx, articleID)
+	if err != nil {
+		slog.Error("failed to resolve users for article update", "article_id", articleID, "error", err)
+		return
+	}
+	for _, userID := range userIDs {
+		preview, err := s.articleRepo.GetArticlePreviewForUser(ctx, userID, articleID)
+		if err != nil {
+			slog.Error("failed to load preview for article update", "article_id", articleID, "user_id", userID, "error", err)
+			continue
+		}
+		s.broker.Publish(userID, preview)
+	}
 }
 
 func (s Service) HandleScrapeResult(ctx context.Context, msg map[string]any) error {
@@ -114,6 +140,7 @@ func (s Service) HandleScrapeResult(ctx context.Context, msg map[string]any) err
 	if err := s.articleRepo.UpdateArticle(ctx, art); err != nil {
 		return fmt.Errorf("updating article with scrape result for id %d: %w", articleID, err)
 	}
+	s.publishArticleUpdate(ctx, articleID)
 	return nil
 }
 
@@ -148,6 +175,7 @@ func (s Service) HandlePhonemizerResult(ctx context.Context, msg map[string]any)
 	if err := s.articleRepo.UpdateArticle(ctx, *article); err != nil {
 		return fmt.Errorf("updating article with phonemizer data for id %d: %w", articleID, err)
 	}
+	s.publishArticleUpdate(ctx, articleID)
 	return nil
 }
 

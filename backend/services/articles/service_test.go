@@ -46,7 +46,7 @@ func TestService_ParseArticle_NewArticle(t *testing.T) {
 		},
 	}
 
-	svc := NewService(repo, submitter)
+	svc := NewService(repo, submitter, nil)
 	err := svc.ParseArticle(context.Background(), userID, articleURL, "")
 	if err != nil {
 		t.Fatalf("ParseArticle returned error: %v", err)
@@ -91,7 +91,7 @@ func TestService_ParseArticle_WithExistingArticle(t *testing.T) {
 			return nil
 		},
 	}
-	svc := NewService(repo, submitter)
+	svc := NewService(repo, submitter, nil)
 	err := svc.ParseArticle(context.Background(), userID, articleURL, "")
 	if err != nil {
 		t.Fatalf("ParseArticle returned error: %v", err)
@@ -119,7 +119,7 @@ func TestService_GetArticles(t *testing.T) {
 		},
 	}
 
-	svc := NewService(repo, nil)
+	svc := NewService(repo, nil, nil)
 	resp, err := svc.GetArticles(context.Background(), userID, req)
 	if err != nil {
 		t.Fatalf("GetArticles returned error: %v", err)
@@ -149,7 +149,7 @@ func TestService_GetArticle(t *testing.T) {
 		},
 	}
 
-	svc := NewService(repo, nil)
+	svc := NewService(repo, nil, nil)
 	article, err := svc.GetArticle(context.Background(), userID, articleID)
 	if err != nil {
 		t.Fatalf("GetArticle returned error: %v", err)
@@ -177,7 +177,7 @@ func TestService_DeleteArticle(t *testing.T) {
 		},
 	}
 
-	svc := NewService(repo, nil)
+	svc := NewService(repo, nil, nil)
 	err := svc.DeleteArticle(context.Background(), userID, articleID)
 	if err != nil {
 		t.Fatalf("DeleteArticle returned error: %v", err)
@@ -206,7 +206,7 @@ func TestService_HandleScrapeResult(t *testing.T) {
 		},
 	}
 
-	svc := NewService(repo, nil)
+	svc := NewService(repo, nil, nil)
 	msg := map[string]any{
 		"article_id": "1",
 		"result":     resultJSON,
@@ -242,7 +242,7 @@ func TestService_HandleScrapeResult_Err(t *testing.T) {
 		},
 	}
 
-	svc := NewService(repo, nil)
+	svc := NewService(repo, nil, nil)
 	msg := map[string]any{
 		"article_id": "1",
 		"result":     resultJSON,
@@ -275,7 +275,7 @@ func TestService_HandleScrapeError(t *testing.T) {
 		},
 	}
 
-	svc := NewService(repo, nil)
+	svc := NewService(repo, nil, nil)
 	msg := map[string]any{
 		"article_id": "1",
 		"error":      `{"msg":"scrape failed"}`,
@@ -308,7 +308,7 @@ func TestService_HandlePhonemizerResult(t *testing.T) {
 		},
 	}
 
-	svc := NewService(repo, nil)
+	svc := NewService(repo, nil, nil)
 	msg := map[string]any{
 		"article_id": "1",
 		"result":     phonemizerJSON,
@@ -349,7 +349,7 @@ func TestService_HandlePhonemizerResult_Error(t *testing.T) {
 		},
 	}
 
-	svc := NewService(repo, nil)
+	svc := NewService(repo, nil, nil)
 	msg := map[string]any{
 		"article_id": "1",
 		"error":      `{"msg":"phonemizer failed"}`,
@@ -364,7 +364,7 @@ func TestService_HandlePhonemizerResult_Error(t *testing.T) {
 }
 
 func TestService_ParseArticle_InvalidURL(t *testing.T) {
-	svc := NewService(&mockRepository{}, &mockSubmitter{})
+	svc := NewService(&mockRepository{}, &mockSubmitter{}, nil)
 	tests := []struct {
 		name string
 		url  string
@@ -401,7 +401,7 @@ func TestService_ParseArticle_URLNormalization(t *testing.T) {
 	submitter := &mockSubmitter{
 		SubmitArticleFn: func(_ context.Context, _ int64, _, _ string) error { return nil },
 	}
-	svc := NewService(repo, submitter)
+	svc := NewService(repo, submitter, nil)
 
 	err := svc.ParseArticle(context.Background(), "user-123",
 		"HTTPS://EXAMPLE.COM/Article/?utm_source=twitter&fbclid=abc", "")
@@ -426,6 +426,8 @@ type mockRepository struct {
 	DeleteArticleFn            func(ctx context.Context, userID string, id int64) error
 	HasUpdatedArticlesFn       func(ctx context.Context, userID string, since time.Time) (bool, error)
 	SaveArticleProgressFn      func(ctx context.Context, userID string, articleID int64, playerPositionMs int64, scrollPosition float64, playbackSpeed float64) error
+	GetUserIDsForArticleFn     func(ctx context.Context, articleID int64) ([]string, error)
+	GetArticlePreviewForUserFn func(ctx context.Context, userID string, articleID int64) (*models.ArticlePreview, error)
 }
 
 func (m *mockRepository) GetArticles(ctx context.Context, userID string, searchQ iomodels.GetArticlesRequest) (*iomodels.GetArticlesResponse, error) {
@@ -466,6 +468,18 @@ func (m *mockRepository) HasUpdatedArticles(ctx context.Context, userID string, 
 		return m.HasUpdatedArticlesFn(ctx, userID, since)
 	}
 	return false, nil
+}
+func (m *mockRepository) GetUserIDsForArticle(ctx context.Context, articleID int64) ([]string, error) {
+	if m.GetUserIDsForArticleFn != nil {
+		return m.GetUserIDsForArticleFn(ctx, articleID)
+	}
+	return nil, nil
+}
+func (m *mockRepository) GetArticlePreviewForUser(ctx context.Context, userID string, articleID int64) (*models.ArticlePreview, error) {
+	if m.GetArticlePreviewForUserFn != nil {
+		return m.GetArticlePreviewForUserFn(ctx, userID, articleID)
+	}
+	return nil, nil
 }
 
 // mockSubmitter implements ArticleSubmitter using function fields.

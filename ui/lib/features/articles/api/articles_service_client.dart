@@ -10,6 +10,7 @@ abstract class ArticlesServiceClientI {
   Future<articles_pb.DeleteArticleResponse> deleteArticle(articles_pb.DeleteArticleRequest input);
   Future<articles_pb.CheckForUpdatesResponse> checkForUpdates(articles_pb.CheckForUpdatesRequest input);
   Future<articles_pb.SaveArticleProgressResponse> saveArticleProgress(articles_pb.SaveArticleProgressRequest input);
+  Stream<articles_pb.StreamArticleUpdatesResponse> streamArticleUpdates(articles_pb.StreamArticleUpdatesRequest input);
 }
 
 class ConnectArticlesServiceClient implements ArticlesServiceClientI {
@@ -34,4 +35,7 @@ class ConnectArticlesServiceClient implements ArticlesServiceClientI {
   @override
   Future<articles_pb.SaveArticleProgressResponse> saveArticleProgress(articles_pb.SaveArticleProgressRequest input) =>
       _client.saveArticleProgress(input);
+  @override
+  Stream<articles_pb.StreamArticleUpdatesResponse> streamArticleUpdates(articles_pb.StreamArticleUpdatesRequest input) =>
+      _client.streamArticleUpdates(input);
 }

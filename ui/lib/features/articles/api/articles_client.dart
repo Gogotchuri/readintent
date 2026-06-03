@@ -3,7 +3,8 @@ import "package:readintent_flutter/core/connect_transport.dart";
 import "package:readintent_flutter/features/articles/api/articles_client_exceptions.dart";
 import "package:readintent_flutter/features/articles/api/articles_service_client.dart";
 import "package:readintent_flutter/proto/articles/v1/articles_service.connect.client.dart";
-import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
+import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
+    as articles_pb;
 import "package:connectrpc/connect.dart";
 import "package:riverpod_annotation/riverpod_annotation.dart";
 
@@ -13,10 +14,16 @@ class ArticlesClient {
   final ArticlesServiceClientI _client;
   ArticlesClient({required ArticlesServiceClientI client}) : _client = client;
 
-  Future<articles_pb.GetArticlesResponse> getArticles({int pageSize = 20, String? pageToken}) async {
+  Future<articles_pb.GetArticlesResponse> getArticles({
+    int pageSize = 20,
+    String? pageToken,
+  }) async {
     try {
       return await _client.getArticles(
-        articles_pb.GetArticlesRequest(pageSize: pageSize, pageToken: pageToken),
+        articles_pb.GetArticlesRequest(
+          pageSize: pageSize,
+          pageToken: pageToken,
+        ),
       );
     } on ConnectException catch (e) {
       handleArticlesConnectException(e, "fetch articles");
@@ -58,16 +65,27 @@ class ArticlesClient {
     }
   }
 
-  Future<articles_pb.CheckForUpdatesResponse> checkForUpdates(int lastCheckedAtUnixSeconds) async {
+  Future<articles_pb.CheckForUpdatesResponse> checkForUpdates(
+    int lastCheckedAtUnixSeconds,
+  ) async {
     try {
       return await _client.checkForUpdates(
-        articles_pb.CheckForUpdatesRequest(lastCheckedAt: Int64(lastCheckedAtUnixSeconds)),
+        articles_pb.CheckForUpdatesRequest(
+          lastCheckedAt: Int64(lastCheckedAtUnixSeconds),
+        ),
       );
     } on ConnectException catch (e) {
       handleArticlesConnectException(e, "check for updates");
     } catch (e) {
       throw ArticlesException("Failed to check for updates: $e");
     }
+  }
+
+  /// Server-streaming subscription to article updates
+  Stream<articles_pb.StreamArticleUpdatesResponse> streamArticleUpdates() {
+    return _client.streamArticleUpdates(
+      articles_pb.StreamArticleUpdatesRequest(),
+    );
   }
 
   Future<void> saveArticleProgress({
@@ -96,5 +114,7 @@ class ArticlesClient {
 @riverpod
 ArticlesClient articlesService(Ref ref) {
   final transport = ref.read(connectTransportProvider);
-  return ArticlesClient(client: ConnectArticlesServiceClient(ArticlesServiceClient(transport)));
+  return ArticlesClient(
+    client: ConnectArticlesServiceClient(ArticlesServiceClient(transport)),
+  );
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/gogotchuri/readintent/backend/proto/articles/v1/articlesv1connect"
 	"github.com/gogotchuri/readintent/backend/services/articles"
 	articlesadapters "github.com/gogotchuri/readintent/backend/services/articles/adapters"
+	"github.com/gogotchuri/readintent/backend/services/articles/broker"
 	articlesconnectrpc "github.com/gogotchuri/readintent/backend/services/articles/ports/connectrpc"
 	"github.com/gogotchuri/readintent/backend/services/articles/repositories"
 	authmodels "github.com/gogotchuri/readintent/backend/services/auth/models"
@@ -94,7 +95,8 @@ func startBackend(t *testing.T, db *sqlx.DB, redisClient *redis.Client) string {
 	})
 
 	repo := repositories.NewPgArticlesRepository(db)
-	svc := articles.NewService(repo, hub)
+	articleBroker := broker.NewMemoryBroker()
+	svc := articles.NewService(repo, hub, articleBroker)
 
 	hub.AddListener(articlesadapters.ScrapeResultStream, svc.HandleScrapeResult)
 	hub.AddListener(articlesadapters.PhonemizerResultStream, svc.HandlePhonemizerResult)
@@ -103,7 +105,7 @@ func startBackend(t *testing.T, db *sqlx.DB, redisClient *redis.Client) string {
 	t.Cleanup(cancel)
 	go func() { hub.Listen(ctx) }()
 
-	server := articlesconnectrpc.NewArticlesServer(svc, &mockSessionGetter{userID: testUserID})
+	server := articlesconnectrpc.NewArticlesServer(ctx, svc, &mockSessionGetter{userID: testUserID}, articleBroker)
 	mux := http.NewServeMux()
 	server.BindArticlesServerToMux(mux)
 

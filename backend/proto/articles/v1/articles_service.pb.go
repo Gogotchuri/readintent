@@ -1022,6 +1022,95 @@ func (x *CheckForUpdatesResponse) GetServerTimestamp() int64 {
 	return 0
 }
 
+type StreamArticleUpdatesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StreamArticleUpdatesRequest) Reset() {
+	*x = StreamArticleUpdatesRequest{}
+	mi := &file_articles_v1_articles_service_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StreamArticleUpdatesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StreamArticleUpdatesRequest) ProtoMessage() {}
+
+func (x *StreamArticleUpdatesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_articles_v1_articles_service_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StreamArticleUpdatesRequest.ProtoReflect.Descriptor instead.
+func (*StreamArticleUpdatesRequest) Descriptor() ([]byte, []int) {
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{16}
+}
+
+type StreamArticleUpdatesResponse struct {
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	Article *ArticlePreview        `protobuf:"bytes,1,opt,name=article,proto3" json:"article,omitempty"`
+	// "updated" | "heartbeat" (room for "deleted" later)
+	EventType     string `protobuf:"bytes,2,opt,name=event_type,json=eventType,proto3" json:"event_type,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StreamArticleUpdatesResponse) Reset() {
+	*x = StreamArticleUpdatesResponse{}
+	mi := &file_articles_v1_articles_service_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StreamArticleUpdatesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StreamArticleUpdatesResponse) ProtoMessage() {}
+
+func (x *StreamArticleUpdatesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_articles_v1_articles_service_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StreamArticleUpdatesResponse.ProtoReflect.Descriptor instead.
+func (*StreamArticleUpdatesResponse) Descriptor() ([]byte, []int) {
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *StreamArticleUpdatesResponse) GetArticle() *ArticlePreview {
+	if x != nil {
+		return x.Article
+	}
+	return nil
+}
+
+func (x *StreamArticleUpdatesResponse) GetEventType() string {
+	if x != nil {
+		return x.EventType
+	}
+	return ""
+}
+
 var File_articles_v1_articles_service_proto protoreflect.FileDescriptor
 
 const file_articles_v1_articles_service_proto_rawDesc = "" +
@@ -1114,7 +1203,12 @@ const file_articles_v1_articles_service_proto_rawDesc = "" +
 	"\x17CheckForUpdatesResponse\x12\x1f\n" +
 	"\vhas_updates\x18\x01 \x01(\bR\n" +
 	"hasUpdates\x12)\n" +
-	"\x10server_timestamp\x18\x02 \x01(\x03R\x0fserverTimestamp2\xa7\x04\n" +
+	"\x10server_timestamp\x18\x02 \x01(\x03R\x0fserverTimestamp\"\x1d\n" +
+	"\x1bStreamArticleUpdatesRequest\"t\n" +
+	"\x1cStreamArticleUpdatesResponse\x125\n" +
+	"\aarticle\x18\x01 \x01(\v2\x1b.articles.v1.ArticlePreviewR\aarticle\x12\x1d\n" +
+	"\n" +
+	"event_type\x18\x02 \x01(\tR\teventType2\x96\x05\n" +
 	"\x0fArticlesService\x12S\n" +
 	"\fParseArticle\x12 .articles.v1.ParseArticleRequest\x1a!.articles.v1.ParseArticleResponse\x12P\n" +
 	"\vGetArticles\x12\x1f.articles.v1.GetArticlesRequest\x1a .articles.v1.GetArticlesResponse\x12M\n" +
@@ -1122,7 +1216,8 @@ const file_articles_v1_articles_service_proto_rawDesc = "" +
 	"GetArticle\x12\x1e.articles.v1.GetArticleRequest\x1a\x1f.articles.v1.GetArticleResponse\x12V\n" +
 	"\rDeleteArticle\x12!.articles.v1.DeleteArticleRequest\x1a\".articles.v1.DeleteArticleResponse\x12\\\n" +
 	"\x0fCheckForUpdates\x12#.articles.v1.CheckForUpdatesRequest\x1a$.articles.v1.CheckForUpdatesResponse\x12h\n" +
-	"\x13SaveArticleProgress\x12'.articles.v1.SaveArticleProgressRequest\x1a(.articles.v1.SaveArticleProgressResponseBGZEgithub.com/gogotchuri/readintent/backend/proto/articles/v1;articlesv1b\x06proto3"
+	"\x13SaveArticleProgress\x12'.articles.v1.SaveArticleProgressRequest\x1a(.articles.v1.SaveArticleProgressResponse\x12m\n" +
+	"\x14StreamArticleUpdates\x12(.articles.v1.StreamArticleUpdatesRequest\x1a).articles.v1.StreamArticleUpdatesResponse0\x01BGZEgithub.com/gogotchuri/readintent/backend/proto/articles/v1;articlesv1b\x06proto3"
 
 var (
 	file_articles_v1_articles_service_proto_rawDescOnce sync.Once
@@ -1136,47 +1231,52 @@ func file_articles_v1_articles_service_proto_rawDescGZIP() []byte {
 	return file_articles_v1_articles_service_proto_rawDescData
 }
 
-var file_articles_v1_articles_service_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_articles_v1_articles_service_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_articles_v1_articles_service_proto_goTypes = []any{
-	(*PhonemizerTokenMeta)(nil),         // 0: articles.v1.PhonemizerTokenMeta
-	(*PhonemizerData)(nil),              // 1: articles.v1.PhonemizerData
-	(*ArticlePreview)(nil),              // 2: articles.v1.ArticlePreview
-	(*Article)(nil),                     // 3: articles.v1.Article
-	(*GetArticlesRequest)(nil),          // 4: articles.v1.GetArticlesRequest
-	(*GetArticlesResponse)(nil),         // 5: articles.v1.GetArticlesResponse
-	(*GetArticleRequest)(nil),           // 6: articles.v1.GetArticleRequest
-	(*GetArticleResponse)(nil),          // 7: articles.v1.GetArticleResponse
-	(*ParseArticleRequest)(nil),         // 8: articles.v1.ParseArticleRequest
-	(*ParseArticleResponse)(nil),        // 9: articles.v1.ParseArticleResponse
-	(*DeleteArticleRequest)(nil),        // 10: articles.v1.DeleteArticleRequest
-	(*DeleteArticleResponse)(nil),       // 11: articles.v1.DeleteArticleResponse
-	(*SaveArticleProgressRequest)(nil),  // 12: articles.v1.SaveArticleProgressRequest
-	(*SaveArticleProgressResponse)(nil), // 13: articles.v1.SaveArticleProgressResponse
-	(*CheckForUpdatesRequest)(nil),      // 14: articles.v1.CheckForUpdatesRequest
-	(*CheckForUpdatesResponse)(nil),     // 15: articles.v1.CheckForUpdatesResponse
+	(*PhonemizerTokenMeta)(nil),          // 0: articles.v1.PhonemizerTokenMeta
+	(*PhonemizerData)(nil),               // 1: articles.v1.PhonemizerData
+	(*ArticlePreview)(nil),               // 2: articles.v1.ArticlePreview
+	(*Article)(nil),                      // 3: articles.v1.Article
+	(*GetArticlesRequest)(nil),           // 4: articles.v1.GetArticlesRequest
+	(*GetArticlesResponse)(nil),          // 5: articles.v1.GetArticlesResponse
+	(*GetArticleRequest)(nil),            // 6: articles.v1.GetArticleRequest
+	(*GetArticleResponse)(nil),           // 7: articles.v1.GetArticleResponse
+	(*ParseArticleRequest)(nil),          // 8: articles.v1.ParseArticleRequest
+	(*ParseArticleResponse)(nil),         // 9: articles.v1.ParseArticleResponse
+	(*DeleteArticleRequest)(nil),         // 10: articles.v1.DeleteArticleRequest
+	(*DeleteArticleResponse)(nil),        // 11: articles.v1.DeleteArticleResponse
+	(*SaveArticleProgressRequest)(nil),   // 12: articles.v1.SaveArticleProgressRequest
+	(*SaveArticleProgressResponse)(nil),  // 13: articles.v1.SaveArticleProgressResponse
+	(*CheckForUpdatesRequest)(nil),       // 14: articles.v1.CheckForUpdatesRequest
+	(*CheckForUpdatesResponse)(nil),      // 15: articles.v1.CheckForUpdatesResponse
+	(*StreamArticleUpdatesRequest)(nil),  // 16: articles.v1.StreamArticleUpdatesRequest
+	(*StreamArticleUpdatesResponse)(nil), // 17: articles.v1.StreamArticleUpdatesResponse
 }
 var file_articles_v1_articles_service_proto_depIdxs = []int32{
 	0,  // 0: articles.v1.PhonemizerData.token_meta:type_name -> articles.v1.PhonemizerTokenMeta
 	1,  // 1: articles.v1.Article.phonemizer_data:type_name -> articles.v1.PhonemizerData
 	2,  // 2: articles.v1.GetArticlesResponse.articles:type_name -> articles.v1.ArticlePreview
 	3,  // 3: articles.v1.GetArticleResponse.article:type_name -> articles.v1.Article
-	8,  // 4: articles.v1.ArticlesService.ParseArticle:input_type -> articles.v1.ParseArticleRequest
-	4,  // 5: articles.v1.ArticlesService.GetArticles:input_type -> articles.v1.GetArticlesRequest
-	6,  // 6: articles.v1.ArticlesService.GetArticle:input_type -> articles.v1.GetArticleRequest
-	10, // 7: articles.v1.ArticlesService.DeleteArticle:input_type -> articles.v1.DeleteArticleRequest
-	14, // 8: articles.v1.ArticlesService.CheckForUpdates:input_type -> articles.v1.CheckForUpdatesRequest
-	12, // 9: articles.v1.ArticlesService.SaveArticleProgress:input_type -> articles.v1.SaveArticleProgressRequest
-	9,  // 10: articles.v1.ArticlesService.ParseArticle:output_type -> articles.v1.ParseArticleResponse
-	5,  // 11: articles.v1.ArticlesService.GetArticles:output_type -> articles.v1.GetArticlesResponse
-	7,  // 12: articles.v1.ArticlesService.GetArticle:output_type -> articles.v1.GetArticleResponse
-	11, // 13: articles.v1.ArticlesService.DeleteArticle:output_type -> articles.v1.DeleteArticleResponse
-	15, // 14: articles.v1.ArticlesService.CheckForUpdates:output_type -> articles.v1.CheckForUpdatesResponse
-	13, // 15: articles.v1.ArticlesService.SaveArticleProgress:output_type -> articles.v1.SaveArticleProgressResponse
-	10, // [10:16] is the sub-list for method output_type
-	4,  // [4:10] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	2,  // 4: articles.v1.StreamArticleUpdatesResponse.article:type_name -> articles.v1.ArticlePreview
+	8,  // 5: articles.v1.ArticlesService.ParseArticle:input_type -> articles.v1.ParseArticleRequest
+	4,  // 6: articles.v1.ArticlesService.GetArticles:input_type -> articles.v1.GetArticlesRequest
+	6,  // 7: articles.v1.ArticlesService.GetArticle:input_type -> articles.v1.GetArticleRequest
+	10, // 8: articles.v1.ArticlesService.DeleteArticle:input_type -> articles.v1.DeleteArticleRequest
+	14, // 9: articles.v1.ArticlesService.CheckForUpdates:input_type -> articles.v1.CheckForUpdatesRequest
+	12, // 10: articles.v1.ArticlesService.SaveArticleProgress:input_type -> articles.v1.SaveArticleProgressRequest
+	16, // 11: articles.v1.ArticlesService.StreamArticleUpdates:input_type -> articles.v1.StreamArticleUpdatesRequest
+	9,  // 12: articles.v1.ArticlesService.ParseArticle:output_type -> articles.v1.ParseArticleResponse
+	5,  // 13: articles.v1.ArticlesService.GetArticles:output_type -> articles.v1.GetArticlesResponse
+	7,  // 14: articles.v1.ArticlesService.GetArticle:output_type -> articles.v1.GetArticleResponse
+	11, // 15: articles.v1.ArticlesService.DeleteArticle:output_type -> articles.v1.DeleteArticleResponse
+	15, // 16: articles.v1.ArticlesService.CheckForUpdates:output_type -> articles.v1.CheckForUpdatesResponse
+	13, // 17: articles.v1.ArticlesService.SaveArticleProgress:output_type -> articles.v1.SaveArticleProgressResponse
+	17, // 18: articles.v1.ArticlesService.StreamArticleUpdates:output_type -> articles.v1.StreamArticleUpdatesResponse
+	12, // [12:19] is the sub-list for method output_type
+	5,  // [5:12] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_articles_v1_articles_service_proto_init() }
@@ -1193,7 +1293,7 @@ func file_articles_v1_articles_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_articles_v1_articles_service_proto_rawDesc), len(file_articles_v1_articles_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   16,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

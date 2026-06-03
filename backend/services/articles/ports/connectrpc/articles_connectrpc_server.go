@@ -15,24 +15,38 @@ import (
 	v1 "github.com/gogotchuri/readintent/backend/proto/articles/v1"
 	"github.com/gogotchuri/readintent/backend/proto/articles/v1/articlesv1connect"
 	"github.com/gogotchuri/readintent/backend/services/articles"
+	"github.com/gogotchuri/readintent/backend/services/articles/broker"
 	iomodels "github.com/gogotchuri/readintent/backend/services/articles/models"
 	"github.com/gogotchuri/readintent/backend/services/articles/urlutil"
 )
 
 var _ articlesv1connect.ArticlesServiceHandler = &ArticlesServer{}
 
+// streamHeartbeatInterval is how often a heartbeat event is sent on an idle
+// stream to survive intermediate proxy idle timeouts.
+const streamHeartbeatInterval = 20 * time.Second
+
 type ArticlesServer struct {
 	service       *articles.Service
 	sessionGetter middlewares.SessionGetter
+	broker        broker.ArticleBroker
+	// shutdownCtx is the root server context; cancelled on shutdown so open
+	// streams close within the graceful-shutdown window instead of timing out.
+	shutdownCtx context.Context
 }
 
-func NewArticlesServer(service *articles.Service, sessionGetter middlewares.SessionGetter) *ArticlesServer {
-	return &ArticlesServer{service: service, sessionGetter: sessionGetter}
+func NewArticlesServer(shutdownCtx context.Context, service *articles.Service, sessionGetter middlewares.SessionGetter, articleBroker broker.ArticleBroker) *ArticlesServer {
+	return &ArticlesServer{
+		service:       service,
+		sessionGetter: sessionGetter,
+		broker:        articleBroker,
+		shutdownCtx:   shutdownCtx,
+	}
 }
 
 func (a *ArticlesServer) BindArticlesServerToMux(mux *http.ServeMux) {
 	interceptors := connect.WithInterceptors(
-		middlewares.NewSessionInterceptor(a.sessionGetter).NewUnaryInterceptor(),
+		middlewares.NewSessionInterceptor(a.sessionGetter),
 		validate.NewInterceptor(),
 	)
 	path, handler := articlesv1connect.NewArticlesServiceHandler(a, interceptors)
@@ -161,6 +175,40 @@ func (a *ArticlesServer) SaveArticleProgress(ctx context.Context, req *connect.R
 	return connect.NewResponse(&v1.SaveArticleProgressResponse{}), nil
 }
 
+func (a *ArticlesServer) StreamArticleUpdates(ctx context.Context, _ *connect.Request[v1.StreamArticleUpdatesRequest], stream *connect.ServerStream[v1.StreamArticleUpdatesResponse]) error {
+	session := middlewares.SessionFromCtx(ctx)
+	if session == nil {
+		return connect.NewError(connect.CodeUnauthenticated, errors.New("no valid session"))
+	}
+
+	sub := a.broker.Subscribe(session.Identity.ID)
+	defer sub.Close()
+
+	heartbeat := time.NewTicker(streamHeartbeatInterval)
+	defer heartbeat.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-a.shutdownCtx.Done():
+			return nil
+		case preview := <-sub.Updates():
+			msg := &v1.StreamArticleUpdatesResponse{
+				Article:   protoArticlePreviewFromArticlePreview(preview),
+				EventType: "updated",
+			}
+			if err := stream.Send(msg); err != nil {
+				return err
+			}
+		case <-heartbeat.C:
+			if err := stream.Send(&v1.StreamArticleUpdatesResponse{EventType: "heartbeat"}); err != nil {
+				return err
+			}
+		}
+	}
+}
+
 func protoArticleFromArticle(article *models.Article) *v1.Article {
 	var phonemes []*v1.PhonemizerData
 	if article.PhonemizerData.Valid {
@@ -205,22 +253,25 @@ func protoPhonemesFromPhonemizerData(pd models.PhonemizerData) *v1.PhonemizerDat
 	}
 }
 
+func protoArticlePreviewFromArticlePreview(a *models.ArticlePreview) *v1.ArticlePreview {
+	return &v1.ArticlePreview{
+		Id:               a.Id,
+		Status:           a.Status,
+		Title:            a.Title.String(),
+		Author:           a.Author.String(),
+		Date:             a.PublishedDate.String(),
+		Description:      a.Description.StringRef(),
+		Image:            a.ImageUrl.StringRef(),
+		Url:              a.Url,
+		PlayerPositionMs: a.PlayerPositionMs,
+		ScrollPosition:   a.ScrollPosition,
+	}
+}
+
 func protoArticlePreviewsFromArticlePreviews(articles []models.ArticlePreview) []*v1.ArticlePreview {
 	var previews []*v1.ArticlePreview
-	for _, a := range articles {
-		preview := &v1.ArticlePreview{
-			Id:               a.Id,
-			Status:           a.Status,
-			Title:            a.Title.String(),
-			Author:           a.Author.String(),
-			Date:             a.PublishedDate.String(),
-			Description:      a.Description.StringRef(),
-			Image:            a.ImageUrl.StringRef(),
-			Url:              a.Url,
-			PlayerPositionMs: a.PlayerPositionMs,
-			ScrollPosition:   a.ScrollPosition,
-		}
-		previews = append(previews, preview)
+	for i := range articles {
+		previews = append(previews, protoArticlePreviewFromArticlePreview(&articles[i]))
 	}
 	return previews
 }

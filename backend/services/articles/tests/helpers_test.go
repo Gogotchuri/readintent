@@ -13,6 +13,7 @@ import (
 	"github.com/gogotchuri/readintent/backend/middlewares"
 	"github.com/gogotchuri/readintent/backend/proto/articles/v1/articlesv1connect"
 	"github.com/gogotchuri/readintent/backend/services/articles"
+	"github.com/gogotchuri/readintent/backend/services/articles/broker"
 	articlesconnectrpc "github.com/gogotchuri/readintent/backend/services/articles/ports/connectrpc"
 	"github.com/gogotchuri/readintent/backend/services/articles/repositories"
 	authmodels "github.com/gogotchuri/readintent/backend/services/auth/models"
@@ -108,8 +109,9 @@ var _ articles.ArticleSubmitter = &mockSubmitter{}
 func startArticlesServer(t *testing.T, db *sqlx.DB, userID string) string {
 	t.Helper()
 	repo := repositories.NewPgArticlesRepository(db)
-	svc := articles.NewService(repo, &mockSubmitter{})
-	server := articlesconnectrpc.NewArticlesServer(svc, &mockSessionGetter{userID: userID})
+	articleBroker := broker.NewMemoryBroker()
+	svc := articles.NewService(repo, &mockSubmitter{}, articleBroker)
+	server := articlesconnectrpc.NewArticlesServer(t.Context(), svc, &mockSessionGetter{userID: userID}, articleBroker)
 
 	mux := http.NewServeMux()
 	server.BindArticlesServerToMux(mux)
