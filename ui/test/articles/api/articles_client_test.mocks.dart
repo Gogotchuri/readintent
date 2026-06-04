@@ -158,4 +158,14 @@ class MockArticlesServiceClientI extends _i1.Mock
             ),
           )
           as _i4.Future<_i2.SaveArticleProgressResponse>);
+
+  @override
+  _i4.Stream<_i2.StreamArticleUpdatesResponse> streamArticleUpdates(
+    _i2.StreamArticleUpdatesRequest? input,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#streamArticleUpdates, [input]),
+            returnValue: _i4.Stream<_i2.StreamArticleUpdatesResponse>.empty(),
+          )
+          as _i4.Stream<_i2.StreamArticleUpdatesResponse>);
 }

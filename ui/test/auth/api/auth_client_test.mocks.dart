@@ -157,13 +157,13 @@ class MockAuthServiceClientI extends _i1.Mock
           as _i4.Future<_i2.HealthResponse>);
 
   @override
-  _i4.Future<_i2.OIDCLoginResponse> oidcLogin(_i2.OIDCLoginRequest? input) =>
+  _i4.Future<_i2.OIDCLoginResponse> oIDCLogin(_i2.OIDCLoginRequest? input) =>
       (super.noSuchMethod(
-            Invocation.method(#oidcLogin, [input]),
+            Invocation.method(#oIDCLogin, [input]),
             returnValue: _i4.Future<_i2.OIDCLoginResponse>.value(
               _FakeOIDCLoginResponse_6(
                 this,
-                Invocation.method(#oidcLogin, [input]),
+                Invocation.method(#oIDCLogin, [input]),
               ),
             ),
           )

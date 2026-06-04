@@ -87,6 +87,23 @@ class MockArticleRepository extends _i1.Mock implements _i3.ArticleRepository {
           as _i4.Future<_i2.GetArticlesResponse?>);
 
   @override
+  _i4.Stream<_i2.StreamArticleUpdatesResponse> streamArticleUpdates() =>
+      (super.noSuchMethod(
+            Invocation.method(#streamArticleUpdates, []),
+            returnValue: _i4.Stream<_i2.StreamArticleUpdatesResponse>.empty(),
+          )
+          as _i4.Stream<_i2.StreamArticleUpdatesResponse>);
+
+  @override
+  _i4.Future<void> upsertPreviewFromUpdate(_i2.ArticlePreview? preview) =>
+      (super.noSuchMethod(
+            Invocation.method(#upsertPreviewFromUpdate, [preview]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
   _i4.Future<_i2.GetArticlesResponse> getArticlesPage({
     int? pageSize = 20,
     String? pageToken,
@@ -137,11 +154,13 @@ class MockArticleRepository extends _i1.Mock implements _i3.ArticleRepository {
     required String? articleId,
     int? playerPositionMs = 0,
     double? scrollPosition = 0.0,
+    double? playbackSpeed = 0.0,
   }) => super.noSuchMethod(
     Invocation.method(#saveArticleProgress, [], {
       #articleId: articleId,
       #playerPositionMs: playerPositionMs,
       #scrollPosition: scrollPosition,
+      #playbackSpeed: playbackSpeed,
     }),
     returnValueForMissingStub: null,
   );
