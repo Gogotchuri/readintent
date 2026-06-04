@@ -1024,16 +1024,26 @@ class MockArticlesClient extends _i1.Mock implements _i8.ArticlesClient {
           as _i5.Future<_i6.CheckForUpdatesResponse>);
 
   @override
+  _i5.Stream<_i6.StreamArticleUpdatesResponse> streamArticleUpdates() =>
+      (super.noSuchMethod(
+            Invocation.method(#streamArticleUpdates, []),
+            returnValue: _i5.Stream<_i6.StreamArticleUpdatesResponse>.empty(),
+          )
+          as _i5.Stream<_i6.StreamArticleUpdatesResponse>);
+
+  @override
   _i5.Future<void> saveArticleProgress({
     required String? articleId,
     required int? playerPositionMs,
     required double? scrollPosition,
+    double? playbackSpeed = 0.0,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#saveArticleProgress, [], {
               #articleId: articleId,
               #playerPositionMs: playerPositionMs,
               #scrollPosition: scrollPosition,
+              #playbackSpeed: playbackSpeed,
             }),
             returnValue: _i5.Future<void>.value(),
             returnValueForMissingStub: _i5.Future<void>.value(),
