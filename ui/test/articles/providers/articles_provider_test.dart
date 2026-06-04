@@ -33,6 +33,11 @@ void main() {
 
   setUp(() {
     mockRepo = MockArticleRepository();
+    // The notifier subscribes to the update stream on build; default it to an
+    // empty stream (a fresh one per call so reconnects can re-listen).
+    when(
+      mockRepo.streamArticleUpdates(),
+    ).thenAnswer((_) => Stream<articles_pb.StreamArticleUpdatesResponse>.empty());
   });
 
   tearDown(() {
