@@ -2,6 +2,7 @@ import "dart:async";
 import "dart:math";
 
 import "package:readintent_flutter/core/connectivity.dart";
+import "package:readintent_flutter/features/articles/providers/article_updates_channel.dart";
 import "package:readintent_flutter/features/articles/repository/article_repository.dart";
 import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
 import "package:riverpod_annotation/riverpod_annotation.dart";
@@ -50,20 +51,43 @@ class ArticlesState {
 @riverpod
 class Articles extends _$Articles {
   late final ArticleRepository _repository;
+  late final ArticleUpdatesChannel _channel;
   static const int _pageSize = 20;
 
   Timer? _checkTimer;
   // Check interval starts at min and increases with backoff up to max if no updates are found
   Duration _checkInterval = _minCheckInterval;
   int _lastCheckedAt = 0;
+  // Guards the polling loop so a polling only runs in the fallback path.
+  bool _pollingActive = false;
 
   @override
   Future<ArticlesState> build() async {
     _repository = ref.read(articleRepositoryProvider);
+
+    // Streaming is primary; polling is only used as a fallback. The channel
+    // owns the connection lifecycle and tells us, via these streams, what to do.
+    _channel = ArticleUpdatesChannel(
+      connect: _repository.streamArticleUpdates,
+      isOnline: () => ref.read(isOnlineProvider),
+    );
+    final subs = <StreamSubscription>[
+      _channel.previews.listen(_mergePreview),
+      _channel.resyncRequests.listen((_) => _resync()),
+      _channel.pollingMode.listen((poll) => poll ? _startChecking() : _stopChecking()),
+    ];
+    ref.onDispose(() {
+      for (final s in subs) {
+        s.cancel();
+      }
+    });
+    ref.onDispose(_channel.dispose);
     ref.onDispose(_stopChecking);
 
+    ref.listen(isOnlineProvider, (_, online) => _channel.onConnectivity(online));
+
     final initialState = await _fetchInitialPage();
-    _startChecking();
+    _channel.start();
     return initialState;
   }
 
@@ -135,6 +159,7 @@ class Articles extends _$Articles {
 
   void _startChecking() {
     _checkTimer?.cancel();
+    _pollingActive = true;
     _checkInterval = _minCheckInterval;
     if (_lastCheckedAt == 0) {
       _lastCheckedAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -143,11 +168,13 @@ class Articles extends _$Articles {
   }
 
   void _stopChecking() {
+    _pollingActive = false;
     _checkTimer?.cancel();
     _checkTimer = null;
   }
 
   void _scheduleNextCheck() {
+    if (!_pollingActive) return;
     _checkTimer = Timer(_checkInterval, _performCheck);
   }
 
@@ -199,4 +226,43 @@ class Articles extends _$Articles {
       nextPageToken: response.nextPageToken.isEmpty ? null : response.nextPageToken,
     );
   }
+
+  // Streaming
+
+  /// Refetches the first page after a reconnect to recover updates missed while
+  /// disconnected. Silent (no loading state); the channel decides when to ask.
+  Future<void> _resync() async {
+    final freshState = await _fetchFreshPage();
+    if (freshState != null) state = AsyncData(freshState);
+  }
+
+  /// Merges a single pushed preview into state by id (replace, else prepend)
+  /// and persists it to the local cache.
+  void _mergePreview(articles_pb.ArticlePreview preview) {
+    _repository.upsertPreviewFromUpdate(preview).catchError((_) {});
+    final current = state.value;
+    if (current == null) return;
+    final articles = [...current.articles];
+    final idx = articles.indexWhere((a) => a.id == preview.id);
+    final isNew = idx < 0;
+    if (isNew) {
+      articles.insert(0, preview);
+    } else {
+      articles[idx] = preview;
+    }
+    // Build explicitly to preserve nextPageToken.
+    state = AsyncData(
+      ArticlesState(
+        articles: articles,
+        totalCount: isNew ? current.totalCount + 1 : current.totalCount,
+        nextPageToken: current.nextPageToken,
+      ),
+    );
+  }
+
+  /// Suspends all background activity while the app is backgrounded.
+  void suspendStream() => _channel.suspend();
+
+  /// Resumes streaming when the app returns to the foreground.
+  void resumeStream() => _channel.resume();
 }
