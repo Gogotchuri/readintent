@@ -100,6 +100,21 @@ class ArticleRepository {
     }
   }
 
+  /// Subscribes to server-pushed article updates. Errors flow to the caller so
+  /// it can drive reconnect/backoff.
+  Stream<articles_pb.StreamArticleUpdatesResponse> streamArticleUpdates() {
+    return _remote.streamArticleUpdates();
+  }
+
+  /// Caches a single preview pushed over the stream, preserving its existing
+  /// sortOrder if the row already exists (new articles sort to the top).
+  Future<void> upsertPreviewFromUpdate(articles_pb.ArticlePreview preview) async {
+    final existing = await _db.getPreview(preview.id.toInt());
+    final sortOrder = existing?.sortOrder ?? 0;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    await _db.upsertPreview(previewProtoToCompanion(preview, sortOrder, now));
+  }
+
   /// Fetches the next page from the server (online only, no caching needed for pages beyond 1).
   Future<articles_pb.GetArticlesResponse> getArticlesPage({
     int pageSize = 20,
