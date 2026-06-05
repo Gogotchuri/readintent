@@ -7,7 +7,6 @@ import "package:path_provider_platform_interface/path_provider_platform_interfac
 
 import "package:readintent_flutter/features/tts/audio_cache.dart";
 import "package:readintent_flutter/features/tts/audio_generator.dart";
-import "package:readintent_flutter/features/tts/phoneme.dart";
 import "package:readintent_flutter/features/tts/voice_style.dart";
 import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
     as pb;
@@ -96,8 +95,6 @@ void main() {
           pipelineFactory: factory,
         );
 
-        final sizes = <int>[];
-        int chunksDone = 0;
         final origFactory = fakePipelineFactory((chunk) {
           final audio = defaultAudioProducer(chunk);
           return audio;

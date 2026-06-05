@@ -225,7 +225,7 @@ class ActivePlayer extends _$ActivePlayer {
         pipelineFactory: _pipelineFactory,
       );
 
-      // Check cache first — if we have completely generated audio, skip to playback
+      // Check cache first - if we have completely generated audio, skip to playback
       final cachedPath = await _session!.checkCacheForComplete();
       if (cachedPath != null) {
         await _playFromFile(cachedPath, article);
@@ -263,7 +263,7 @@ class ActivePlayer extends _$ActivePlayer {
           _reloadPlayer();
         }
 
-        // Ran out of generated audio, waiting for more — resume when available
+        // Ran out of generated audio, waiting for more - resume when available
         if (_waitingForBuffer && !sessionState.isComplete) {
           _waitingForBuffer = false;
           _reloadAndResume();
@@ -292,7 +292,7 @@ class ActivePlayer extends _$ActivePlayer {
       return;
     }
 
-    // Different article — stop current playback and clean up
+    // Different article - stop current playback and clean up
     _cleanup();
     _handler.stop();
     _loadedArticle = article;
@@ -453,12 +453,12 @@ class ActivePlayer extends _$ActivePlayer {
 
   Future<void> togglePlayPause() async {
     if (!_playerStarted) {
-      // Have the article object — start playback directly
+      // Have the article object - start playback directly
       if (_loadedArticle != null) {
         await play(article: _loadedArticle!);
         return;
       }
-      // Restored from persistence — fetch the article from the repository
+      // Restored from persistence - fetch the article from the repository
       if (state.articleId != null) {
         await _fetchAndPlay(state.articleId!);
         return;
@@ -527,7 +527,9 @@ class ActivePlayer extends _$ActivePlayer {
     );
     // Fire-and-forget server sync
     try {
-      ref.read(articleRepositoryProvider).saveArticleProgress(
+      ref
+          .read(articleRepositoryProvider)
+          .saveArticleProgress(
             articleId: state.articleId!,
             playerPositionMs: state.position.inMilliseconds,
             playbackSpeed: state.playbackSpeed,
@@ -578,10 +580,10 @@ class ActivePlayer extends _$ActivePlayer {
           }
         }
       } catch (_) {
-        // Best-effort — server position is optional and won't interfere with local restore if it fails
+        // Best-effort - server position is optional and won't interfere with local restore if it fails
       }
     } catch (_) {
-      // Best-effort restore — don't crash on corrupt/missing data
+      // Best-effort restore - don't crash on corrupt/missing data
     } finally {
       _restoring = false;
     }
@@ -610,7 +612,7 @@ class ActivePlayer extends _$ActivePlayer {
     final pos = position.inMilliseconds / 1000.0;
 
     if (pos < sentences.first.startSeconds) {
-      // Before the first sentence — snap to it
+      // Before the first sentence - snap to it
       if (state.activeSentenceIndex != 0) {
         state = state.copyWith(activeSentenceIndex: 0);
       }
@@ -633,7 +635,7 @@ class ActivePlayer extends _$ActivePlayer {
       }
     }
 
-    // Past the last sentence — clamp to it
+    // Past the last sentence - clamp to it
     newIndex ??= pos >= sentences.last.endSeconds ? sentences.length - 1 : null;
 
     if (newIndex != state.activeSentenceIndex) {

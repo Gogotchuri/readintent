@@ -77,7 +77,7 @@ locals {
 
   # Self-contained script that recreates every managed file on the server. It
   # carries the (sensitive) rendered content, so it is delivered via a file
-  # provisioner rather than a remote-exec inline command — otherwise OpenTofu
+  # provisioner rather than a remote-exec inline command - otherwise OpenTofu
   # marks the whole command sensitive and suppresses all streamed output.
   config_setup_script = join("\n", concat(
     [

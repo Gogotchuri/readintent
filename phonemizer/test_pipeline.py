@@ -40,7 +40,7 @@ def test_single_sentence(pipeline):
     assert len(results) == 1
     assert results[0].graphemes == "hello"
     assert results[0].phonemes == "hɛloʊ"
-    assert results[0].token_ids == [VOCAB[c] for c in "hɛloʊ" if c in VOCAB]
+    assert results[0].token_ids == [0] + [VOCAB[c] for c in "hɛloʊ" if c in VOCAB] + [0]
     assert len(results[0].token_meta) == 1
     assert results[0].token_meta[0].text == "hello"
     assert results[0].token_meta[0].has_whitespace is True
@@ -68,7 +68,7 @@ def test_token_ids_match_vocab(pipeline):
 
     results = p.generate_phonemes("hello")
 
-    expected_ids = [VOCAB[c] for c in phonemes if c in VOCAB]
+    expected_ids = [0] + [VOCAB[c] for c in phonemes if c in VOCAB] + [0]
     assert results[0].token_ids == expected_ids
 
 
@@ -113,7 +113,7 @@ def test_no_tokens(pipeline):
     results = p.generate_phonemes("hello")
 
     assert results[0].token_meta == []
-    assert results[0].token_ids == [VOCAB[c] for c in "hɛloʊ" if c in VOCAB]
+    assert results[0].token_ids == [0] + [VOCAB[c] for c in "hɛloʊ" if c in VOCAB] + [0]
 
 
 # We should ignore characters not in vocab, except little information loss
@@ -124,7 +124,7 @@ def test_phonemes_not_in_vocab(pipeline):
 
     results = p.generate_phonemes("test")
 
-    expected_ids = [VOCAB["h"], VOCAB["ɛ"]]
+    expected_ids = [0, VOCAB["h"], VOCAB["ɛ"], 0]
     assert results[0].token_ids == expected_ids
 
 
@@ -140,6 +140,6 @@ def test_to_dict(pipeline):
     assert d == {
         "graphemes": "hi",
         "phonemes": "haI",
-        "token_ids": [VOCAB["h"], VOCAB["a"], VOCAB["I"]],
+        "token_ids": [0, VOCAB["h"], VOCAB["a"], VOCAB["I"], 0],
         "token_meta": [{"text": "hi", "phoneme_len": 3, "has_whitespace": True}],
     }

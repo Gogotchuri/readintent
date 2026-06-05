@@ -12,7 +12,6 @@ import "package:readintent_flutter/features/auth/presentation/registration_scree
 import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
 import "package:readintent_flutter/models/auth_state.dart";
 import "package:readintent_flutter/models/user.dart";
-import "package:readintent_flutter/proto/google/rpc/error_details.pb.dart";
 
 @GenerateMocks([AuthClient, SessionStorage])
 import "registration_screen_test.mocks.dart";
@@ -31,14 +30,26 @@ void main() {
 
   late ProviderContainer container;
 
+  tearDown(() {
+    // Dispose the provider so any scheduled error-clear timer is cancelled.
+    container.dispose();
+  });
+
   Widget createRegistrationScreen() {
     container = ProviderContainer(
       overrides: [
         authServiceProvider.overrideWithValue(mockAuthClient),
         sessionStorageProvider.overrideWithValue(mockSessionStorage),
         isOnlineProvider.overrideWithValue(true),
+        // _restoreSession reads connectivityMonitorProvider directly (not the
+        // isOnlineProvider override), so stub it to avoid the real plugin.
+        connectivityMonitorProvider.overrideWith((ref) => Stream.value(true)),
       ],
     );
+    // Keep a live listener on the connectivity stream. isOnlineProvider
+    // is overridden with a constant, nothing else subscribes to it, and an
+    // unsubscribed StreamProvider never emits - which would hang _restoreSession.
+    container.listen(connectivityMonitorProvider, (_, _) {});
     return UncontrolledProviderScope(
       container: container,
       child: const MaterialApp(home: RegistrationScreen()),
@@ -118,26 +129,27 @@ void main() {
     // After the future completes, it should show the error message and the form fields again
     await tester.pumpAndSettle();
     expect(find.byType(CircularProgressIndicator), findsNothing);
-    expect(find.text("Registration failed"), findsOneWidget);
+    // The general error is rendered as a bullet line ("- Registration failed").
+    expect(find.textContaining("Registration failed"), findsOneWidget);
     expect(find.byType(TextField), findsNWidgets(5));
+
+    // Drain the pending auto-clear timer so it doesn't outlive the test.
+    await tester.pump(const Duration(seconds: 5));
   });
 
   // Check We display field validation errors completely and correctly
   testWidgets("RegistrationScreen shows field validation errors correctly", (WidgetTester tester) async {
-    final badRequest = BadRequest(
-      fieldViolations: [
-        BadRequest_FieldViolation(field_1: "general", description: "general issue 1"),
-        BadRequest_FieldViolation(field_1: "general", description: "general issue 2"),
-        BadRequest_FieldViolation(field_1: "email", description: "Invalid email format"),
-        BadRequest_FieldViolation(field_1: "password", description: "Password too short"),
-      ],
-    );
-
+    // AuthClient translates a BadRequest ConnectException into a ValidationException
+    // before the provider sees it, so the mocked client throws the translated type.
     when(mockAuthClient.passwordRegistration(any, any, any, any)).thenThrow(
-      ConnectException(
-        Code.invalidArgument,
-        "Validation failed",
-        details: [ErrorDetail("google.rpc.BadRequest", badRequest.writeToBuffer())],
+      const ValidationException(
+        message: "Validation failed",
+        fieldErrors: [
+          FieldError(field: "general", description: "general issue 1"),
+          FieldError(field: "general", description: "general issue 2"),
+          FieldError(field: "email", description: "Invalid email format"),
+          FieldError(field: "password", description: "Password too short"),
+        ],
       ),
     );
 
@@ -148,8 +160,10 @@ void main() {
     await tester.enterText(find.widgetWithText(TextField, "First Name"), "First");
     await tester.enterText(find.widgetWithText(TextField, "Last Name"), "Last");
     await tester.enterText(find.widgetWithText(TextField, "Email"), "invalid-email");
-    await tester.enterText(find.widgetWithText(TextField, "Password"), "short");
-    await tester.enterText(find.widgetWithText(TextField, "Confirm Password"), "short");
+    // Must satisfy client-side validation (>= 8 chars, matching confirmation)
+    // so the request reaches the server and we exercise the server-side errors.
+    await tester.enterText(find.widgetWithText(TextField, "Password"), "password123");
+    await tester.enterText(find.widgetWithText(TextField, "Confirm Password"), "password123");
     await tester.tap(find.widgetWithText(ElevatedButton, "Sign Up"));
     await tester.pump(); // Start the registration process
     await tester.pumpAndSettle(); // Wait for the registration process to complete
@@ -159,6 +173,9 @@ void main() {
     expect(find.textContaining("general issue 2"), findsOneWidget);
     expect(find.textContaining("Invalid email format"), findsOneWidget);
     expect(find.textContaining("Password too short"), findsOneWidget);
+
+    // Drain the pending auto-clear timer so it doesn't outlive the test.
+    await tester.pump(const Duration(seconds: 5));
   });
 
   // Successful registration

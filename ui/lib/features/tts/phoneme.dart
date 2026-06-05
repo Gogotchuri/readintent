@@ -1,8 +1,5 @@
 import "dart:typed_data";
 
-import "package:just_audio/just_audio.dart";
-import "package:wav/wav.dart";
-
 class PhonemeChunk {
   final String graphemes;
   final List<int> tokenIds;

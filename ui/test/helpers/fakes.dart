@@ -9,10 +9,10 @@ import "package:just_audio/just_audio.dart";
 import "package:path_provider_platform_interface/path_provider_platform_interface.dart";
 import "package:plugin_platform_interface/plugin_platform_interface.dart";
 
+import "package:readintent_flutter/core/connectivity.dart";
 import "package:readintent_flutter/core/player_persistence.dart";
 import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
 import "package:readintent_flutter/features/tts/audio_handler.dart";
-import "package:readintent_flutter/features/tts/audio_generator.dart";
 import "package:readintent_flutter/features/tts/phoneme.dart";
 import "package:readintent_flutter/features/tts/pipeline.dart";
 import "package:readintent_flutter/features/tts/voice_style.dart";
@@ -146,6 +146,9 @@ class FakePathProvider extends Fake with MockPlatformInterfaceMixin implements P
 
   @override
   Future<String?> getApplicationSupportPath() async => tempDir.path;
+
+  @override
+  Future<String?> getTemporaryPath() async => tempDir.path;
 }
 
 // --- Test Container Helper ---
@@ -155,10 +158,14 @@ ProviderContainer createTestContainer({
   PipelineFactory? pipelineFactory,
   PlayerPersistence? persistence,
 }) {
-  return ProviderContainer(overrides: [
-    audioHandlerProvider.overrideWithValue(handler),
-    if (pipelineFactory != null) pipelineFactoryProvider.overrideWithValue(pipelineFactory),
-    if (persistence != null) playerPersistenceProvider.overrideWithValue(persistence),
-    authProvider.overrideWithValue(const AuthInitial()),
-  ]);
+  return ProviderContainer(
+    overrides: [
+      audioHandlerProvider.overrideWithValue(handler),
+      if (pipelineFactory != null) pipelineFactoryProvider.overrideWithValue(pipelineFactory),
+      if (persistence != null) playerPersistenceProvider.overrideWithValue(persistence),
+      authProvider.overrideWithValue(const AuthInitial()),
+      // Avoid hitting the real connectivity_plus plugin
+      connectivityMonitorProvider.overrideWith((ref) => Stream.value(true)),
+    ],
+  );
 }

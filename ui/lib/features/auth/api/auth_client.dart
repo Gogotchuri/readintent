@@ -1,13 +1,9 @@
-import "package:readintent_flutter/core/session_storage.dart";
 import "package:readintent_flutter/features/auth/api/auth_client_exceptions.dart";
 import "package:readintent_flutter/features/auth/api/auth_service_client.dart";
 import "package:readintent_flutter/core/connect_transport.dart";
 import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
 import "package:readintent_flutter/models/user.dart";
 import "package:connectrpc/connect.dart";
-import "package:connectrpc/protobuf.dart";
-import "package:connectrpc/http2.dart";
-import "package:connectrpc/protocol/connect.dart" as connect_p;
 import "package:readintent_flutter/proto/auth/v1/auth_service.connect.client.dart";
 import "package:readintent_flutter/proto/auth/v1/auth_service.pb.dart" as auth_pb;
 
@@ -40,7 +36,7 @@ class AuthClient {
       handleConnectException(e, "validate session");
     } catch (e) {
       // A non-Connect error here is a transport/socket failure (server
-      // unreachable), not an auth failure — keep the cached session.
+      // unreachable), not an auth failure - keep the cached session.
       throw ServerUnavailableException("Failed to validate session: $e");
     }
   }

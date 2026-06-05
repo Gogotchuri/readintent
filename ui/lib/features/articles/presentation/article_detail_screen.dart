@@ -43,7 +43,7 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
   }
 
   void _onScroll() {
-    // User scrolled manually — pause auto-scroll for 5 seconds
+    // User scrolled manually - pause auto-scroll for 5 seconds
     if (!_isAutoScrolling) {
       _manualScrollPause?.cancel();
       _manualScrollPause = Timer(const Duration(seconds: 5), () {

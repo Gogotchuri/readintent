@@ -29,7 +29,7 @@ Interceptor _createAuthInterceptor(SessionStorage sessionStorage) {
 /// Observes request failures and flags the backend as unhealthy when one
 /// reports a server-unavailable error (HTTP 502/503/504/429 -> Code.unavailable),
 /// so the app trips offline immediately instead of waiting for the next health
-/// poll. It never swallows the error — it rethrows so existing error handling is
+/// poll. It never swallows the error - it rethrows so existing error handling is
 /// unchanged. Code.unknown (HTTP 500) is intentionally excluded to avoid
 /// false-offline flapping; the periodic probe still catches a sustained 500.
 Interceptor _createServerHealthInterceptor(Ref ref) {
@@ -53,10 +53,7 @@ connect_p.Transport connectTransport(Ref ref) {
   return connect_p.Transport(
     baseUrl: connectBaseUrl,
     httpClient: createHttpClient(),
-    interceptors: [
-      _createAuthInterceptor(sessionStorage),
-      _createServerHealthInterceptor(ref),
-    ],
+    interceptors: [_createAuthInterceptor(sessionStorage), _createServerHealthInterceptor(ref)],
     codec: const ProtoCodec(),
   );
 }

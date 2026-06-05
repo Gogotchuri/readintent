@@ -51,7 +51,7 @@ Output: `build/app/outputs/bundle/release/app-release.aab`
 
 ### Publishing a new version
 
-1. Bump `version` in `pubspec.yaml` (e.g. `1.1.0+2` — the `+N` build number must increase each upload)
+1. Bump `version` in `pubspec.yaml` (e.g. `1.1.0+2` - the `+N` build number must increase each upload)
 2. Build the release bundle (step 3 above)
 3. Upload the `.aab` to Google Play Console > Release > Production (or testing track)
 4. Submit for review

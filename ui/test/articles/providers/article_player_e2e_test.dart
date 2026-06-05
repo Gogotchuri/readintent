@@ -1,5 +1,4 @@
 import "dart:io";
-import "dart:typed_data";
 
 import "package:fixnum/fixnum.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
@@ -10,7 +9,6 @@ import "package:path_provider_platform_interface/path_provider_platform_interfac
 import "package:shared_preferences/shared_preferences.dart";
 
 import "package:readintent_flutter/features/articles/providers/article_player_provider.dart";
-import "package:readintent_flutter/features/tts/audio_handler.dart";
 import "package:readintent_flutter/features/tts/pipeline.dart";
 import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as pb;
 

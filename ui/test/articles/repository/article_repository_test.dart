@@ -30,6 +30,8 @@ ArticlePreview makePreviewRow({
   String imageUrl = "https://example.com/image.jpg",
   int sortOrder = 0,
   int cachedAt = 1000,
+  int playerPositionMs = 0,
+  double scrollPosition = 0.0,
 }) {
   return ArticlePreview(
     id: id,
@@ -43,12 +45,15 @@ ArticlePreview makePreviewRow({
     imageUrl: imageUrl,
     sortOrder: sortOrder,
     cachedAt: cachedAt,
+    playerPositionMs: playerPositionMs,
+    scrollPosition: scrollPosition,
   );
 }
 
 ArticleDetail makeDetailRow({
   int id = 1,
   String extractedHtml = "<p>Hello</p>",
+  String processedHtml = "<p>Hello</p>",
   String pureText = "Hello",
   Uint8List? phonemizerBlob,
   int cachedAt = 1000,
@@ -56,6 +61,7 @@ ArticleDetail makeDetailRow({
   return ArticleDetail(
     id: id,
     extractedHtml: extractedHtml,
+    processedHtml: processedHtml,
     pureText: pureText,
     phonemizerBlob: phonemizerBlob,
     cachedAt: cachedAt,
