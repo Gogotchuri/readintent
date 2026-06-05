@@ -35,6 +35,7 @@ jobs:
           username: deploy
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
+            set -euo pipefail
             cd /opt/readintent
             sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=${{ steps.target.outputs.tag }}/' .env
             docker compose pull
