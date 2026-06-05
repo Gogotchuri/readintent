@@ -60,6 +60,7 @@ func (s Service) ParseArticle(ctx context.Context, userID, rawURL, html string) 
 	if err := s.eventHub.SubmitArticle(ctx, newArticle.Id, url, html); err != nil {
 		return err
 	}
+	s.publishArticleUpdate(ctx, newArticle.Id)
 	return nil
 }
 
