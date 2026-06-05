@@ -54,4 +54,4 @@ final class ConnectTransportProvider
   }
 }
 
-String _$connectTransportHash() => r'191fc11550421b81f2988a6b955ab2d50225f24a';
+String _$connectTransportHash() => r'066e28ee7a405d52a26f0115a3fbeb5f7ee53eed';

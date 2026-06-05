@@ -2,6 +2,7 @@ import "package:connectrpc/connect.dart";
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_test/flutter_test.dart";
+import "package:readintent_flutter/core/connectivity.dart";
 import "package:readintent_flutter/core/session_storage.dart";
 import "package:readintent_flutter/features/auth/api/auth_client.dart";
 import "package:readintent_flutter/features/auth/api/auth_client_exceptions.dart";
@@ -34,6 +35,7 @@ void main() {
       overrides: [
         authServiceProvider.overrideWithValue(mockAuthClient),
         sessionStorageProvider.overrideWithValue(mockSessionStorage),
+        isOnlineProvider.overrideWithValue(true),
       ],
     );
     return UncontrolledProviderScope(

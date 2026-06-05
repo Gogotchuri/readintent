@@ -39,7 +39,9 @@ class AuthClient {
     } on ConnectException catch (e) {
       handleConnectException(e, "validate session");
     } catch (e) {
-      throw AuthException("Failed to validate session: $e");
+      // A non-Connect error here is a transport/socket failure (server
+      // unreachable), not an auth failure — keep the cached session.
+      throw ServerUnavailableException("Failed to validate session: $e");
     }
   }
 
