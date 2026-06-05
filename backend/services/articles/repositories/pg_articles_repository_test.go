@@ -254,6 +254,102 @@ func TestUpdateArticle(t *testing.T) {
 	}
 }
 
+// scrapeArticle builds a scrape-derived Article for the given id/url.
+func scrapeArticle(id int64, url string) models.Article {
+	return models.Article{
+		Id:            id,
+		Url:           url,
+		Title:         models.NewNullString("Scraped Title"),
+		Author:        models.NewNullString("Author"),
+		ExtractedHtml: models.NewNullString("<p>body</p>"),
+		PureText:      models.NewNullString("body"),
+	}
+}
+
+func phonemizerData() models.JSONB[[]models.PhonemizerData] {
+	return models.NewJSONB([]models.PhonemizerData{{Graphemes: "body", Phonemes: "body"}})
+}
+
+// TestApplyResults_ScrapeFirst covers the ordering where the scrape result is
+// applied before the phonemizer result: text-ready, then ready once phonemes land.
+func TestApplyResults_ScrapeFirst(t *testing.T) {
+	db := startPostgres(t)
+	repo := NewPgArticlesRepository(db)
+	ctx := t.Context()
+
+	created, err := repo.CreateInitialArticle(ctx, "repo-test-user", "https://example.com/scrape-first")
+	if err != nil {
+		t.Fatalf("CreateInitialArticle failed: %v", err)
+	}
+
+	if err := repo.ApplyScrapeResult(ctx, scrapeArticle(created.Id, created.Url)); err != nil {
+		t.Fatalf("ApplyScrapeResult failed: %v", err)
+	}
+	got, _ := repo.GetArticleByID(ctx, created.Id)
+	if got.Status != models.ArticleStatusTextReady {
+		t.Fatalf("after scrape: expected %s, got %s", models.ArticleStatusTextReady, got.Status)
+	}
+
+	if err := repo.ApplyPhonemizerResult(ctx, created.Id, phonemizerData()); err != nil {
+		t.Fatalf("ApplyPhonemizerResult failed: %v", err)
+	}
+	got, _ = repo.GetArticleByID(ctx, created.Id)
+	if got.Status != models.ArticleStatusReady {
+		t.Errorf("after phonemizer: expected %s, got %s", models.ArticleStatusReady, got.Status)
+	}
+	// The phonemizer update must not have clobbered the scrape columns.
+	if got.ExtractedHtml.String() != "<p>body</p>" {
+		t.Errorf("extracted_html was clobbered: %q", got.ExtractedHtml.String())
+	}
+}
+
+// TestApplyResults_PhonemizerFirst covers the reverse ordering: phonemes-ready,
+// then ready once the scrape result lands.
+func TestApplyResults_PhonemizerFirst(t *testing.T) {
+	db := startPostgres(t)
+	repo := NewPgArticlesRepository(db)
+	ctx := t.Context()
+
+	created, err := repo.CreateInitialArticle(ctx, "repo-test-user", "https://example.com/phon-first")
+	if err != nil {
+		t.Fatalf("CreateInitialArticle failed: %v", err)
+	}
+
+	if err := repo.ApplyPhonemizerResult(ctx, created.Id, phonemizerData()); err != nil {
+		t.Fatalf("ApplyPhonemizerResult failed: %v", err)
+	}
+	got, _ := repo.GetArticleByID(ctx, created.Id)
+	if got.Status != models.ArticleStatusPhonemesReady {
+		t.Fatalf("after phonemizer: expected %s, got %s", models.ArticleStatusPhonemesReady, got.Status)
+	}
+
+	if err := repo.ApplyScrapeResult(ctx, scrapeArticle(created.Id, created.Url)); err != nil {
+		t.Fatalf("ApplyScrapeResult failed: %v", err)
+	}
+	got, _ = repo.GetArticleByID(ctx, created.Id)
+	if got.Status != models.ArticleStatusReady {
+		t.Errorf("after scrape: expected %s, got %s", models.ArticleStatusReady, got.Status)
+	}
+	// The scrape update must not have clobbered the phonemizer data.
+	if !got.PhonemizerData.Valid || len(got.PhonemizerData.Data) != 1 {
+		t.Errorf("phonemizer_data was clobbered: valid=%v len=%d", got.PhonemizerData.Valid, len(got.PhonemizerData.Data))
+	}
+}
+
+func TestApplyResults_NotFound(t *testing.T) {
+	db := startPostgres(t)
+	repo := NewPgArticlesRepository(db)
+	ctx := t.Context()
+
+	const missingID = 999999
+	if err := repo.ApplyScrapeResult(ctx, scrapeArticle(missingID, "https://example.com/missing")); !errors.Is(err, articles.ErrArticleNotFound) {
+		t.Errorf("ApplyScrapeResult: expected ErrArticleNotFound, got %v", err)
+	}
+	if err := repo.ApplyPhonemizerResult(ctx, missingID, phonemizerData()); !errors.Is(err, articles.ErrArticleNotFound) {
+		t.Errorf("ApplyPhonemizerResult: expected ErrArticleNotFound, got %v", err)
+	}
+}
+
 func TestDeleteArticle(t *testing.T) {
 	db := startPostgres(t)
 	repo := NewPgArticlesRepository(db)
