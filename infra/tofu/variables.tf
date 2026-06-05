@@ -31,6 +31,12 @@ variable "ssh_public_key_path" {
   description = "Path to SSH public key file"
 }
 
+variable "ssh_private_key_path" {
+  type        = string
+  default     = "~/.ssh/id_ed25519"
+  description = "Path to SSH private key for the deploy user (used by the config provisioner)"
+}
+
 variable "volume_size" {
   type        = number
   default     = 20

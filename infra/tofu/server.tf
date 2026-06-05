@@ -9,38 +9,26 @@ resource "hcloud_server" "main" {
 
   firewall_ids = [hcloud_firewall.main.id]
 
+  # Bootstrap only. Mutable app config is delivered post-boot by
+  # terraform_data.config (see config.tf), so it lives outside user_data and a
+  # config edit no longer forces a server replace.
   user_data = templatefile("${path.module}/templates/cloud-init.yml.tpl", {
-    ssh_public_key       = trimspace(file(pathexpand(var.ssh_public_key_path)))
-    domain               = var.domain
-    environment          = var.environment
-    postgres_admin_user  = data.sops_file.secrets.data["postgres_user"]
-    postgres_admin_pass  = data.sops_file.secrets.data["postgres_password"]
-    kratos_secret        = data.sops_file.secrets.data["kratos_secret"]
-    kratos_cookie_secret = data.sops_file.secrets.data["kratos_cookie_secret"]
-    dockerhub_username   = data.sops_file.secrets.data["dockerhub_username"]
-    dockerhub_token      = data.sops_file.secrets.data["dockerhub_token"]
-    volume_id            = hcloud_volume.data.id
-    docker_compose       = file("${path.module}/files/docker-compose.yml")
-    caddyfile = templatefile("${path.module}/files/Caddyfile.tpl", {
-      domain = var.domain
-    })
-    kratos_config = templatefile("${path.module}/files/kratos.yml.tpl", {
-      domain                     = var.domain
-      kratos_secret              = data.sops_file.secrets.data["kratos_secret"]
-      kratos_cookie_secret       = data.sops_file.secrets.data["kratos_cookie_secret"]
-      google_oauth_client_id     = data.sops_file.secrets.data["google_oauth_client_id"]
-      google_oauth_client_secret = data.sops_file.secrets.data["google_oauth_client_secret"]
-    })
-    kratos_identity_schema    = file("${path.module}/../../infra/kratos/identity.schema.json")
-    kratos_oidc_google_mapper = file("${path.module}/../../infra/kratos/oidc.google.jsonnet")
-    db_init_sql               = file("${path.module}/../../infra/database/docker-initdb/01-databases.sql")
-    db_init_users_sh          = file("${path.module}/../../infra/database/docker-initdb/02-users.sh")
-    db_init_perms_sql         = file("${path.module}/../../infra/database/docker-initdb/03-permissions.sql")
-    pg_hba_conf               = file("${path.module}/../../infra/database/pg_hba.conf")
+    ssh_public_key     = trimspace(file(pathexpand(var.ssh_public_key_path)))
+    dockerhub_username = data.sops_file.secrets.data["dockerhub_username"]
+    dockerhub_token    = data.sops_file.secrets.data["dockerhub_token"]
+    volume_id          = hcloud_volume.data.id
   })
 
   labels = {
     environment = var.environment
     managed_by  = "opentofu"
+  }
+
+  # user_data only executes on first boot, so later edits never reach a running
+  # server anyway. Ignoring it stops config changes from forcing a full server
+  # replace (which would detach the data volume and risk downtime/data loss).
+  # Mutable config is delivered out-of-band via the deploy pipeline instead.
+  lifecycle {
+    ignore_changes = [user_data]
   }
 }

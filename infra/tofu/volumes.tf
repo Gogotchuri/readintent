@@ -11,7 +11,7 @@ resource "hcloud_volume" "data" {
 
   lifecycle {
     prevent_destroy = true
-    ignore_changes  = [format]
+    ignore_changes = [format]
   }
 }
 
