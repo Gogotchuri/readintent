@@ -1,5 +1,3 @@
-import "dart:async";
-
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_test/flutter_test.dart";
@@ -139,16 +137,14 @@ void main() {
 class _TestArticles extends Articles {
   final ParseArticleResult? parseResult;
   final String? parseError;
-  final Completer<ParseArticleResult>? parseCompleter;
 
-  _TestArticles({this.parseResult, this.parseError, this.parseCompleter});
+  _TestArticles({this.parseResult, this.parseError});
 
   @override
   Future<ArticlesState> build() async => const ArticlesState();
 
   @override
   Future<ParseArticleResult> parseArticle(String url) async {
-    if (parseCompleter != null) return parseCompleter!.future;
     if (parseError != null) throw Exception(parseError);
     return parseResult ?? ParseArticleResult(queued: false);
   }

@@ -74,7 +74,7 @@ rpc.BadRequest? extractBadRequest(ConnectException e) {
 /// are present, otherwise throws [AuthException].
 Never handleConnectException(ConnectException e, String context) {
   // A server-unavailable error (HTTP 502/503/504/429) means the backend isn't
-  // reachable, not that auth failed — surface it distinctly.
+  // reachable, not that auth failed - surface it distinctly.
   if (e.code == Code.unavailable) {
     throw ServerUnavailableException("Failed to $context: ${e.message}");
   }

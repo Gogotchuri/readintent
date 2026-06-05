@@ -11,6 +11,7 @@ import "package:readintent_flutter/models/auth_state.dart";
 import "package:riverpod_annotation/riverpod_annotation.dart";
 
 part "auth_provider.g.dart";
+
 const _googleServerClientId = String.fromEnvironment(
   "GOOGLE_WEB_CLIENT_ID",
   defaultValue: "1036129511964-3s27nho51k8fsukpkgmbqr7lha7pvq1k.apps.googleusercontent.com",
@@ -39,6 +40,11 @@ class Auth extends _$Auth {
       if (isOnlineNow && !_sessionValidated) {
         _validateSession();
       }
+    });
+    // Make sure a scheduled error-clear timer doesn't outlive the provider.
+    ref.onDispose(() {
+      _errorTimer?.cancel();
+      _errorTimer = null;
     });
     // We attempt to restore the session on provider initialization, which will update the state accordingly
     _restoreSession();
@@ -83,7 +89,7 @@ class Auth extends _$Auth {
       _sessionValidated = true; // Session validation succeeded
       state = AuthAuthenticated(sessionToken: session.sessionToken, user: session.user);
     } on ServerUnavailableException {
-      // The backend is unreachable/unhealthy — this is not an auth failure, so
+      // The backend is unreachable/unhealthy - this is not an auth failure, so
       // keep the optimistic cached session rather than logging the user out.
       // The isOnlineProvider listener re-validates once health recovers.
       _sessionValidated = false;
@@ -173,7 +179,10 @@ class Auth extends _$Auth {
       developer.log("GoogleSignIn: account=${account.email}", name: "auth");
       final authentication = await account.authentication;
       final idToken = authentication.idToken;
-      developer.log("GoogleSignIn: idToken=${idToken != null ? '${idToken.substring(0, 20)}...' : 'null'}", name: "auth");
+      developer.log(
+        "GoogleSignIn: idToken=${idToken != null ? '${idToken.substring(0, 20)}...' : 'null'}",
+        name: "auth",
+      );
       if (idToken == null) {
         state = const AuthError(message: "Failed to obtain ID token from Google");
         _scheduleErrorClear(const Duration(seconds: 5));

@@ -126,7 +126,7 @@ class TTSPipeline {
 /// Ported from the reference Python implementation by the Kokoro timestamped model author:
 /// https://gist.github.com/fagenorn/d4aa16704541370d9b9d5f91f1f07b34
 ///
-/// [tokens] maps to chunk.tokenMeta — one entry per word/punctuation token.
+/// [tokens] maps to chunk.tokenMeta - one entry per word/punctuation token.
 /// [predDur] is the flattened predicted duration tensor (output[1]).
 /// MAGIC_DIVISOR = 80 converts half-frames to seconds (hop_size=600, sr=24000).
 List<WordTimestamp> joinTimestamps(List<TokenMeta> tokens, List<double> predDur) {

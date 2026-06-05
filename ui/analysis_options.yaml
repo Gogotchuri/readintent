@@ -9,6 +9,22 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  # Generated code (protobuf, drift, mockito, riverpod) doesn't follow our lint
+  # rules and is regenerated on every build, so excluding it keeps `flutter
+  # analyze` focused on hand-written code.
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.pb.dart"
+    - "**/*.pbenum.dart"
+    - "**/*.pbjson.dart"
+    - "**/*.pbserver.dart"
+    - "**/*.connect.dart"
+    - "**/*.connect.spec.dart"
+    - "**/*.mocks.dart"
+    - "**/*.freezed.dart"
+    - "lib/proto/**"
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`
