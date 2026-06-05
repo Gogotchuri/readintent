@@ -21,6 +21,9 @@ type Repository interface {
 	AddArticleForUser(ctx context.Context, userID string, articleID int64) error
 	UpdateArticle(ctx context.Context, article models.Article) error
 
+	ApplyScrapeResult(ctx context.Context, article models.Article) error
+	ApplyPhonemizerResult(ctx context.Context, articleID int64, data models.JSONB[[]models.PhonemizerData]) error
+
 	DeleteArticle(ctx context.Context, userID string, id int64) error
 
 	HasUpdatedArticles(ctx context.Context, userID string, since time.Time) (bool, error)

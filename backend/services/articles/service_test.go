@@ -191,18 +191,13 @@ func TestService_HandleScrapeResult(t *testing.T) {
 	const articleID int64 = 1
 	resultJSON := `{"url":"https://example.com/article","title":"Test Title"}`
 
-	var updatedArticle models.Article
-	updatedArticle.Id = articleID
+	// The final status is derived in SQL (see repository ApplyScrapeResult tests);
+	// here we only assert the handler forwards the parsed scrape data unchanged.
+	var applied models.Article
 	repo := &mockRepository{
-		UpdateArticleFn: func(_ context.Context, article models.Article) error {
-			updatedArticle = article
+		ApplyScrapeResultFn: func(_ context.Context, article models.Article) error {
+			applied = article
 			return nil
-		},
-		GetArticleByIDFn: func(_ context.Context, id int64) (*models.Article, error) {
-			if id != articleID {
-				t.Fatalf("unexpected articleID: %d", id)
-			}
-			return &updatedArticle, nil
 		},
 	}
 
@@ -215,11 +210,14 @@ func TestService_HandleScrapeResult(t *testing.T) {
 	if err != nil {
 		t.Fatalf("HandleScrapeResult returned error: %v", err)
 	}
-	if updatedArticle.Id != articleID {
-		t.Errorf("expected article ID %d, got %d", articleID, updatedArticle.Id)
+	if applied.Id != articleID {
+		t.Errorf("expected article ID %d, got %d", articleID, applied.Id)
 	}
-	if updatedArticle.Status != models.ArticleStatusTextReady {
-		t.Errorf("expected status %s, got %s", models.ArticleStatusTextReady, updatedArticle.Status)
+	if applied.Url != "https://example.com/article" {
+		t.Errorf("unexpected url: %s", applied.Url)
+	}
+	if applied.Title.String() != "Test Title" {
+		t.Errorf("expected title 'Test Title', got %s", applied.Title.String())
 	}
 }
 
@@ -293,18 +291,15 @@ func TestService_HandlePhonemizerResult(t *testing.T) {
 	const articleID int64 = 1
 	phonemizerJSON := `[{"graphemes":"hello","phonemes":"hello","token_ids":[1,2],"token_meta":[]}]`
 
-	var updatedArticle models.Article
-	updatedArticle.Id = articleID
+	// The final status is derived in SQL (see repository ApplyPhonemizerResult
+	// tests); here we only assert the handler forwards the parsed phonemizer data.
+	var appliedID int64
+	var appliedData models.JSONB[[]models.PhonemizerData]
 	repo := &mockRepository{
-		UpdateArticleFn: func(_ context.Context, article models.Article) error {
-			updatedArticle = article
+		ApplyPhonemizerResultFn: func(_ context.Context, id int64, data models.JSONB[[]models.PhonemizerData]) error {
+			appliedID = id
+			appliedData = data
 			return nil
-		},
-		GetArticleByIDFn: func(_ context.Context, id int64) (*models.Article, error) {
-			if id != articleID {
-				t.Fatalf("unexpected articleID: %d", id)
-			}
-			return &updatedArticle, nil
 		},
 	}
 
@@ -317,17 +312,17 @@ func TestService_HandlePhonemizerResult(t *testing.T) {
 	if err != nil {
 		t.Fatalf("HandlePhonemizerResult returned error: %v", err)
 	}
-	if updatedArticle.Status != models.ArticleStatusPhonemesReady {
-		t.Errorf("expected status %s, got %s", models.ArticleStatusPhonemesReady, updatedArticle.Status)
+	if appliedID != articleID {
+		t.Errorf("expected article ID %d, got %d", articleID, appliedID)
 	}
-	if !updatedArticle.PhonemizerData.Valid {
+	if !appliedData.Valid {
 		t.Fatal("expected PhonemizerData to be valid")
 	}
-	if len(updatedArticle.PhonemizerData.Data) != 1 {
-		t.Fatalf("expected 1 phonemizer entry, got %d", len(updatedArticle.PhonemizerData.Data))
+	if len(appliedData.Data) != 1 {
+		t.Fatalf("expected 1 phonemizer entry, got %d", len(appliedData.Data))
 	}
-	if updatedArticle.PhonemizerData.Data[0].Graphemes != "hello" {
-		t.Errorf("expected graphemes 'hello', got %s", updatedArticle.PhonemizerData.Data[0].Graphemes)
+	if appliedData.Data[0].Graphemes != "hello" {
+		t.Errorf("expected graphemes 'hello', got %s", appliedData.Data[0].Graphemes)
 	}
 }
 
@@ -423,6 +418,8 @@ type mockRepository struct {
 	CreateInitialArticleFn     func(ctx context.Context, userID, url string) (*models.Article, error)
 	AddArticleForUserFn        func(ctx context.Context, userID string, articleID int64) error
 	UpdateArticleFn            func(ctx context.Context, article models.Article) error
+	ApplyScrapeResultFn        func(ctx context.Context, article models.Article) error
+	ApplyPhonemizerResultFn    func(ctx context.Context, articleID int64, data models.JSONB[[]models.PhonemizerData]) error
 	DeleteArticleFn            func(ctx context.Context, userID string, id int64) error
 	HasUpdatedArticlesFn       func(ctx context.Context, userID string, since time.Time) (bool, error)
 	SaveArticleProgressFn      func(ctx context.Context, userID string, articleID int64, playerPositionMs int64, scrollPosition float64, playbackSpeed float64) error
@@ -453,6 +450,12 @@ func (m *mockRepository) AddArticleForUser(ctx context.Context, userID string, a
 }
 func (m *mockRepository) UpdateArticle(ctx context.Context, article models.Article) error {
 	return m.UpdateArticleFn(ctx, article)
+}
+func (m *mockRepository) ApplyScrapeResult(ctx context.Context, article models.Article) error {
+	return m.ApplyScrapeResultFn(ctx, article)
+}
+func (m *mockRepository) ApplyPhonemizerResult(ctx context.Context, articleID int64, data models.JSONB[[]models.PhonemizerData]) error {
+	return m.ApplyPhonemizerResultFn(ctx, articleID, data)
 }
 func (m *mockRepository) DeleteArticle(ctx context.Context, userID string, id int64) error {
 	return m.DeleteArticleFn(ctx, userID, id)

@@ -118,28 +118,19 @@ func (s Service) HandleScrapeResult(ctx context.Context, msg map[string]any) err
 	if !ok {
 		return fmt.Errorf("missing result field for article %d", articleID)
 	}
-	article, err := s.articleRepo.GetArticleByID(ctx, articleID)
-	if err != nil {
-		return fmt.Errorf("getting article with id %d: %w", articleID, err)
-	}
 	art, err := models.ArticleFromScrape(resultStr)
 	if err != nil {
 		return fmt.Errorf("parsing article from scrape result for article %d: %w", articleID, err)
 	}
-	art.Id = article.Id
-	// Just in case this has arrived first
-	art.PhonemizerData = article.PhonemizerData
-	if art.PhonemizerData.Valid {
-		art.Status = models.ArticleStatusReady
-	} else {
-		art.Status = models.ArticleStatusTextReady
-	}
+	art.Id = articleID
 	// Generate 300 len description if there is none
 	art.GenerateDescriptionIfNone(300)
 
-	slog.Info(fmt.Sprintf("Updating article %d with scrape result, status set to %s", articleID, art.Status))
-	if err := s.articleRepo.UpdateArticle(ctx, art); err != nil {
-		return fmt.Errorf("updating article with scrape result for id %d: %w", articleID, err)
+	// derives the final status atomically from whether the phonemizer stage has already landed, so
+	// it stays correct even when the phonemizer result is applied concurrently.
+	slog.Info(fmt.Sprintf("Applying scrape result for article %d", articleID))
+	if err := s.articleRepo.ApplyScrapeResult(ctx, art); err != nil {
+		return fmt.Errorf("applying scrape result for id %d: %w", articleID, err)
 	}
 	s.publishArticleUpdate(ctx, articleID)
 	return nil
@@ -161,20 +152,12 @@ func (s Service) HandlePhonemizerResult(ctx context.Context, msg map[string]any)
 	if err := json.Unmarshal([]byte(resultStr), &phonemizerData); err != nil {
 		return fmt.Errorf("unmarshaling phonemizer data for article %d: %w", articleID, err)
 	}
-	article, err := s.articleRepo.GetArticleByID(ctx, articleID)
-	if err != nil {
-		return fmt.Errorf("getting article with id %d: %w", articleID, err)
-	}
-	article.PhonemizerData = models.NewJSONB(phonemizerData)
-	article.Status = models.ArticleStatusPhonemesReady
-	// Check if the article has already arrived, there is a chance it didn't
-	// If we have successfully extracted html too we mark the article as ready
-	if article.ExtractedHtml.Valid {
-		article.Status = models.ArticleStatusReady
-	}
-	slog.Info(fmt.Sprintf("Updating article %d with phonemizer data, status set to %s", articleID, article.Status))
-	if err := s.articleRepo.UpdateArticle(ctx, *article); err != nil {
-		return fmt.Errorf("updating article with phonemizer data for id %d: %w", articleID, err)
+
+	// derives the final status atomically from whether the scrape stage has already landed,
+	// so it stays correct even when the scrape result is applied concurrently.
+	slog.Info(fmt.Sprintf("Applying phonemizer data for article %d", articleID))
+	if err := s.articleRepo.ApplyPhonemizerResult(ctx, articleID, models.NewJSONB(phonemizerData)); err != nil {
+		return fmt.Errorf("applying phonemizer data for id %d: %w", articleID, err)
 	}
 	s.publishArticleUpdate(ctx, articleID)
 	return nil

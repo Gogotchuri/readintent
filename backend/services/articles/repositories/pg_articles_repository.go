@@ -221,6 +221,53 @@ func (p PgArticlesRepository) UpdateArticle(ctx context.Context, article models.
 	return nil
 }
 
+// ApplyScrapeResult writes only every column from the passed article except phonemizer_data, 
+// and in the same statement (atomically) sets the status to 'ready' if phonemizer_data is already present, 
+// otherwise set 'text_ready'
+func (p PgArticlesRepository) ApplyScrapeResult(ctx context.Context, article models.Article) error {
+	query := fmt.Sprintf(`
+		UPDATE articles SET
+			title = :title, author = :author, published_date = :published_date,
+			extracted_html = :extracted_html, pure_text = :pure_text, url = :url,
+			categories = :categories, description = :description, image_url = :image_url,
+			status = CASE WHEN phonemizer_data IS NOT NULL THEN '%s' ELSE '%s' END,
+			updated_at = NOW()
+		WHERE id = :id
+	`, models.ArticleStatusReady, models.ArticleStatusTextReady)
+	res, err := p.db.NamedExecContext(ctx, query, &article)
+	if err != nil {
+		return fmt.Errorf("failed to apply scrape result for article %d: %w", article.Id, err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return fmt.Errorf("applying scrape result: %w", articles.ErrArticleNotFound)
+	}
+	return nil
+}
+
+// ApplyPhonemizerResult writes only the phonemizer_data column from the passed article, 
+// and in the same statement (atomically) sets the status to 'ready' if extracted_html is already present,
+//  otherwise set 'phonemes_ready'
+func (p PgArticlesRepository) ApplyPhonemizerResult(ctx context.Context, articleID int64, data models.JSONB[[]models.PhonemizerData]) error {
+	query := fmt.Sprintf(`
+		UPDATE articles SET
+			phonemizer_data = :phonemizer_data,
+			status = CASE WHEN extracted_html IS NOT NULL THEN '%s' ELSE '%s' END,
+			updated_at = NOW()
+		WHERE id = :id
+	`, models.ArticleStatusReady, models.ArticleStatusPhonemesReady)
+	res, err := p.db.NamedExecContext(ctx, query, map[string]any{
+		"id":              articleID,
+		"phonemizer_data": data,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to apply phonemizer result for article %d: %w", articleID, err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return fmt.Errorf("applying phonemizer result: %w", articles.ErrArticleNotFound)
+	}
+	return nil
+}
+
 func (p PgArticlesRepository) DeleteArticle(ctx context.Context, userID string, id int64) error {
 	// We will just delete the user-article relation, and keep the article in the database, as it can be reused by other users
 	_, err := p.db.ExecContext(ctx, `
