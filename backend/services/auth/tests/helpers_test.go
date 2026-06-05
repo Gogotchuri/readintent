@@ -93,7 +93,7 @@ func startConnectRPCAuthServer(t *testing.T) {
 	kratosURL := fmt.Sprintf("http://127.0.0.1:%s", kratosPublicPort)
 	mux := http.NewServeMux()
 	kratosClient := adapters.NewKratosClient(kratosURL)
-	service := auth.NewService(kratosClient, nil)
+	service := auth.NewService(kratosClient, &stubUserRepository{})
 	//TODO grantClaimer
 	connectRPC := authconnectrpc.NewAuthServer(service, nil)
 	connectRPC.BindAuthServerToMux(mux)
@@ -119,6 +119,13 @@ func startConnectRPCAuthServer(t *testing.T) {
 	// Artificial wait to let the server come online, reduces flakiness
 	time.Sleep(2 * time.Second)
 }
+
+// stubUserRepository is a no-op auth.UserRepository for the connect RPC flow tests.
+// These tests exercise the real Kratos integration and field mapping; persisting the
+// linked user in Postgres is out of scope here, so CreateUser simply succeeds.
+type stubUserRepository struct{}
+
+func (stubUserRepository) CreateUser(_ context.Context, _ string) error { return nil }
 
 func newAuthClient(t *testing.T) authv1connect.AuthServiceClient {
 	t.Helper()

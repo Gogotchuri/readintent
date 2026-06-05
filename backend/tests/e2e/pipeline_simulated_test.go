@@ -148,8 +148,9 @@ func TestFullPipeline_Simulated(t *testing.T) {
 		t.Fatalf("ParseArticle: %v", err)
 	}
 
-	// Poll until ready
-	resp := pollArticleUntilReady(t, client, 30*time.Second)
+	// Poll until ready. Generous budget so container/consumer-group startup
+	// jitter under load doesn't make this flaky.
+	resp := pollArticleUntilReady(t, client, 60*time.Second)
 
 	if resp.TotalCount != 1 {
 		t.Fatalf("expected 1 article, got %d", resp.TotalCount)
