@@ -63,6 +63,9 @@ func main() {
 
 	mux := http.NewServeMux()
 
+	// Health check endpoint (DB + Redis + Kratos readiness)
+	registerHealthRoutes(mux, db, redisClient, kratosClient)
+
 	// Auth ConnectRPC server
 	authServer := authconnectrpc.NewAuthServer(authService, extService)
 	authServer.BindAuthServerToMux(mux)
