@@ -65,7 +65,7 @@ write_files:
   # Environment file
   - path: /opt/readintent/.env
     permissions: "0600"
-    owner: root:root
+    owner: deploy:deploy
     content: |
       ENVIRONMENT=${environment}
       DOCKER_REPO=${dockerhub_username}
