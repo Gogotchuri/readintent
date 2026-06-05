@@ -47,6 +47,18 @@ class AuthException implements Exception {
   String toString() => message;
 }
 
+/// Thrown when the backend is unreachable/unhealthy (server-unavailable error
+/// or a transport-level failure). Distinct from an auth failure so callers can
+/// keep an optimistic cached session instead of logging the user out.
+class ServerUnavailableException implements Exception {
+  final String message;
+
+  const ServerUnavailableException(this.message);
+
+  @override
+  String toString() => message;
+}
+
 /// Extracts a BadRequest from ConnectException details, if present.
 rpc.BadRequest? extractBadRequest(ConnectException e) {
   for (final detail in e.details) {
@@ -61,6 +73,11 @@ rpc.BadRequest? extractBadRequest(ConnectException e) {
 /// general AuthException. Throws [ValidationException] if BadRequest details
 /// are present, otherwise throws [AuthException].
 Never handleConnectException(ConnectException e, String context) {
+  // A server-unavailable error (HTTP 502/503/504/429) means the backend isn't
+  // reachable, not that auth failed — surface it distinctly.
+  if (e.code == Code.unavailable) {
+    throw ServerUnavailableException("Failed to $context: ${e.message}");
+  }
   final badRequest = extractBadRequest(e);
   if (badRequest != null && badRequest.fieldViolations.isNotEmpty) {
     final fieldErrors = badRequest.fieldViolations

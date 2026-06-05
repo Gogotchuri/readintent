@@ -3,6 +3,7 @@ import "dart:developer" as developer;
 
 import "package:google_sign_in/google_sign_in.dart";
 import "package:readintent_flutter/core/connectivity.dart";
+import "package:readintent_flutter/core/server_health.dart";
 import "package:readintent_flutter/core/session_storage.dart";
 import "package:readintent_flutter/features/auth/api/auth_client.dart";
 import "package:readintent_flutter/features/auth/api/auth_client_exceptions.dart";
@@ -81,6 +82,21 @@ class Auth extends _$Auth {
       final session = await _authClient.getSession();
       _sessionValidated = true; // Session validation succeeded
       state = AuthAuthenticated(sessionToken: session.sessionToken, user: session.user);
+    } on ServerUnavailableException {
+      // The backend is unreachable/unhealthy — this is not an auth failure, so
+      // keep the optimistic cached session rather than logging the user out.
+      // The isOnlineProvider listener re-validates once health recovers.
+      _sessionValidated = false;
+      ref.read(serverHealthProvider.notifier).reportServerError();
+      if (state is AuthAuthenticated) return; // Already showing cached session
+      final token = await _sessionStorage.getToken();
+      final cachedUser = await _sessionStorage.getUser();
+      if (token != null && cachedUser != null) {
+        state = AuthAuthenticated(sessionToken: token, user: cachedUser);
+      } else {
+        await _sessionStorage.clearSession();
+        state = const AuthUnauthenticated();
+      }
     } catch (e) {
       _sessionValidated = false; // Session validation failed
       // Clear session and set unauthenticated if validation fails
