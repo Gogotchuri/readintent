@@ -74,6 +74,21 @@ locals {
       content = file("${path.module}/../../infra/database/pg_hba.conf")
     }
   }
+
+  # Self-contained script that recreates every managed file on the server. It
+  # carries the (sensitive) rendered content, so it is delivered via a file
+  # provisioner rather than a remote-exec inline command — otherwise OpenTofu
+  # marks the whole command sensitive and suppresses all streamed output.
+  config_setup_script = join("\n", concat(
+    [
+      "#!/usr/bin/env bash",
+      "set -euo pipefail",
+      "mkdir -p /opt/readintent/kratos /opt/readintent/database/docker-initdb",
+    ],
+    [for path, f in local.managed_files :
+      "printf '%s' '${base64encode(f.content)}' | base64 -d > /opt/readintent/${path}; chmod ${f.mode} /opt/readintent/${path}"
+    ],
+  ))
 }
 
 # Delivers mutable app config to the server out-of-band, after first boot.
@@ -93,22 +108,32 @@ resource "terraform_data" "config" {
     timeout     = "10m" # first boot does apt upgrade + docker install
   }
 
+  # 1. Prepare /opt/readintent. No secrets referenced -> output stays visible.
   provisioner "remote-exec" {
-    inline = concat(
-      [
-        # Wait for cloud-init to finish docker install + volume mount.
-        # `|| true` tolerates a non-zero status from earlier-boot errors.
-        "cloud-init status --wait || true",
-        "sudo mkdir -p /opt/readintent/kratos /opt/readintent/database/docker-initdb",
-        "sudo chown -R deploy:deploy /opt/readintent",
-      ],
-      # Write each file from base64 (avoids shell-escaping issues; only sha256
-      # hashes of the content live in state, never the plaintext secrets).
-      [for path, f in local.managed_files :
-        "printf '%s' '${base64encode(f.content)}' | base64 -d > /opt/readintent/${path} && chmod ${f.mode} /opt/readintent/${path}"
-      ],
-      ["cd /opt/readintent && docker compose pull && docker compose up -d --remove-orphans"],
-    )
+    inline = [
+      # Wait for cloud-init to finish docker install + volume mount.
+      # `|| true` tolerates a non-zero status from earlier-boot errors.
+      "cloud-init status --wait || true",
+      "sudo mkdir -p /opt/readintent",
+      "sudo chown -R deploy:deploy /opt/readintent",
+    ]
+  }
+
+  # 2. Upload the (sensitive) file-writer script. File provisioners stream no
+  #    stdout, so the secret content here doesn't suppress anything.
+  provisioner "file" {
+    content     = local.config_setup_script
+    destination = "/tmp/ri-config-setup.sh"
+  }
+
+  # 3. Run the script, then bring the stack up. No secrets referenced here, so
+  #    `docker compose` progress prints normally.
+  provisioner "remote-exec" {
+    inline = [
+      "bash /tmp/ri-config-setup.sh",
+      "rm -f /tmp/ri-config-setup.sh",
+      "cd /opt/readintent && docker compose pull && docker compose up -d --remove-orphans",
+    ]
   }
 
   # Volume must be attached + mounted before compose brings up postgres/redis.
