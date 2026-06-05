@@ -42,6 +42,27 @@ Those are just some fo the upsides. Down the line if the shared version manageme
 - The browser extension can be loaded in each browser separately.
 - Flutter UI requires flutter to be installed on the device. `flutter run -d <platform>`
 
+## Testing
+
+Tests can be run from one place using the root [`test.sh`](./test.sh) script:
+
+```sh
+./test.sh                 # run tests for all components that have them
+./test.sh backend ui      # run tests for only the named components
+```
+
+Testable components and their requirements:
+- `backend/` - Go (`go test ./...`). Uses [testcontainers-go](https://golang.testcontainers.org/), so **Docker** must be running.
+- `scraper/` - Python via [uv](https://docs.astral.sh/uv/) (`uv run pytest`). Uses testcontainers (Redis), so **Docker** must be running.
+- `phonemizer/` - Python via uv (`uv run pytest`). Needs **Docker** and the system packages `espeak-ng` and `libsndfile1`.
+- `ui/` - Flutter (`flutter test`).
+
+The script assumes the relevant toolchains (`go`, `uv`, `flutter`) are already installed; `browser_extension/`, `shared/`, and `infra/` have no tests.
+
+### CI
+
+[`.github/workflows/test.yml`](./.github/workflows/test.yml) runs on pull requests and pushes to `dev`/`master`. It uses path filtering to run **only the tests for components whose files changed** — each component runs in its own job (setting up its toolchain) and invokes `./test.sh <component>`, so test commands live in a single place.
+
 ## Architecture and event flow
 
 ### General Architecture
