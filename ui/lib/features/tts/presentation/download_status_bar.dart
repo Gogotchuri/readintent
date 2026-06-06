@@ -64,7 +64,9 @@ class DownloadStatusBar extends ConsumerWidget {
                     child: LinearProgressIndicator(
                       value: status.progress,
                       minHeight: 3,
-                      backgroundColor: theme.onPrimaryContainer.withValues(alpha: 0.2),
+                      backgroundColor: theme.onPrimaryContainer.withValues(
+                        alpha: 0.2,
+                      ),
                       color: theme.onPrimaryContainer,
                     ),
                   ),

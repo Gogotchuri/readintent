@@ -44,7 +44,10 @@ class AuthError extends AuthState {
 
   /// getFieldErrors returns the error messages for a specific field if it exists, otherwise null
   List<String>? getFieldErrors(String field) {
-    final errors = fieldErrors.where((e) => e.field == field).map((e) => e.description).toList();
+    final errors = fieldErrors
+        .where((e) => e.field == field)
+        .map((e) => e.description)
+        .toList();
     return errors.isEmpty ? null : errors;
   }
 

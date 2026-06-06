@@ -23,7 +23,9 @@ class MiniPlayerWidget extends ConsumerWidget {
         color: theme.colorScheme.surfaceContainerHighest,
         child: Container(
           decoration: BoxDecoration(
-            border: Border(top: BorderSide(color: theme.colorScheme.outlineVariant)),
+            border: Border(
+              top: BorderSide(color: theme.colorScheme.outlineVariant),
+            ),
           ),
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -37,7 +39,10 @@ class MiniPlayerWidget extends ConsumerWidget {
                   ),
                   // Content row
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     child: Row(
                       children: [
                         _buildImage(state.articleImageUrl, theme),
@@ -94,7 +99,9 @@ class MiniPlayerWidget extends ConsumerWidget {
           state.articleTitle ?? "",
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w500,
+          ),
         ),
         if (state.articleAuthor != null) ...[
           const SizedBox(height: 2),
@@ -114,7 +121,9 @@ class MiniPlayerWidget extends ConsumerWidget {
   Widget _buildRewindButton(ActivePlayerState state, ActivePlayer controller) {
     return IconButton(
       icon: const Icon(Icons.replay_10, size: 24),
-      onPressed: state.position > Duration.zero ? controller.jumpBackward : null,
+      onPressed: state.position > Duration.zero
+          ? controller.jumpBackward
+          : null,
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
     );

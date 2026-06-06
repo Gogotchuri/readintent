@@ -34,7 +34,7 @@ class ServerHealth extends _$ServerHealth {
       _dio.close(force: true);
     });
 
-    // Re-probe as soon as the device regains connectivity; stop probing when it drops off 
+    // Re-probe as soon as the device regains connectivity; stop probing when it drops off
     ref.listen(connectivityMonitorProvider, (_, next) {
       final deviceOnline = next.whenData((v) => v).value ?? true;
       if (deviceOnline) {
@@ -55,7 +55,8 @@ class ServerHealth extends _$ServerHealth {
   }
 
   Future<void> _probe() async {
-    final deviceOnline = ref.read(connectivityMonitorProvider).whenData((v) => v).value ?? true;
+    final deviceOnline =
+        ref.read(connectivityMonitorProvider).whenData((v) => v).value ?? true;
     if (!deviceOnline) {
       // The connectivity listener will reschedule when we're back online.
       return;

@@ -6,9 +6,7 @@ import "package:readintent_flutter/features/articles/providers/articles_provider
 import "package:readintent_flutter/features/articles/repository/article_repository.dart";
 
 void main() {
-  Widget createWidget({
-    required _TestArticles Function() createNotifier,
-  }) {
+  Widget createWidget({required _TestArticles Function() createNotifier}) {
     final container = ProviderContainer(
       overrides: [
         // ignore: deprecated_member_use
@@ -39,9 +37,9 @@ void main() {
   }
 
   testWidgets("renders URL input and buttons", (tester) async {
-    await tester.pumpWidget(createWidget(
-      createNotifier: () => _TestArticles(),
-    ));
+    await tester.pumpWidget(
+      createWidget(createNotifier: () => _TestArticles()),
+    );
     await openDialog(tester);
 
     expect(find.byType(TextFormField), findsOneWidget);
@@ -50,9 +48,9 @@ void main() {
   });
 
   testWidgets("validates empty URL", (tester) async {
-    await tester.pumpWidget(createWidget(
-      createNotifier: () => _TestArticles(),
-    ));
+    await tester.pumpWidget(
+      createWidget(createNotifier: () => _TestArticles()),
+    );
     await openDialog(tester);
 
     await tester.tap(find.text("Add"));
@@ -62,9 +60,9 @@ void main() {
   });
 
   testWidgets("validates malformed URL", (tester) async {
-    await tester.pumpWidget(createWidget(
-      createNotifier: () => _TestArticles(),
-    ));
+    await tester.pumpWidget(
+      createWidget(createNotifier: () => _TestArticles()),
+    );
     await openDialog(tester);
 
     await tester.enterText(find.byType(TextFormField), "not-a-url");
@@ -75,42 +73,63 @@ void main() {
   });
 
   testWidgets("shows snackbar when article queued (offline)", (tester) async {
-    await tester.pumpWidget(createWidget(
-      createNotifier: () => _TestArticles(
-        parseResult: ParseArticleResult(queued: true),
+    await tester.pumpWidget(
+      createWidget(
+        createNotifier: () =>
+            _TestArticles(parseResult: ParseArticleResult(queued: true)),
       ),
-    ));
+    );
     await openDialog(tester);
 
-    await tester.enterText(find.byType(TextFormField), "https://example.com/article");
+    await tester.enterText(
+      find.byType(TextFormField),
+      "https://example.com/article",
+    );
     await tester.tap(find.text("Add"));
     await tester.pumpAndSettle();
 
-    expect(find.text("Article will be added when you're back online"), findsOneWidget);
+    expect(
+      find.text("Article will be added when you're back online"),
+      findsOneWidget,
+    );
   });
 
-  testWidgets("no snackbar when article added immediately (online)", (tester) async {
-    await tester.pumpWidget(createWidget(
-      createNotifier: () => _TestArticles(
-        parseResult: ParseArticleResult(queued: false),
+  testWidgets("no snackbar when article added immediately (online)", (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      createWidget(
+        createNotifier: () =>
+            _TestArticles(parseResult: ParseArticleResult(queued: false)),
       ),
-    ));
+    );
     await openDialog(tester);
 
-    await tester.enterText(find.byType(TextFormField), "https://example.com/article");
+    await tester.enterText(
+      find.byType(TextFormField),
+      "https://example.com/article",
+    );
     await tester.tap(find.text("Add"));
     await tester.pumpAndSettle();
 
-    expect(find.text("Article will be added when you're back online"), findsNothing);
+    expect(
+      find.text("Article will be added when you're back online"),
+      findsNothing,
+    );
   });
 
   testWidgets("shows error message on failure", (tester) async {
-    await tester.pumpWidget(createWidget(
-      createNotifier: () => _TestArticles(parseError: "Something went wrong"),
-    ));
+    await tester.pumpWidget(
+      createWidget(
+        createNotifier: () => _TestArticles(parseError: "Something went wrong"),
+      ),
+    );
     await openDialog(tester);
 
-    await tester.enterText(find.byType(TextFormField), "https://example.com/article");
+    await tester.enterText(
+      find.byType(TextFormField),
+      "https://example.com/article",
+    );
     await tester.tap(find.text("Add"));
     await tester.pumpAndSettle();
 
@@ -118,15 +137,19 @@ void main() {
   });
 
   testWidgets("closes dialog on success", (tester) async {
-    await tester.pumpWidget(createWidget(
-      createNotifier: () => _TestArticles(
-        parseResult: ParseArticleResult(queued: false),
+    await tester.pumpWidget(
+      createWidget(
+        createNotifier: () =>
+            _TestArticles(parseResult: ParseArticleResult(queued: false)),
       ),
-    ));
+    );
     await openDialog(tester);
     expect(find.byType(AddArticleDialog), findsOneWidget);
 
-    await tester.enterText(find.byType(TextFormField), "https://example.com/article");
+    await tester.enterText(
+      find.byType(TextFormField),
+      "https://example.com/article",
+    );
     await tester.tap(find.text("Add"));
     await tester.pumpAndSettle();
 

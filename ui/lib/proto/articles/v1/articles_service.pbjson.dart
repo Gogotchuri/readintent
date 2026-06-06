@@ -36,7 +36,14 @@ const PhonemizerData$json = {
     {'1': 'graphemes', '3': 1, '4': 1, '5': 9, '10': 'graphemes'},
     {'1': 'phonemes', '3': 2, '4': 1, '5': 9, '10': 'phonemes'},
     {'1': 'token_ids', '3': 3, '4': 3, '5': 3, '10': 'tokenIds'},
-    {'1': 'token_meta', '3': 4, '4': 3, '5': 11, '6': '.articles.v1.PhonemizerTokenMeta', '10': 'tokenMeta'},
+    {
+      '1': 'token_meta',
+      '3': 4,
+      '4': 3,
+      '5': 11,
+      '6': '.articles.v1.PhonemizerTokenMeta',
+      '10': 'tokenMeta'
+    },
   ],
 };
 
@@ -58,9 +65,23 @@ const ArticlePreview$json = {
     {'1': 'date', '3': 5, '4': 1, '5': 9, '10': 'date'},
     {'1': 'url', '3': 6, '4': 1, '5': 9, '10': 'url'},
     {'1': 'categories', '3': 7, '4': 3, '5': 9, '10': 'categories'},
-    {'1': 'description', '3': 8, '4': 1, '5': 9, '9': 0, '10': 'description', '17': true},
+    {
+      '1': 'description',
+      '3': 8,
+      '4': 1,
+      '5': 9,
+      '9': 0,
+      '10': 'description',
+      '17': true
+    },
     {'1': 'image', '3': 9, '4': 1, '5': 9, '9': 1, '10': 'image', '17': true},
-    {'1': 'player_position_ms', '3': 10, '4': 1, '5': 3, '10': 'playerPositionMs'},
+    {
+      '1': 'player_position_ms',
+      '3': 10,
+      '4': 1,
+      '5': 3,
+      '10': 'playerPositionMs'
+    },
     {'1': 'scroll_position', '3': 11, '4': 1, '5': 1, '10': 'scrollPosition'},
   ],
   '8': [
@@ -92,10 +113,31 @@ const Article$json = {
     {'1': 'pure_text', '3': 7, '4': 1, '5': 9, '10': 'pureText'},
     {'1': 'url', '3': 8, '4': 1, '5': 9, '10': 'url'},
     {'1': 'categories', '3': 9, '4': 3, '5': 9, '10': 'categories'},
-    {'1': 'description', '3': 10, '4': 1, '5': 9, '9': 0, '10': 'description', '17': true},
+    {
+      '1': 'description',
+      '3': 10,
+      '4': 1,
+      '5': 9,
+      '9': 0,
+      '10': 'description',
+      '17': true
+    },
     {'1': 'image', '3': 11, '4': 1, '5': 9, '9': 1, '10': 'image', '17': true},
-    {'1': 'phonemizer_data', '3': 12, '4': 3, '5': 11, '6': '.articles.v1.PhonemizerData', '10': 'phonemizerData'},
-    {'1': 'player_position_ms', '3': 13, '4': 1, '5': 3, '10': 'playerPositionMs'},
+    {
+      '1': 'phonemizer_data',
+      '3': 12,
+      '4': 3,
+      '5': 11,
+      '6': '.articles.v1.PhonemizerData',
+      '10': 'phonemizerData'
+    },
+    {
+      '1': 'player_position_ms',
+      '3': 13,
+      '4': 1,
+      '5': 3,
+      '10': 'playerPositionMs'
+    },
     {'1': 'scroll_position', '3': 14, '4': 1, '5': 1, '10': 'scrollPosition'},
     {'1': 'playback_speed', '3': 15, '4': 1, '5': 1, '10': 'playbackSpeed'},
   ],
@@ -125,7 +167,15 @@ const GetArticlesRequest$json = {
     {'1': 'page_size', '3': 1, '4': 1, '5': 5, '10': 'pageSize'},
     {'1': 'page_token', '3': 2, '4': 1, '5': 9, '10': 'pageToken'},
     {'1': 'categories', '3': 3, '4': 3, '5': 9, '10': 'categories'},
-    {'1': 'search_query', '3': 4, '4': 1, '5': 9, '9': 0, '10': 'searchQuery', '17': true},
+    {
+      '1': 'search_query',
+      '3': 4,
+      '4': 1,
+      '5': 9,
+      '9': 0,
+      '10': 'searchQuery',
+      '17': true
+    },
     {'1': 'author', '3': 5, '4': 1, '5': 9, '9': 1, '10': 'author', '17': true},
   ],
   '8': [
@@ -145,7 +195,14 @@ final $typed_data.Uint8List getArticlesRequestDescriptor = $convert.base64Decode
 const GetArticlesResponse$json = {
   '1': 'GetArticlesResponse',
   '2': [
-    {'1': 'articles', '3': 1, '4': 3, '5': 11, '6': '.articles.v1.ArticlePreview', '10': 'articles'},
+    {
+      '1': 'articles',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.articles.v1.ArticlePreview',
+      '10': 'articles'
+    },
     {'1': 'next_page_token', '3': 2, '4': 1, '5': 9, '10': 'nextPageToken'},
     {'1': 'total_count', '3': 3, '4': 1, '5': 5, '10': 'totalCount'},
   ],
@@ -166,14 +223,21 @@ const GetArticleRequest$json = {
 };
 
 /// Descriptor for `GetArticleRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getArticleRequestDescriptor = $convert.base64Decode(
-    'ChFHZXRBcnRpY2xlUmVxdWVzdBIOCgJpZBgBIAEoCVICaWQ=');
+final $typed_data.Uint8List getArticleRequestDescriptor =
+    $convert.base64Decode('ChFHZXRBcnRpY2xlUmVxdWVzdBIOCgJpZBgBIAEoCVICaWQ=');
 
 @$core.Deprecated('Use getArticleResponseDescriptor instead')
 const GetArticleResponse$json = {
   '1': 'GetArticleResponse',
   '2': [
-    {'1': 'article', '3': 1, '4': 1, '5': 11, '6': '.articles.v1.Article', '10': 'article'},
+    {
+      '1': 'article',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.articles.v1.Article',
+      '10': 'article'
+    },
   ],
 };
 
@@ -191,8 +255,8 @@ const ParseArticleRequest$json = {
 };
 
 /// Descriptor for `ParseArticleRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List parseArticleRequestDescriptor = $convert.base64Decode(
-    'ChNQYXJzZUFydGljbGVSZXF1ZXN0EhAKA3VybBgBIAEoCVIDdXJs');
+final $typed_data.Uint8List parseArticleRequestDescriptor = $convert
+    .base64Decode('ChNQYXJzZUFydGljbGVSZXF1ZXN0EhAKA3VybBgBIAEoCVIDdXJs');
 
 @$core.Deprecated('Use parseArticleResponseDescriptor instead')
 const ParseArticleResponse$json = {
@@ -200,8 +264,8 @@ const ParseArticleResponse$json = {
 };
 
 /// Descriptor for `ParseArticleResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List parseArticleResponseDescriptor = $convert.base64Decode(
-    'ChRQYXJzZUFydGljbGVSZXNwb25zZQ==');
+final $typed_data.Uint8List parseArticleResponseDescriptor =
+    $convert.base64Decode('ChRQYXJzZUFydGljbGVSZXNwb25zZQ==');
 
 @$core.Deprecated('Use deleteArticleRequestDescriptor instead')
 const DeleteArticleRequest$json = {
@@ -212,8 +276,8 @@ const DeleteArticleRequest$json = {
 };
 
 /// Descriptor for `DeleteArticleRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteArticleRequestDescriptor = $convert.base64Decode(
-    'ChREZWxldGVBcnRpY2xlUmVxdWVzdBIOCgJpZBgBIAEoCVICaWQ=');
+final $typed_data.Uint8List deleteArticleRequestDescriptor = $convert
+    .base64Decode('ChREZWxldGVBcnRpY2xlUmVxdWVzdBIOCgJpZBgBIAEoCVICaWQ=');
 
 @$core.Deprecated('Use deleteArticleResponseDescriptor instead')
 const DeleteArticleResponse$json = {
@@ -221,15 +285,21 @@ const DeleteArticleResponse$json = {
 };
 
 /// Descriptor for `DeleteArticleResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteArticleResponseDescriptor = $convert.base64Decode(
-    'ChVEZWxldGVBcnRpY2xlUmVzcG9uc2U=');
+final $typed_data.Uint8List deleteArticleResponseDescriptor =
+    $convert.base64Decode('ChVEZWxldGVBcnRpY2xlUmVzcG9uc2U=');
 
 @$core.Deprecated('Use saveArticleProgressRequestDescriptor instead')
 const SaveArticleProgressRequest$json = {
   '1': 'SaveArticleProgressRequest',
   '2': [
     {'1': 'article_id', '3': 1, '4': 1, '5': 9, '10': 'articleId'},
-    {'1': 'player_position_ms', '3': 2, '4': 1, '5': 3, '10': 'playerPositionMs'},
+    {
+      '1': 'player_position_ms',
+      '3': 2,
+      '4': 1,
+      '5': 3,
+      '10': 'playerPositionMs'
+    },
     {'1': 'scroll_position', '3': 3, '4': 1, '5': 1, '10': 'scrollPosition'},
     {'1': 'playback_speed', '3': 4, '4': 1, '5': 1, '10': 'playbackSpeed'},
   ],
@@ -248,8 +318,8 @@ const SaveArticleProgressResponse$json = {
 };
 
 /// Descriptor for `SaveArticleProgressResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List saveArticleProgressResponseDescriptor = $convert.base64Decode(
-    'ChtTYXZlQXJ0aWNsZVByb2dyZXNzUmVzcG9uc2U=');
+final $typed_data.Uint8List saveArticleProgressResponseDescriptor =
+    $convert.base64Decode('ChtTYXZlQXJ0aWNsZVByb2dyZXNzUmVzcG9uc2U=');
 
 @$core.Deprecated('Use checkForUpdatesRequestDescriptor instead')
 const CheckForUpdatesRequest$json = {
@@ -260,9 +330,10 @@ const CheckForUpdatesRequest$json = {
 };
 
 /// Descriptor for `CheckForUpdatesRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List checkForUpdatesRequestDescriptor = $convert.base64Decode(
-    'ChZDaGVja0ZvclVwZGF0ZXNSZXF1ZXN0EiYKD2xhc3RfY2hlY2tlZF9hdBgBIAEoA1INbGFzdE'
-    'NoZWNrZWRBdA==');
+final $typed_data.Uint8List checkForUpdatesRequestDescriptor =
+    $convert.base64Decode(
+        'ChZDaGVja0ZvclVwZGF0ZXNSZXF1ZXN0EiYKD2xhc3RfY2hlY2tlZF9hdBgBIAEoA1INbGFzdE'
+        'NoZWNrZWRBdA==');
 
 @$core.Deprecated('Use checkForUpdatesResponseDescriptor instead')
 const CheckForUpdatesResponse$json = {
@@ -274,9 +345,10 @@ const CheckForUpdatesResponse$json = {
 };
 
 /// Descriptor for `CheckForUpdatesResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List checkForUpdatesResponseDescriptor = $convert.base64Decode(
-    'ChdDaGVja0ZvclVwZGF0ZXNSZXNwb25zZRIfCgtoYXNfdXBkYXRlcxgBIAEoCFIKaGFzVXBkYX'
-    'RlcxIpChBzZXJ2ZXJfdGltZXN0YW1wGAIgASgDUg9zZXJ2ZXJUaW1lc3RhbXA=');
+final $typed_data.Uint8List checkForUpdatesResponseDescriptor =
+    $convert.base64Decode(
+        'ChdDaGVja0ZvclVwZGF0ZXNSZXNwb25zZRIfCgtoYXNfdXBkYXRlcxgBIAEoCFIKaGFzVXBkYX'
+        'RlcxIpChBzZXJ2ZXJfdGltZXN0YW1wGAIgASgDUg9zZXJ2ZXJUaW1lc3RhbXA=');
 
 @$core.Deprecated('Use streamArticleUpdatesRequestDescriptor instead')
 const StreamArticleUpdatesRequest$json = {
@@ -284,39 +356,77 @@ const StreamArticleUpdatesRequest$json = {
 };
 
 /// Descriptor for `StreamArticleUpdatesRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List streamArticleUpdatesRequestDescriptor = $convert.base64Decode(
-    'ChtTdHJlYW1BcnRpY2xlVXBkYXRlc1JlcXVlc3Q=');
+final $typed_data.Uint8List streamArticleUpdatesRequestDescriptor =
+    $convert.base64Decode('ChtTdHJlYW1BcnRpY2xlVXBkYXRlc1JlcXVlc3Q=');
 
 @$core.Deprecated('Use streamArticleUpdatesResponseDescriptor instead')
 const StreamArticleUpdatesResponse$json = {
   '1': 'StreamArticleUpdatesResponse',
   '2': [
-    {'1': 'article', '3': 1, '4': 1, '5': 11, '6': '.articles.v1.ArticlePreview', '10': 'article'},
+    {
+      '1': 'article',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.articles.v1.ArticlePreview',
+      '10': 'article'
+    },
     {'1': 'event_type', '3': 2, '4': 1, '5': 9, '10': 'eventType'},
   ],
 };
 
 /// Descriptor for `StreamArticleUpdatesResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List streamArticleUpdatesResponseDescriptor = $convert.base64Decode(
-    'ChxTdHJlYW1BcnRpY2xlVXBkYXRlc1Jlc3BvbnNlEjUKB2FydGljbGUYASABKAsyGy5hcnRpY2'
-    'xlcy52MS5BcnRpY2xlUHJldmlld1IHYXJ0aWNsZRIdCgpldmVudF90eXBlGAIgASgJUglldmVu'
-    'dFR5cGU=');
+final $typed_data.Uint8List streamArticleUpdatesResponseDescriptor =
+    $convert.base64Decode(
+        'ChxTdHJlYW1BcnRpY2xlVXBkYXRlc1Jlc3BvbnNlEjUKB2FydGljbGUYASABKAsyGy5hcnRpY2'
+        'xlcy52MS5BcnRpY2xlUHJldmlld1IHYXJ0aWNsZRIdCgpldmVudF90eXBlGAIgASgJUglldmVu'
+        'dFR5cGU=');
 
 const $core.Map<$core.String, $core.dynamic> ArticlesServiceBase$json = {
   '1': 'ArticlesService',
   '2': [
-    {'1': 'ParseArticle', '2': '.articles.v1.ParseArticleRequest', '3': '.articles.v1.ParseArticleResponse'},
-    {'1': 'GetArticles', '2': '.articles.v1.GetArticlesRequest', '3': '.articles.v1.GetArticlesResponse'},
-    {'1': 'GetArticle', '2': '.articles.v1.GetArticleRequest', '3': '.articles.v1.GetArticleResponse'},
-    {'1': 'DeleteArticle', '2': '.articles.v1.DeleteArticleRequest', '3': '.articles.v1.DeleteArticleResponse'},
-    {'1': 'CheckForUpdates', '2': '.articles.v1.CheckForUpdatesRequest', '3': '.articles.v1.CheckForUpdatesResponse'},
-    {'1': 'SaveArticleProgress', '2': '.articles.v1.SaveArticleProgressRequest', '3': '.articles.v1.SaveArticleProgressResponse'},
-    {'1': 'StreamArticleUpdates', '2': '.articles.v1.StreamArticleUpdatesRequest', '3': '.articles.v1.StreamArticleUpdatesResponse', '6': true},
+    {
+      '1': 'ParseArticle',
+      '2': '.articles.v1.ParseArticleRequest',
+      '3': '.articles.v1.ParseArticleResponse'
+    },
+    {
+      '1': 'GetArticles',
+      '2': '.articles.v1.GetArticlesRequest',
+      '3': '.articles.v1.GetArticlesResponse'
+    },
+    {
+      '1': 'GetArticle',
+      '2': '.articles.v1.GetArticleRequest',
+      '3': '.articles.v1.GetArticleResponse'
+    },
+    {
+      '1': 'DeleteArticle',
+      '2': '.articles.v1.DeleteArticleRequest',
+      '3': '.articles.v1.DeleteArticleResponse'
+    },
+    {
+      '1': 'CheckForUpdates',
+      '2': '.articles.v1.CheckForUpdatesRequest',
+      '3': '.articles.v1.CheckForUpdatesResponse'
+    },
+    {
+      '1': 'SaveArticleProgress',
+      '2': '.articles.v1.SaveArticleProgressRequest',
+      '3': '.articles.v1.SaveArticleProgressResponse'
+    },
+    {
+      '1': 'StreamArticleUpdates',
+      '2': '.articles.v1.StreamArticleUpdatesRequest',
+      '3': '.articles.v1.StreamArticleUpdatesResponse',
+      '6': true
+    },
   ],
 };
 
 @$core.Deprecated('Use articlesServiceDescriptor instead')
-const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> ArticlesServiceBase$messageJson = {
+const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>>
+    ArticlesServiceBase$messageJson = {
   '.articles.v1.ParseArticleRequest': ParseArticleRequest$json,
   '.articles.v1.ParseArticleResponse': ParseArticleResponse$json,
   '.articles.v1.GetArticlesRequest': GetArticlesRequest$json,
@@ -334,7 +444,8 @@ const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> ArticlesSe
   '.articles.v1.SaveArticleProgressRequest': SaveArticleProgressRequest$json,
   '.articles.v1.SaveArticleProgressResponse': SaveArticleProgressResponse$json,
   '.articles.v1.StreamArticleUpdatesRequest': StreamArticleUpdatesRequest$json,
-  '.articles.v1.StreamArticleUpdatesResponse': StreamArticleUpdatesResponse$json,
+  '.articles.v1.StreamArticleUpdatesResponse':
+      StreamArticleUpdatesResponse$json,
 };
 
 /// Descriptor for `ArticlesService`. Decode as a `google.protobuf.ServiceDescriptorProto`.
@@ -351,4 +462,3 @@ final $typed_data.Uint8List articlesServiceDescriptor = $convert.base64Decode(
     'Vzc1JlcXVlc3QaKC5hcnRpY2xlcy52MS5TYXZlQXJ0aWNsZVByb2dyZXNzUmVzcG9uc2USbQoU'
     'U3RyZWFtQXJ0aWNsZVVwZGF0ZXMSKC5hcnRpY2xlcy52MS5TdHJlYW1BcnRpY2xlVXBkYXRlc1'
     'JlcXVlc3QaKS5hcnRpY2xlcy52MS5TdHJlYW1BcnRpY2xlVXBkYXRlc1Jlc3BvbnNlMAE=');
-

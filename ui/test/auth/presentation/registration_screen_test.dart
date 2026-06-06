@@ -24,7 +24,9 @@ void main() {
   setUp(() {
     mockAuthClient = MockAuthClient();
     mockSessionStorage = MockSessionStorage();
-    when(mockAuthClient.getSession()).thenThrow(ConnectException(Code.unauthenticated, "Unauthenticated"));
+    when(
+      mockAuthClient.getSession(),
+    ).thenThrow(ConnectException(Code.unauthenticated, "Unauthenticated"));
     when(mockSessionStorage.getToken()).thenAnswer((_) async => null);
   });
 
@@ -68,7 +70,10 @@ void main() {
       expect(find.widgetWithText(TextField, "Last Name"), findsOneWidget);
       expect(find.widgetWithText(TextField, "Email"), findsOneWidget);
       expect(find.widgetWithText(TextField, "Password"), findsOneWidget);
-      expect(find.widgetWithText(TextField, "Confirm Password"), findsOneWidget);
+      expect(
+        find.widgetWithText(TextField, "Confirm Password"),
+        findsOneWidget,
+      );
     },
   );
 
@@ -77,68 +82,119 @@ void main() {
     "RegistrationScreen calls passwordRegistration on auth client with names, email, and password",
     (WidgetTester tester) async {
       when(
-        mockAuthClient.passwordRegistration("correct-email", "correct-password", "First", "Last"),
+        mockAuthClient.passwordRegistration(
+          "correct-email",
+          "correct-password",
+          "First",
+          "Last",
+        ),
       ).thenAnswer(
         (_) async => Session(
           sessionToken: "token",
-          user: User(id: "id", email: "correct-email", firstName: "First", lastName: "Last"),
+          user: User(
+            id: "id",
+            email: "correct-email",
+            firstName: "First",
+            lastName: "Last",
+          ),
         ),
       );
       await tester.pumpWidget(createRegistrationScreen());
       await tester.pumpAndSettle();
 
       // Enter first name, last name, email, and password
-      await tester.enterText(find.widgetWithText(TextField, "First Name"), "First");
-      await tester.enterText(find.widgetWithText(TextField, "Last Name"), "Last");
-      await tester.enterText(find.widgetWithText(TextField, "Email"), "correct-email");
-      await tester.enterText(find.widgetWithText(TextField, "Password"), "correct-password");
-      await tester.enterText(find.widgetWithText(TextField, "Confirm Password"), "correct-password");
+      await tester.enterText(
+        find.widgetWithText(TextField, "First Name"),
+        "First",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Last Name"),
+        "Last",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Email"),
+        "correct-email",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Password"),
+        "correct-password",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Confirm Password"),
+        "correct-password",
+      );
       await tester.tap(find.widgetWithText(ElevatedButton, "Sign Up"));
       await tester.pump(); // Start the registration process
 
       verify(
-        mockAuthClient.passwordRegistration("correct-email", "correct-password", "First", "Last"),
+        mockAuthClient.passwordRegistration(
+          "correct-email",
+          "correct-password",
+          "First",
+          "Last",
+        ),
       ).called(1);
     },
   );
 
   // Login screen should show loading indicator when we tap the login button and the login future is not completed yet, then show error message if login fails
-  testWidgets("RegistrationScreen shows loading indicator on registration and error message on failure", (
-    WidgetTester tester,
-  ) async {
-    when(mockAuthClient.passwordRegistration(any, any, any, any)).thenAnswer(
-      (_) => Future.delayed(const Duration(seconds: 5), () => throw AuthException("Registration failed")),
-    );
-    await tester.pumpWidget(createRegistrationScreen());
-    await tester.pumpAndSettle();
+  testWidgets(
+    "RegistrationScreen shows loading indicator on registration and error message on failure",
+    (WidgetTester tester) async {
+      when(mockAuthClient.passwordRegistration(any, any, any, any)).thenAnswer(
+        (_) => Future.delayed(
+          const Duration(seconds: 5),
+          () => throw AuthException("Registration failed"),
+        ),
+      );
+      await tester.pumpWidget(createRegistrationScreen());
+      await tester.pumpAndSettle();
 
-    // Enter first name, last name, email, and password
-    await tester.enterText(find.widgetWithText(TextField, "First Name"), "First");
-    await tester.enterText(find.widgetWithText(TextField, "Last Name"), "Last");
-    await tester.enterText(find.widgetWithText(TextField, "Email"), "sam@example.com");
-    await tester.enterText(find.widgetWithText(TextField, "Password"), "password123");
-    await tester.enterText(find.widgetWithText(TextField, "Confirm Password"), "password123");
-    await tester.tap(find.widgetWithText(ElevatedButton, "Sign Up"));
-    await tester.pump(); // Start the registration process
+      // Enter first name, last name, email, and password
+      await tester.enterText(
+        find.widgetWithText(TextField, "First Name"),
+        "First",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Last Name"),
+        "Last",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Email"),
+        "sam@example.com",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Password"),
+        "password123",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Confirm Password"),
+        "password123",
+      );
+      await tester.tap(find.widgetWithText(ElevatedButton, "Sign Up"));
+      await tester.pump(); // Start the registration process
 
-    // Should show loading indicator and nothing else while waiting for registration future to complete
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    expect(find.text("Registration failed"), findsNothing);
-    expect(find.byType(TextField), findsNothing);
+      // Should show loading indicator and nothing else while waiting for registration future to complete
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.text("Registration failed"), findsNothing);
+      expect(find.byType(TextField), findsNothing);
 
-    // After the future completes, it should show the error message and the form fields again
-    await tester.pumpAndSettle();
-    expect(find.byType(CircularProgressIndicator), findsNothing);
-    // The general error is rendered as a bullet line ("- Registration failed").
-    expect(find.textContaining("Registration failed"), findsOneWidget);
-    expect(find.byType(TextField), findsNWidgets(5));
+      // After the future completes, it should show the error message and the form fields again
+      await tester.pumpAndSettle();
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      // The general error is rendered as a bullet line ("- Registration failed").
+      expect(find.textContaining("Registration failed"), findsOneWidget);
+      expect(find.byType(TextField), findsNWidgets(5));
 
-    // Drain the pending auto-clear timer so it doesn't outlive the test.
-    await tester.pump(const Duration(seconds: 5));
-  });
+      // Drain the pending auto-clear timer so it doesn't outlive the test.
+      await tester.pump(const Duration(seconds: 5));
+    },
+  );
 
   // Check We display field validation errors completely and correctly
-  testWidgets("RegistrationScreen shows field validation errors correctly", (WidgetTester tester) async {
+  testWidgets("RegistrationScreen shows field validation errors correctly", (
+    WidgetTester tester,
+  ) async {
     // AuthClient translates a BadRequest ConnectException into a ValidationException
     // before the provider sees it, so the mocked client throws the translated type.
     when(mockAuthClient.passwordRegistration(any, any, any, any)).thenThrow(
@@ -157,16 +213,29 @@ void main() {
     await tester.pumpAndSettle();
 
     // Enter first name, last name, email, and password
-    await tester.enterText(find.widgetWithText(TextField, "First Name"), "First");
+    await tester.enterText(
+      find.widgetWithText(TextField, "First Name"),
+      "First",
+    );
     await tester.enterText(find.widgetWithText(TextField, "Last Name"), "Last");
-    await tester.enterText(find.widgetWithText(TextField, "Email"), "invalid-email");
+    await tester.enterText(
+      find.widgetWithText(TextField, "Email"),
+      "invalid-email",
+    );
     // Must satisfy client-side validation (>= 8 chars, matching confirmation)
     // so the request reaches the server and we exercise the server-side errors.
-    await tester.enterText(find.widgetWithText(TextField, "Password"), "password123");
-    await tester.enterText(find.widgetWithText(TextField, "Confirm Password"), "password123");
+    await tester.enterText(
+      find.widgetWithText(TextField, "Password"),
+      "password123",
+    );
+    await tester.enterText(
+      find.widgetWithText(TextField, "Confirm Password"),
+      "password123",
+    );
     await tester.tap(find.widgetWithText(ElevatedButton, "Sign Up"));
     await tester.pump(); // Start the registration process
-    await tester.pumpAndSettle(); // Wait for the registration process to complete
+    await tester
+        .pumpAndSettle(); // Wait for the registration process to complete
 
     // Should show field validation errors
     expect(find.textContaining("general issue 1"), findsOneWidget);
@@ -179,35 +248,62 @@ void main() {
   });
 
   // Successful registration
-  testWidgets("RegistrationScreen successful registration saves session and updates auth state", (
-    WidgetTester tester,
-  ) async {
-    when(
-      mockAuthClient.passwordRegistration("correct-email", "correct-password", "First", "Last"),
-    ).thenAnswer(
-      (_) async => Session(
-        sessionToken: "token",
-        user: User(id: "id", email: "correct-email", firstName: "First", lastName: "Last"),
-      ),
-    );
-    await tester.pumpWidget(createRegistrationScreen());
-    await tester.pumpAndSettle();
+  testWidgets(
+    "RegistrationScreen successful registration saves session and updates auth state",
+    (WidgetTester tester) async {
+      when(
+        mockAuthClient.passwordRegistration(
+          "correct-email",
+          "correct-password",
+          "First",
+          "Last",
+        ),
+      ).thenAnswer(
+        (_) async => Session(
+          sessionToken: "token",
+          user: User(
+            id: "id",
+            email: "correct-email",
+            firstName: "First",
+            lastName: "Last",
+          ),
+        ),
+      );
+      await tester.pumpWidget(createRegistrationScreen());
+      await tester.pumpAndSettle();
 
-    // Enter first name, last name, email, and password
-    await tester.enterText(find.widgetWithText(TextField, "First Name"), "First");
-    await tester.enterText(find.widgetWithText(TextField, "Last Name"), "Last");
-    await tester.enterText(find.widgetWithText(TextField, "Email"), "correct-email");
-    await tester.enterText(find.widgetWithText(TextField, "Password"), "correct-password");
-    await tester.enterText(find.widgetWithText(TextField, "Confirm Password"), "correct-password");
-    await tester.tap(find.widgetWithText(ElevatedButton, "Sign Up"));
-    await tester.pump(); // Start the registration process
-    await tester.pumpAndSettle(); // Wait for the registration process to complete
+      // Enter first name, last name, email, and password
+      await tester.enterText(
+        find.widgetWithText(TextField, "First Name"),
+        "First",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Last Name"),
+        "Last",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Email"),
+        "correct-email",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Password"),
+        "correct-password",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Confirm Password"),
+        "correct-password",
+      );
+      await tester.tap(find.widgetWithText(ElevatedButton, "Sign Up"));
+      await tester.pump(); // Start the registration process
+      await tester
+          .pumpAndSettle(); // Wait for the registration process to complete
 
-    // Check auth state is updated to AuthAuthenticated
-    final authState = container.read(authProvider);
-    expect(authState, isA<AuthAuthenticated>());
-    final authStateData = authState as AuthAuthenticated;
-    expect(authStateData.sessionToken, "token");
-    expect(authStateData.user.email, "correct-email");
-  });
+      // Check auth state is updated to AuthAuthenticated
+      final authState = container.read(authProvider);
+      expect(authState, isA<AuthAuthenticated>());
+      final authStateData = authState as AuthAuthenticated;
+      expect(authStateData.sessionToken, "token");
+      expect(authStateData.user.email, "correct-email");
+    },
+  );
 }

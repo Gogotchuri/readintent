@@ -7,7 +7,7 @@ import "package:connectrpc/connect.dart" as connect;
 import "articles_service.pb.dart" as articlesv1articles_service;
 import "articles_service.connect.spec.dart" as specs;
 
-extension type ArticlesServiceClient (connect.Transport _transport) {
+extension type ArticlesServiceClient(connect.Transport _transport) {
   Future<articlesv1articles_service.ParseArticleResponse> parseArticle(
     articlesv1articles_service.ParseArticleRequest input, {
     connect.Headers? headers,
@@ -93,7 +93,8 @@ extension type ArticlesServiceClient (connect.Transport _transport) {
     );
   }
 
-  Future<articlesv1articles_service.SaveArticleProgressResponse> saveArticleProgress(
+  Future<articlesv1articles_service.SaveArticleProgressResponse>
+  saveArticleProgress(
     articlesv1articles_service.SaveArticleProgressRequest input, {
     connect.Headers? headers,
     connect.AbortSignal? signal,
@@ -113,7 +114,8 @@ extension type ArticlesServiceClient (connect.Transport _transport) {
   /// StreamArticleUpdates pushes the full updated ArticlePreview whenever an
   /// article's status changes for the authenticated user. Periodic heartbeat
   /// events keep the connection alive through idle proxy timeouts.
-  Stream<articlesv1articles_service.StreamArticleUpdatesResponse> streamArticleUpdates(
+  Stream<articlesv1articles_service.StreamArticleUpdatesResponse>
+  streamArticleUpdates(
     articlesv1articles_service.StreamArticleUpdatesRequest input, {
     connect.Headers? headers,
     connect.AbortSignal? signal,

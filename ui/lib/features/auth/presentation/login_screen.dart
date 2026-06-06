@@ -27,7 +27,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _submit() {
     if (_formKey.currentState!.validate()) {
-      ref.read(authProvider.notifier).passwordLogin(_emailController.text.trim(), _passwordController.text);
+      ref
+          .read(authProvider.notifier)
+          .passwordLogin(
+            _emailController.text.trim(),
+            _passwordController.text,
+          );
     }
   }
 
@@ -76,7 +81,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             border: const OutlineInputBorder(),
             errorText: fieldError("password"),
             suffixIcon: IconButton(
-              icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+              icon: Icon(
+                _obscurePassword ? Icons.visibility_off : Icons.visibility,
+              ),
               onPressed: () {
                 setState(() {
                   _obscurePassword = !_obscurePassword;

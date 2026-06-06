@@ -2,7 +2,9 @@ import "dart:convert";
 import "package:riverpod/riverpod.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
-final playerPersistenceProvider = Provider<PlayerPersistence>((ref) => PlayerPersistence());
+final playerPersistenceProvider = Provider<PlayerPersistence>(
+  (ref) => PlayerPersistence(),
+);
 
 class PlayerPersistence {
   static const _key = "last_played_article";

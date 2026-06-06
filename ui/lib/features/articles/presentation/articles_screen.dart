@@ -5,7 +5,8 @@ import "package:go_router/go_router.dart";
 import "package:readintent_flutter/features/articles/presentation/add_article_dialog.dart";
 import "package:readintent_flutter/features/articles/providers/articles_provider.dart";
 import "package:readintent_flutter/features/settings/presentation/font_size_button.dart";
-import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
+import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
+    as articles_pb;
 
 class ArticlesScreen extends ConsumerStatefulWidget {
   const ArticlesScreen({super.key});
@@ -31,7 +32,8 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
 
   void _onScroll() {
     // Detect scroll near the bottom and load more if needed
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       ref.read(articlesProvider.notifier).loadMore();
     }
   }
@@ -45,7 +47,10 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
         actions: const [FontSizeButton()],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => showDialog(context: context, builder: (_) => const AddArticleDialog()),
+        onPressed: () => showDialog(
+          context: context,
+          builder: (_) => const AddArticleDialog(),
+        ),
         child: const Icon(Icons.add),
       ),
       body: articlesAsync.when(
@@ -69,16 +74,24 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.article_outlined, size: 64, color: Colors.grey[400]),
+                  Icon(
+                    Icons.article_outlined,
+                    size: 64,
+                    color: Colors.grey[400],
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     "No articles yet",
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     "Tap + to add your first article",
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
                   ),
                 ],
               ),
@@ -150,17 +163,25 @@ class _ArticleTile extends StatelessWidget {
                   child: Text(
                     article.author,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.grey[600]),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelSmall?.copyWith(color: Colors.grey[600]),
                   ),
                 ),
                 const SizedBox(width: 12),
               ],
               if (article.date.isNotEmpty) ...[
-                Icon(Icons.calendar_today_outlined, size: 14, color: Colors.grey[600]),
+                Icon(
+                  Icons.calendar_today_outlined,
+                  size: 14,
+                  color: Colors.grey[600],
+                ),
                 const SizedBox(width: 4),
                 Text(
                   article.date,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.grey[600]),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelSmall?.copyWith(color: Colors.grey[600]),
                 ),
               ],
             ],
@@ -173,7 +194,9 @@ class _ArticleTile extends StatelessWidget {
                 const SizedBox(width: 4),
                 Text(
                   "Processing failed",
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.red[400]),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelSmall?.copyWith(color: Colors.red[400]),
                 ),
               ],
             ),
@@ -193,7 +216,10 @@ class _ArticleTile extends StatelessWidget {
                   width: 80,
                   height: 80,
                   color: Colors.grey[200],
-                  child: Icon(Icons.broken_image_outlined, color: Colors.grey[400]),
+                  child: Icon(
+                    Icons.broken_image_outlined,
+                    color: Colors.grey[400],
+                  ),
                 ),
               ),
             )
@@ -211,14 +237,18 @@ class _ProcessingArticleTile extends StatefulWidget {
 }
 
 // Used to have animated state displaying when article isn't parsed yet
-class _ProcessingArticleTileState extends State<_ProcessingArticleTile> with SingleTickerProviderStateMixin {
+class _ProcessingArticleTileState extends State<_ProcessingArticleTile>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500))..repeat();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat();
     _animation = Tween<double>(
       begin: 0.3,
       end: 0.7,
@@ -265,14 +295,17 @@ class _ProcessingArticleTileState extends State<_ProcessingArticleTile> with Sin
                     widget.article.url,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(color: Colors.grey[500], fontStyle: FontStyle.italic),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[500],
+                      fontStyle: FontStyle.italic,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     "Processing...",
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.orange[400]),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelSmall?.copyWith(color: Colors.orange[400]),
                   ),
                 ],
               ),

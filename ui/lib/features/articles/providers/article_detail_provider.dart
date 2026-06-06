@@ -1,5 +1,6 @@
 import "package:readintent_flutter/features/articles/repository/article_repository.dart";
-import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
+import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
+    as articles_pb;
 import "package:riverpod_annotation/riverpod_annotation.dart";
 
 part "article_detail_provider.g.dart";

@@ -5,7 +5,11 @@ class PhonemeChunk {
   final List<int> tokenIds;
   final List<TokenMeta> tokenMeta;
 
-  const PhonemeChunk({required this.graphemes, required this.tokenIds, required this.tokenMeta});
+  const PhonemeChunk({
+    required this.graphemes,
+    required this.tokenIds,
+    required this.tokenMeta,
+  });
 }
 
 class TokenMeta {
@@ -13,7 +17,11 @@ class TokenMeta {
   final int phonemeLen;
   final bool hasWhitespace;
 
-  const TokenMeta({required this.text, required this.phonemeLen, required this.hasWhitespace});
+  const TokenMeta({
+    required this.text,
+    required this.phonemeLen,
+    required this.hasWhitespace,
+  });
 }
 
 class WordTimestamp {
@@ -21,10 +29,15 @@ class WordTimestamp {
   final double start;
   final double end;
 
-  const WordTimestamp({required this.word, required this.start, required this.end});
+  const WordTimestamp({
+    required this.word,
+    required this.start,
+    required this.end,
+  });
 
   @override
-  String toString() => '"$word" ${start.toStringAsFixed(3)}s - ${end.toStringAsFixed(3)}s';
+  String toString() =>
+      '"$word" ${start.toStringAsFixed(3)}s - ${end.toStringAsFixed(3)}s';
 }
 
 class SentenceTimestamp {
@@ -50,5 +63,9 @@ class KokoroResult {
   final List<WordTimestamp> timestamps;
   final String graphemes;
 
-  const KokoroResult({required this.audio, required this.timestamps, required this.graphemes});
+  const KokoroResult({
+    required this.audio,
+    required this.timestamps,
+    required this.graphemes,
+  });
 }

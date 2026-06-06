@@ -4,12 +4,17 @@ import "package:fake_async/fake_async.dart";
 import "package:fixnum/fixnum.dart";
 import "package:flutter_test/flutter_test.dart";
 import "package:readintent_flutter/features/articles/providers/article_updates_channel.dart";
-import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
+import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
+    as articles_pb;
 
 articles_pb.StreamArticleUpdatesResponse _updated({int id = 1}) {
   return articles_pb.StreamArticleUpdatesResponse(
     eventType: "updated",
-    article: articles_pb.ArticlePreview(id: Int64(id), title: "Article $id", status: "ready"),
+    article: articles_pb.ArticlePreview(
+      id: Int64(id),
+      title: "Article $id",
+      status: "ready",
+    ),
   );
 }
 
@@ -20,7 +25,8 @@ articles_pb.StreamArticleUpdatesResponse _heartbeat() {
 /// Hands out a fresh single-subscription controller per connect() call so the
 /// test can drive each connection attempt independently.
 class _FakeConnect {
-  final List<StreamController<articles_pb.StreamArticleUpdatesResponse>> controllers = [];
+  final List<StreamController<articles_pb.StreamArticleUpdatesResponse>>
+  controllers = [];
 
   Stream<articles_pb.StreamArticleUpdatesResponse> call() {
     final c = StreamController<articles_pb.StreamArticleUpdatesResponse>();
@@ -28,7 +34,8 @@ class _FakeConnect {
     return c.stream;
   }
 
-  StreamController<articles_pb.StreamArticleUpdatesResponse> get last => controllers.last;
+  StreamController<articles_pb.StreamArticleUpdatesResponse> get last =>
+      controllers.last;
   int get attempts => controllers.length;
 }
 
@@ -117,7 +124,9 @@ void main() {
       // Attempt 2 fails -> next backoff is 2s.
       connect.last.addError(Exception("boom"));
       async.flushMicrotasks();
-      async.elapse(const Duration(seconds: 2) - const Duration(milliseconds: 1));
+      async.elapse(
+        const Duration(seconds: 2) - const Duration(milliseconds: 1),
+      );
       expect(connect.attempts, 2);
       async.elapse(const Duration(milliseconds: 1));
       expect(connect.attempts, 3);

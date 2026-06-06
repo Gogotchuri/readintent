@@ -108,7 +108,9 @@ class ArticleRepository {
 
   /// Caches a single preview pushed over the stream, preserving its existing
   /// sortOrder if the row already exists (new articles sort to the top).
-  Future<void> upsertPreviewFromUpdate(articles_pb.ArticlePreview preview) async {
+  Future<void> upsertPreviewFromUpdate(
+    articles_pb.ArticlePreview preview,
+  ) async {
     final existing = await _db.getPreview(preview.id.toInt());
     final sortOrder = existing?.sortOrder ?? 0;
     final now = DateTime.now().millisecondsSinceEpoch;
@@ -180,8 +182,13 @@ class ArticleRepository {
         phonemizerBlob = Uint8List.fromList(container.writeToBuffer());
 
         // Pre-compute sentence-annotated HTML for highlighting during TTS playback
-        final sentenceTexts = buildSentenceTexts(protoToChunks(article.phonemizerData));
-        processedHtml = injectSentenceSpans(article.extractedHtml, sentenceTexts);
+        final sentenceTexts = buildSentenceTexts(
+          protoToChunks(article.phonemizerData),
+        );
+        processedHtml = injectSentenceSpans(
+          article.extractedHtml,
+          sentenceTexts,
+        );
       }
 
       await _db.upsertDetail(
@@ -230,7 +237,9 @@ class ArticleRepository {
   }) {
     final intId = int.tryParse(articleId);
     if (intId != null) {
-      _db.updateProgress(intId, playerPositionMs, scrollPosition).catchError((_) {});
+      _db
+          .updateProgress(intId, playerPositionMs, scrollPosition)
+          .catchError((_) {});
     }
     if (!_isOnline) return;
     _remote
@@ -391,7 +400,9 @@ articles_pb.Article detailRowToProto(
   }
 
   // Use processedHtml (with sentence spans) if available, fall back to raw
-  final html = detail.processedHtml.isNotEmpty ? detail.processedHtml : detail.extractedHtml;
+  final html = detail.processedHtml.isNotEmpty
+      ? detail.processedHtml
+      : detail.extractedHtml;
 
   return articles_pb.Article(
     id: Int64(preview.id),

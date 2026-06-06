@@ -24,7 +24,9 @@ abstract class AudioHandlerInterface {
 // This is a simple wrapper around just_audio's AudioPlayer to integrate with audio_service
 // It exposes methods to set the audio source and control playback, and broadcasts state changes to audio_service
 // Allows for background audio playback and integration with system media controls
-class AppAudioHandler extends BaseAudioHandler with SeekHandler implements AudioHandlerInterface {
+class AppAudioHandler extends BaseAudioHandler
+    with SeekHandler
+    implements AudioHandlerInterface {
   final AudioPlayer _player = AudioPlayer();
 
   AppAudioHandler() {
@@ -70,25 +72,27 @@ class AppAudioHandler extends BaseAudioHandler with SeekHandler implements Audio
 
   void _broadcastState() {
     final playing = _player.playing;
-    playbackState.add(playbackState.value.copyWith(
-      controls: [
-        MediaControl.rewind,
-        if (playing) MediaControl.pause else MediaControl.play,
-        MediaControl.fastForward,
-        MediaControl.stop,
-      ],
-      androidCompactActionIndices: const [0, 1, 2],
-      systemActions: const {
-        MediaAction.seek,
-        MediaAction.seekForward,
-        MediaAction.seekBackward,
-      },
-      processingState: _mapProcessingState(_player.processingState),
-      playing: playing,
-      updatePosition: _player.position,
-      bufferedPosition: _player.bufferedPosition,
-      speed: _player.speed,
-    ));
+    playbackState.add(
+      playbackState.value.copyWith(
+        controls: [
+          MediaControl.rewind,
+          if (playing) MediaControl.pause else MediaControl.play,
+          MediaControl.fastForward,
+          MediaControl.stop,
+        ],
+        androidCompactActionIndices: const [0, 1, 2],
+        systemActions: const {
+          MediaAction.seek,
+          MediaAction.seekForward,
+          MediaAction.seekBackward,
+        },
+        processingState: _mapProcessingState(_player.processingState),
+        playing: playing,
+        updatePosition: _player.position,
+        bufferedPosition: _player.bufferedPosition,
+        speed: _player.speed,
+      ),
+    );
   }
 
   static AudioProcessingState _mapProcessingState(ProcessingState state) {

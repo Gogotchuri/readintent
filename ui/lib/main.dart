@@ -22,10 +22,12 @@ Future<void> main() async {
     ),
   );
 
-  runApp(ProviderScope(
-    overrides: [audioHandlerProvider.overrideWithValue(audioHandler)],
-    child: const MyApp(),
-  ));
+  runApp(
+    ProviderScope(
+      overrides: [audioHandlerProvider.overrideWithValue(audioHandler)],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends ConsumerWidget {
@@ -44,7 +46,9 @@ class MyApp extends ConsumerWidget {
       theme: ThemeData(primarySwatch: Colors.blue),
       // Apply the persisted global font scale to all text in the app.
       builder: (context, child) => MediaQuery(
-        data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)),
+        data: MediaQuery.of(
+          context,
+        ).copyWith(textScaler: TextScaler.linear(textScale)),
         child: child!,
       ),
     );

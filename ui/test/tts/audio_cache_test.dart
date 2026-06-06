@@ -6,7 +6,9 @@ import "package:path_provider_platform_interface/path_provider_platform_interfac
 import "package:plugin_platform_interface/plugin_platform_interface.dart";
 import "package:readintent_flutter/features/tts/audio_cache.dart";
 
-class FakePathProvider extends Fake with MockPlatformInterfaceMixin implements PathProviderPlatform {
+class FakePathProvider extends Fake
+    with MockPlatformInterfaceMixin
+    implements PathProviderPlatform {
   final Directory tempDir;
   FakePathProvider(this.tempDir);
 
@@ -30,26 +32,66 @@ void main() {
 
   group("AudioCache", () {
     test("cacheKey is deterministic", () {
-      final key1 = cache.cacheKey(articleId: "1", articleText: "Hello world", voice: "af", speed: 1.0);
-      final key2 = cache.cacheKey(articleId: "1", articleText: "Hello world", voice: "af", speed: 1.0);
+      final key1 = cache.cacheKey(
+        articleId: "1",
+        articleText: "Hello world",
+        voice: "af",
+        speed: 1.0,
+      );
+      final key2 = cache.cacheKey(
+        articleId: "1",
+        articleText: "Hello world",
+        voice: "af",
+        speed: 1.0,
+      );
       expect(key1, key2);
     });
 
     test("cacheKey differs for different text", () {
-      final key1 = cache.cacheKey(articleId: "1", articleText: "Hello", voice: "af", speed: 1.0);
-      final key2 = cache.cacheKey(articleId: "1", articleText: "Hello!", voice: "af", speed: 1.0);
+      final key1 = cache.cacheKey(
+        articleId: "1",
+        articleText: "Hello",
+        voice: "af",
+        speed: 1.0,
+      );
+      final key2 = cache.cacheKey(
+        articleId: "1",
+        articleText: "Hello!",
+        voice: "af",
+        speed: 1.0,
+      );
       expect(key1, isNot(key2));
     });
 
     test("cacheKey differs for different voice", () {
-      final key1 = cache.cacheKey(articleId: "1", articleText: "Hello", voice: "af", speed: 1.0);
-      final key2 = cache.cacheKey(articleId: "1", articleText: "Hello", voice: "bm", speed: 1.0);
+      final key1 = cache.cacheKey(
+        articleId: "1",
+        articleText: "Hello",
+        voice: "af",
+        speed: 1.0,
+      );
+      final key2 = cache.cacheKey(
+        articleId: "1",
+        articleText: "Hello",
+        voice: "bm",
+        speed: 1.0,
+      );
       expect(key1, isNot(key2));
     });
 
     test("cacheKey differs for different speed", () {
-      final key1 = cache.cacheKey(articleId: "1", articleText: "Hello", voice: "af", speed: 1.0);
-      final key2 = cache.cacheKey(articleId: "1", articleText: "Hello", voice: "af", speed: 1.5);
+      final key1 = cache.cacheKey(
+        articleId: "1",
+        articleText: "Hello",
+        voice: "af",
+        speed: 1.0,
+      );
+      final key2 = cache.cacheKey(
+        articleId: "1",
+        articleText: "Hello",
+        voice: "af",
+        speed: 1.5,
+      );
       expect(key1, isNot(key2));
     });
 
@@ -60,7 +102,12 @@ void main() {
 
     test("save and load roundtrip", () async {
       final data = Uint8List.fromList([1, 2, 3, 4]);
-      final key = cache.cacheKey(articleId: "1", articleText: "Test article", voice: "af", speed: 1.0);
+      final key = cache.cacheKey(
+        articleId: "1",
+        articleText: "Test article",
+        voice: "af",
+        speed: 1.0,
+      );
 
       await cache.save(key, data);
       final loaded = await cache.load(key);
@@ -70,7 +117,12 @@ void main() {
     });
 
     test("incremental save overwrites previous snapshot", () async {
-      final key = cache.cacheKey(articleId: "1", articleText: "Test article", voice: "af", speed: 1.0);
+      final key = cache.cacheKey(
+        articleId: "1",
+        articleText: "Test article",
+        voice: "af",
+        speed: 1.0,
+      );
 
       await cache.save(key, Uint8List.fromList([1, 2, 3]));
       await cache.save(key, Uint8List.fromList([1, 2, 3, 4, 5]));
@@ -80,7 +132,12 @@ void main() {
     });
 
     test("pathForKey returns consistent path", () async {
-      final key = cache.cacheKey(articleId: "1", articleText: "Test article", voice: "af", speed: 1.0);
+      final key = cache.cacheKey(
+        articleId: "1",
+        articleText: "Test article",
+        voice: "af",
+        speed: 1.0,
+      );
       final path1 = await cache.pathForKey(key);
       final path2 = await cache.pathForKey(key);
       expect(path1, path2);

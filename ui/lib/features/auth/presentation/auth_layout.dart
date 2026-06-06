@@ -60,7 +60,14 @@ class AuthLayout extends ConsumerWidget {
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: generalErrors.map((e) => Text("- $e", style: TextStyle(color: Colors.red[800]))).toList(),
+                        children: generalErrors
+                            .map(
+                              (e) => Text(
+                                "- $e",
+                                style: TextStyle(color: Colors.red[800]),
+                              ),
+                            )
+                            .toList(),
                       ),
                     ),
                   Form(
@@ -89,7 +96,9 @@ class AuthLayout extends ConsumerWidget {
                         const SizedBox(height: 24),
                         ElevatedButton(
                           onPressed: onSubmit,
-                          style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
                           child: Text(submitLabel),
                         ),
                         // Divider with "OR"
@@ -98,8 +107,13 @@ class AuthLayout extends ConsumerWidget {
                           children: [
                             const Expanded(child: Divider()),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Text("OR", style: TextStyle(color: Colors.grey[500])),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              child: Text(
+                                "OR",
+                                style: TextStyle(color: Colors.grey[500]),
+                              ),
                             ),
                             const Expanded(child: Divider()),
                           ],
@@ -108,7 +122,10 @@ class AuthLayout extends ConsumerWidget {
                         // Social Auth
                         SocialAuthSection(),
                         const SizedBox(height: 16),
-                        if (switchSection != null) ...[const SizedBox(height: 12), switchSection!],
+                        if (switchSection != null) ...[
+                          const SizedBox(height: 12),
+                          switchSection!,
+                        ],
                       ],
                     ),
                   ),

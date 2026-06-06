@@ -79,14 +79,17 @@ class AudioCache {
   }
 
   /// Save word timestamps as JSON alongside the audio cache file.
-  Future<void> saveTimestamps(String key, List<WordTimestamp> timestamps) async {
+  Future<void> saveTimestamps(
+    String key,
+    List<WordTimestamp> timestamps,
+  ) async {
     final dir = await _getDir();
     final file = File("${dir.path}/$key.timestamps");
-    final json = jsonEncode(timestamps.map((t) => {
-      "word": t.word,
-      "start": t.start,
-      "end": t.end,
-    }).toList());
+    final json = jsonEncode(
+      timestamps
+          .map((t) => {"word": t.word, "start": t.start, "end": t.end})
+          .toList(),
+    );
     await file.writeAsString(json);
   }
 
@@ -97,11 +100,15 @@ class AudioCache {
     if (!await file.exists()) return null;
     try {
       final json = jsonDecode(await file.readAsString()) as List;
-      return json.map((e) => WordTimestamp(
-        word: e["word"] as String,
-        start: (e["start"] as num).toDouble(),
-        end: (e["end"] as num).toDouble(),
-      )).toList();
+      return json
+          .map(
+            (e) => WordTimestamp(
+              word: e["word"] as String,
+              start: (e["start"] as num).toDouble(),
+              end: (e["end"] as num).toDouble(),
+            ),
+          )
+          .toList();
     } catch (_) {
       return null;
     }

@@ -32,9 +32,11 @@ GoRouter appRouter(Ref ref) {
     refreshListenable: notifier,
     redirect: (BuildContext context, GoRouterState state) {
       final auth = notifier.value;
-      final onAuthPage = state.uri.path == "/login" || state.uri.path == "/register";
+      final onAuthPage =
+          state.uri.path == "/login" || state.uri.path == "/register";
       final onSplashPage = state.uri.path == "/";
-      final isUnauthenticated = auth is AuthUnauthenticated || auth is AuthError;
+      final isUnauthenticated =
+          auth is AuthUnauthenticated || auth is AuthError;
       final undeterminedAuthState = auth is AuthInitial || auth is AuthLoading;
       final isAuthenticated = auth is AuthAuthenticated;
 
@@ -64,15 +66,27 @@ GoRouter appRouter(Ref ref) {
       // Auth routes - outside the shell, no mini player
       GoRoute(path: "/", builder: (context, state) => const SplashScreen()),
       GoRoute(path: "/login", builder: (context, state) => const LoginScreen()),
-      GoRoute(path: "/register", builder: (context, state) => const RegistrationScreen()),
+      GoRoute(
+        path: "/register",
+        builder: (context, state) => const RegistrationScreen(),
+      ),
 
       // Authenticated routes - wrapped in PlayerShell for persistent mini player
       ShellRoute(
         builder: (context, state, child) => PlayerShell(child: child),
         routes: [
-          GoRoute(path: "/home", builder: (context, state) => const HomeScreen()),
-          GoRoute(path: "/pair-extension", builder: (context, state) => const DeviceCodeScreen()),
-          GoRoute(path: "/voice-settings", builder: (context, state) => const VoiceSettingsScreen()),
+          GoRoute(
+            path: "/home",
+            builder: (context, state) => const HomeScreen(),
+          ),
+          GoRoute(
+            path: "/pair-extension",
+            builder: (context, state) => const DeviceCodeScreen(),
+          ),
+          GoRoute(
+            path: "/voice-settings",
+            builder: (context, state) => const VoiceSettingsScreen(),
+          ),
           GoRoute(
             path: "/articles/:id",
             builder: (context, state) {

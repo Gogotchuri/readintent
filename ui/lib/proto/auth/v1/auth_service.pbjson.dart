@@ -19,8 +19,24 @@ const Identity$json = {
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
     {'1': 'email', '3': 2, '4': 1, '5': 9, '10': 'email'},
-    {'1': 'first_name', '3': 3, '4': 1, '5': 9, '9': 0, '10': 'firstName', '17': true},
-    {'1': 'last_name', '3': 4, '4': 1, '5': 9, '9': 1, '10': 'lastName', '17': true},
+    {
+      '1': 'first_name',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '9': 0,
+      '10': 'firstName',
+      '17': true
+    },
+    {
+      '1': 'last_name',
+      '3': 4,
+      '4': 1,
+      '5': 9,
+      '9': 1,
+      '10': 'lastName',
+      '17': true
+    },
   ],
   '8': [
     {'1': '_first_name'},
@@ -40,7 +56,14 @@ const Session$json = {
   '2': [
     {'1': 'session_token', '3': 1, '4': 1, '5': 9, '10': 'sessionToken'},
     {'1': 'expired_at_unix', '3': 2, '4': 1, '5': 3, '10': 'expiredAtUnix'},
-    {'1': 'identity', '3': 3, '4': 1, '5': 11, '6': '.auth.v1.Identity', '10': 'identity'},
+    {
+      '1': 'identity',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.auth.v1.Identity',
+      '10': 'identity'
+    },
   ],
 };
 
@@ -55,7 +78,13 @@ const EmailVerificationFlow$json = {
   '1': 'EmailVerificationFlow',
   '2': [
     {'1': 'flow_id', '3': 1, '4': 1, '5': 9, '10': 'flowId'},
-    {'1': 'verifiable_address', '3': 2, '4': 1, '5': 9, '10': 'verifiableAddress'},
+    {
+      '1': 'verifiable_address',
+      '3': 2,
+      '4': 1,
+      '5': 9,
+      '10': 'verifiableAddress'
+    },
   ],
 };
 
@@ -70,14 +99,21 @@ const GetSessionRequest$json = {
 };
 
 /// Descriptor for `GetSessionRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSessionRequestDescriptor = $convert.base64Decode(
-    'ChFHZXRTZXNzaW9uUmVxdWVzdA==');
+final $typed_data.Uint8List getSessionRequestDescriptor =
+    $convert.base64Decode('ChFHZXRTZXNzaW9uUmVxdWVzdA==');
 
 @$core.Deprecated('Use getSessionResponseDescriptor instead')
 const GetSessionResponse$json = {
   '1': 'GetSessionResponse',
   '2': [
-    {'1': 'session', '3': 1, '4': 1, '5': 11, '6': '.auth.v1.Session', '10': 'session'},
+    {
+      '1': 'session',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.auth.v1.Session',
+      '10': 'session'
+    },
   ],
 };
 
@@ -104,7 +140,14 @@ final $typed_data.Uint8List passwordLoginRequestDescriptor = $convert.base64Deco
 const PasswordLoginResponse$json = {
   '1': 'PasswordLoginResponse',
   '2': [
-    {'1': 'session', '3': 1, '4': 1, '5': 11, '6': '.auth.v1.Session', '10': 'session'},
+    {
+      '1': 'session',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.auth.v1.Session',
+      '10': 'session'
+    },
   ],
 };
 
@@ -119,8 +162,24 @@ const PasswordRegistrationRequest$json = {
   '2': [
     {'1': 'email', '3': 1, '4': 1, '5': 9, '10': 'email'},
     {'1': 'password', '3': 2, '4': 1, '5': 9, '10': 'password'},
-    {'1': 'first_name', '3': 3, '4': 1, '5': 9, '9': 0, '10': 'firstName', '17': true},
-    {'1': 'last_name', '3': 4, '4': 1, '5': 9, '9': 1, '10': 'lastName', '17': true},
+    {
+      '1': 'first_name',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '9': 0,
+      '10': 'firstName',
+      '17': true
+    },
+    {
+      '1': 'last_name',
+      '3': 4,
+      '4': 1,
+      '5': 9,
+      '9': 1,
+      '10': 'lastName',
+      '17': true
+    },
   ],
   '8': [
     {'1': '_first_name'},
@@ -139,8 +198,24 @@ final $typed_data.Uint8List passwordRegistrationRequestDescriptor = $convert.bas
 const PasswordRegistrationResponse$json = {
   '1': 'PasswordRegistrationResponse',
   '2': [
-    {'1': 'session', '3': 1, '4': 1, '5': 11, '6': '.auth.v1.Session', '10': 'session'},
-    {'1': 'verification_flow', '3': 2, '4': 1, '5': 11, '6': '.auth.v1.EmailVerificationFlow', '9': 0, '10': 'verificationFlow', '17': true},
+    {
+      '1': 'session',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.auth.v1.Session',
+      '10': 'session'
+    },
+    {
+      '1': 'verification_flow',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.auth.v1.EmailVerificationFlow',
+      '9': 0,
+      '10': 'verificationFlow',
+      '17': true
+    },
   ],
   '8': [
     {'1': '_verification_flow'},
@@ -160,8 +235,8 @@ const LogoutRequest$json = {
 };
 
 /// Descriptor for `LogoutRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List logoutRequestDescriptor = $convert.base64Decode(
-    'Cg1Mb2dvdXRSZXF1ZXN0');
+final $typed_data.Uint8List logoutRequestDescriptor =
+    $convert.base64Decode('Cg1Mb2dvdXRSZXF1ZXN0');
 
 @$core.Deprecated('Use logoutResponseDescriptor instead')
 const LogoutResponse$json = {
@@ -169,8 +244,8 @@ const LogoutResponse$json = {
 };
 
 /// Descriptor for `LogoutResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List logoutResponseDescriptor = $convert.base64Decode(
-    'Cg5Mb2dvdXRSZXNwb25zZQ==');
+final $typed_data.Uint8List logoutResponseDescriptor =
+    $convert.base64Decode('Cg5Mb2dvdXRSZXNwb25zZQ==');
 
 @$core.Deprecated('Use healthRequestDescriptor instead')
 const HealthRequest$json = {
@@ -178,8 +253,8 @@ const HealthRequest$json = {
 };
 
 /// Descriptor for `HealthRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List healthRequestDescriptor = $convert.base64Decode(
-    'Cg1IZWFsdGhSZXF1ZXN0');
+final $typed_data.Uint8List healthRequestDescriptor =
+    $convert.base64Decode('Cg1IZWFsdGhSZXF1ZXN0');
 
 @$core.Deprecated('Use healthResponseDescriptor instead')
 const HealthResponse$json = {
@@ -187,8 +262,8 @@ const HealthResponse$json = {
 };
 
 /// Descriptor for `HealthResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List healthResponseDescriptor = $convert.base64Decode(
-    'Cg5IZWFsdGhSZXNwb25zZQ==');
+final $typed_data.Uint8List healthResponseDescriptor =
+    $convert.base64Decode('Cg5IZWFsdGhSZXNwb25zZQ==');
 
 @$core.Deprecated('Use claimGrantCodeRequestDescriptor instead')
 const ClaimGrantCodeRequest$json = {
@@ -208,8 +283,8 @@ const ClaimGrantCodeResponse$json = {
 };
 
 /// Descriptor for `ClaimGrantCodeResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List claimGrantCodeResponseDescriptor = $convert.base64Decode(
-    'ChZDbGFpbUdyYW50Q29kZVJlc3BvbnNl');
+final $typed_data.Uint8List claimGrantCodeResponseDescriptor =
+    $convert.base64Decode('ChZDbGFpbUdyYW50Q29kZVJlc3BvbnNl');
 
 @$core.Deprecated('Use oIDCLoginRequestDescriptor instead')
 const OIDCLoginRequest$json = {
@@ -229,7 +304,14 @@ final $typed_data.Uint8List oIDCLoginRequestDescriptor = $convert.base64Decode(
 const OIDCLoginResponse$json = {
   '1': 'OIDCLoginResponse',
   '2': [
-    {'1': 'session', '3': 1, '4': 1, '5': 11, '6': '.auth.v1.Session', '10': 'session'},
+    {
+      '1': 'session',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.auth.v1.Session',
+      '10': 'session'
+    },
   ],
 };
 
@@ -241,18 +323,47 @@ final $typed_data.Uint8List oIDCLoginResponseDescriptor = $convert.base64Decode(
 const $core.Map<$core.String, $core.dynamic> AuthServiceBase$json = {
   '1': 'AuthService',
   '2': [
-    {'1': 'PasswordLogin', '2': '.auth.v1.PasswordLoginRequest', '3': '.auth.v1.PasswordLoginResponse'},
-    {'1': 'PasswordRegistration', '2': '.auth.v1.PasswordRegistrationRequest', '3': '.auth.v1.PasswordRegistrationResponse'},
-    {'1': 'Logout', '2': '.auth.v1.LogoutRequest', '3': '.auth.v1.LogoutResponse'},
-    {'1': 'GetSession', '2': '.auth.v1.GetSessionRequest', '3': '.auth.v1.GetSessionResponse'},
-    {'1': 'Health', '2': '.auth.v1.HealthRequest', '3': '.auth.v1.HealthResponse'},
-    {'1': 'ClaimGrantCode', '2': '.auth.v1.ClaimGrantCodeRequest', '3': '.auth.v1.ClaimGrantCodeResponse'},
-    {'1': 'OIDCLogin', '2': '.auth.v1.OIDCLoginRequest', '3': '.auth.v1.OIDCLoginResponse'},
+    {
+      '1': 'PasswordLogin',
+      '2': '.auth.v1.PasswordLoginRequest',
+      '3': '.auth.v1.PasswordLoginResponse'
+    },
+    {
+      '1': 'PasswordRegistration',
+      '2': '.auth.v1.PasswordRegistrationRequest',
+      '3': '.auth.v1.PasswordRegistrationResponse'
+    },
+    {
+      '1': 'Logout',
+      '2': '.auth.v1.LogoutRequest',
+      '3': '.auth.v1.LogoutResponse'
+    },
+    {
+      '1': 'GetSession',
+      '2': '.auth.v1.GetSessionRequest',
+      '3': '.auth.v1.GetSessionResponse'
+    },
+    {
+      '1': 'Health',
+      '2': '.auth.v1.HealthRequest',
+      '3': '.auth.v1.HealthResponse'
+    },
+    {
+      '1': 'ClaimGrantCode',
+      '2': '.auth.v1.ClaimGrantCodeRequest',
+      '3': '.auth.v1.ClaimGrantCodeResponse'
+    },
+    {
+      '1': 'OIDCLogin',
+      '2': '.auth.v1.OIDCLoginRequest',
+      '3': '.auth.v1.OIDCLoginResponse'
+    },
   ],
 };
 
 @$core.Deprecated('Use authServiceDescriptor instead')
-const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> AuthServiceBase$messageJson = {
+const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>>
+    AuthServiceBase$messageJson = {
   '.auth.v1.PasswordLoginRequest': PasswordLoginRequest$json,
   '.auth.v1.PasswordLoginResponse': PasswordLoginResponse$json,
   '.auth.v1.Session': Session$json,
@@ -284,4 +395,3 @@ final $typed_data.Uint8List authServiceDescriptor = $convert.base64Decode(
     'xhaW1HcmFudENvZGUSHi5hdXRoLnYxLkNsYWltR3JhbnRDb2RlUmVxdWVzdBofLmF1dGgudjEu'
     'Q2xhaW1HcmFudENvZGVSZXNwb25zZRJCCglPSURDTG9naW4SGS5hdXRoLnYxLk9JRENMb2dpbl'
     'JlcXVlc3QaGi5hdXRoLnYxLk9JRENMb2dpblJlc3BvbnNl');
-

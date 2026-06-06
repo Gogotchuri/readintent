@@ -16,7 +16,11 @@ class ArticlePlayerWidget extends ConsumerWidget {
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
       child: Container(
         decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
+          border: Border(
+            top: BorderSide(
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
+          ),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Column(
@@ -33,7 +37,10 @@ class ArticlePlayerWidget extends ConsumerWidget {
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
                   state.error!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                    fontSize: 12,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -44,9 +51,16 @@ class ArticlePlayerWidget extends ConsumerWidget {
     );
   }
 
-  Widget _buildTitleRow(BuildContext context, String title, ActivePlayer controller) {
-    final style = Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)
-        ?? const TextStyle(fontWeight: FontWeight.w500);
+  Widget _buildTitleRow(
+    BuildContext context,
+    String title,
+    ActivePlayer controller,
+  ) {
+    final style =
+        Theme.of(
+          context,
+        ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500) ??
+        const TextStyle(fontWeight: FontWeight.w500);
     final fontSize = style.fontSize ?? 14.0;
     final lineHeight = style.height ?? 1.2;
 
@@ -69,12 +83,18 @@ class ArticlePlayerWidget extends ConsumerWidget {
     );
   }
 
-  Widget _buildProgressSlider(BuildContext context, ActivePlayerState state, ActivePlayer controller) {
+  Widget _buildProgressSlider(
+    BuildContext context,
+    ActivePlayerState state,
+    ActivePlayer controller,
+  ) {
     final totalMs = (state.estimatedDuration ?? Duration.zero).inMilliseconds;
     final positionMs = state.position.inMilliseconds;
     final bufferedMs = state.bufferedDuration.inMilliseconds;
     final progress = totalMs > 0 ? (positionMs / totalMs).clamp(0.0, 1.0) : 0.0;
-    final bufferedProgress = totalMs > 0 ? (bufferedMs / totalMs).clamp(0.0, 1.0) : 0.0;
+    final bufferedProgress = totalMs > 0
+        ? (bufferedMs / totalMs).clamp(0.0, 1.0)
+        : 0.0;
 
     return Stack(
       alignment: Alignment.center,
@@ -82,7 +102,9 @@ class ArticlePlayerWidget extends ConsumerWidget {
         LinearProgressIndicator(
           value: bufferedProgress,
           backgroundColor: Theme.of(context).colorScheme.outlineVariant,
-          valueColor: AlwaysStoppedAnimation(Theme.of(context).colorScheme.outline),
+          valueColor: AlwaysStoppedAnimation(
+            Theme.of(context).colorScheme.outline,
+          ),
           minHeight: 3,
         ),
         SliderTheme(
@@ -97,7 +119,9 @@ class ArticlePlayerWidget extends ConsumerWidget {
           child: Slider(
             value: progress,
             onChanged: totalMs > 0
-                ? (v) => controller.seekTo(Duration(milliseconds: (v * totalMs).round()))
+                ? (v) => controller.seekTo(
+                    Duration(milliseconds: (v * totalMs).round()),
+                  )
                 : null,
           ),
         ),
@@ -109,13 +133,21 @@ class ArticlePlayerWidget extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(_formatDuration(state.position), style: Theme.of(context).textTheme.labelSmall),
+        Text(
+          _formatDuration(state.position),
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
         if (!state.ttsComplete && state.bufferedDuration > Duration.zero)
           Text(
             "Generating...",
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
-        Text(_formatEndTime(state), style: Theme.of(context).textTheme.labelSmall),
+        Text(
+          _formatEndTime(state),
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
       ],
     );
   }
@@ -132,7 +164,9 @@ class ArticlePlayerWidget extends ConsumerWidget {
         _buildSpeedButton(context, ref),
         const SizedBox(width: 8),
         IconButton(
-          onPressed: state.position > Duration.zero ? controller.jumpBackward : null,
+          onPressed: state.position > Duration.zero
+              ? controller.jumpBackward
+              : null,
           icon: const Icon(Icons.replay_10),
         ),
         const SizedBox(width: 8),
@@ -140,7 +174,9 @@ class ArticlePlayerWidget extends ConsumerWidget {
         const SizedBox(width: 8),
         IconButton(
           onPressed:
-              state.ttsComplete || state.position + const Duration(seconds: 15) <= state.bufferedDuration
+              state.ttsComplete ||
+                  state.position + const Duration(seconds: 15) <=
+                      state.bufferedDuration
               ? controller.jumpForward
               : null,
           icon: const Icon(Icons.forward_10),
@@ -154,7 +190,9 @@ class ArticlePlayerWidget extends ConsumerWidget {
   static const _speedOptions = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
 
   Widget _buildSpeedButton(BuildContext context, WidgetRef ref) {
-    final speed = ref.watch(activePlayerProvider.select((s) => s.playbackSpeed));
+    final speed = ref.watch(
+      activePlayerProvider.select((s) => s.playbackSpeed),
+    );
     final label = speed == speed.truncateToDouble()
         ? "${speed.toInt()}.0x"
         : "${speed}x";
@@ -184,15 +222,22 @@ class ArticlePlayerWidget extends ConsumerWidget {
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Text("Playback Speed", style: Theme.of(context).textTheme.titleMedium),
+              child: Text(
+                "Playback Speed",
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ),
             for (final speed in _speedOptions)
               ListTile(
                 title: Text("${speed}x"),
-                trailing: speed == currentSpeed ? const Icon(Icons.check) : null,
+                trailing: speed == currentSpeed
+                    ? const Icon(Icons.check)
+                    : null,
                 selected: speed == currentSpeed,
                 onTap: () {
-                  ref.read(activePlayerProvider.notifier).setPlaybackSpeed(speed);
+                  ref
+                      .read(activePlayerProvider.notifier)
+                      .setPlaybackSpeed(speed);
                   Navigator.pop(ctx);
                 },
               ),
@@ -204,7 +249,9 @@ class ArticlePlayerWidget extends ConsumerWidget {
   }
 
   Widget _buildSyncButton(WidgetRef ref) {
-    final syncEnabled = ref.watch(activePlayerProvider.select((s) => s.syncEnabled));
+    final syncEnabled = ref.watch(
+      activePlayerProvider.select((s) => s.syncEnabled),
+    );
     return IconButton(
       icon: Icon(syncEnabled ? Icons.sync : Icons.sync_disabled),
       color: syncEnabled ? null : Colors.grey,
@@ -217,14 +264,20 @@ class ArticlePlayerWidget extends ConsumerWidget {
     if (state.isLoading) {
       return const Padding(
         padding: EdgeInsets.all(12),
-        child: SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2.5)),
+        child: SizedBox(
+          width: 28,
+          height: 28,
+          child: CircularProgressIndicator(strokeWidth: 2.5),
+        ),
       );
     }
 
     return IconButton(
       iconSize: 40,
       onPressed: controller.togglePlayPause,
-      icon: Icon(state.isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled),
+      icon: Icon(
+        state.isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+      ),
     );
   }
 

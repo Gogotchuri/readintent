@@ -21,8 +21,10 @@ import "package:readintent_flutter/models/auth_state.dart";
 // --- FakeAudioHandler ---
 
 class FakeAudioHandler implements AudioHandlerInterface {
-  final StreamController<Duration> _positionController = StreamController<Duration>.broadcast();
-  final StreamController<PlayerState> _playerStateController = StreamController<PlayerState>.broadcast();
+  final StreamController<Duration> _positionController =
+      StreamController<Duration>.broadcast();
+  final StreamController<PlayerState> _playerStateController =
+      StreamController<PlayerState>.broadcast();
 
   bool _isPlaying = false;
   Duration _currentPosition = Duration.zero;
@@ -114,11 +116,20 @@ class FakeTTSPipeline implements TTSPipeline {
   FakeTTSPipeline(this._audioProducer);
 
   @override
-  Future<KokoroResult> runInference(PhonemeChunk chunk, VoiceStyle style) async {
+  Future<KokoroResult> runInference(
+    PhonemeChunk chunk,
+    VoiceStyle style,
+  ) async {
     final audio = _audioProducer(chunk);
     return KokoroResult(
       audio: audio,
-      timestamps: [WordTimestamp(word: chunk.graphemes, start: 0.0, end: audio.length / 24000.0)],
+      timestamps: [
+        WordTimestamp(
+          word: chunk.graphemes,
+          start: 0.0,
+          end: audio.length / 24000.0,
+        ),
+      ],
       graphemes: chunk.graphemes,
     );
   }
@@ -127,7 +138,9 @@ class FakeTTSPipeline implements TTSPipeline {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-PipelineFactory fakePipelineFactory(Float32List Function(PhonemeChunk chunk) audioProducer) {
+PipelineFactory fakePipelineFactory(
+  Float32List Function(PhonemeChunk chunk) audioProducer,
+) {
   return (VoiceStyle voiceStyle) async => FakeTTSPipeline(audioProducer);
 }
 
@@ -140,7 +153,9 @@ Float32List defaultAudioProducer(PhonemeChunk chunk) {
 
 // --- FakePathProvider ---
 
-class FakePathProvider extends Fake with MockPlatformInterfaceMixin implements PathProviderPlatform {
+class FakePathProvider extends Fake
+    with MockPlatformInterfaceMixin
+    implements PathProviderPlatform {
   final Directory tempDir;
   FakePathProvider(this.tempDir);
 
@@ -161,8 +176,10 @@ ProviderContainer createTestContainer({
   return ProviderContainer(
     overrides: [
       audioHandlerProvider.overrideWithValue(handler),
-      if (pipelineFactory != null) pipelineFactoryProvider.overrideWithValue(pipelineFactory),
-      if (persistence != null) playerPersistenceProvider.overrideWithValue(persistence),
+      if (pipelineFactory != null)
+        pipelineFactoryProvider.overrideWithValue(pipelineFactory),
+      if (persistence != null)
+        playerPersistenceProvider.overrideWithValue(persistence),
       authProvider.overrideWithValue(const AuthInitial()),
       // Avoid hitting the real connectivity_plus plugin
       connectivityMonitorProvider.overrideWith((ref) => Stream.value(true)),
