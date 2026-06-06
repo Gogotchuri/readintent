@@ -4,6 +4,7 @@ import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 import "package:readintent_flutter/features/articles/presentation/add_article_dialog.dart";
 import "package:readintent_flutter/features/articles/providers/articles_provider.dart";
+import "package:readintent_flutter/features/settings/presentation/font_size_button.dart";
 import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
 
 class ArticlesScreen extends ConsumerStatefulWidget {
@@ -39,7 +40,10 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
   Widget build(BuildContext context) {
     final articlesAsync = ref.watch(articlesProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text("Articles")),
+      appBar: AppBar(
+        title: const Text("Articles"),
+        actions: const [FontSizeButton()],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showDialog(context: context, builder: (_) => const AddArticleDialog()),
         child: const Icon(Icons.add),

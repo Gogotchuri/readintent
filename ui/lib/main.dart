@@ -4,6 +4,7 @@ import "package:just_audio_media_kit/just_audio_media_kit.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:readintent_flutter/core/router.dart";
 import "package:readintent_flutter/features/articles/repository/pending_operations.dart";
+import "package:readintent_flutter/features/settings/providers/app_settings_provider.dart";
 import "package:readintent_flutter/features/tts/audio_handler.dart";
 
 Future<void> main() async {
@@ -36,10 +37,16 @@ class MyApp extends ConsumerWidget {
     ref.watch(pendingOperationsWatcherProvider);
 
     final router = ref.watch(appRouterProvider);
+    final textScale = ref.watch(appSettingsProvider.select((s) => s.textScale));
     return MaterialApp.router(
       routerConfig: router,
       title: "ReadIntent",
       theme: ThemeData(primarySwatch: Colors.blue),
+      // Apply the persisted global font scale to all text in the app.
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)),
+        child: child!,
+      ),
     );
   }
 }
