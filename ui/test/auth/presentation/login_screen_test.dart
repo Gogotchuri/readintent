@@ -23,7 +23,9 @@ void main() {
   setUp(() {
     mockAuthClient = MockAuthClient();
     mockSessionStorage = MockSessionStorage();
-    when(mockAuthClient.getSession()).thenThrow(ConnectException(Code.unauthenticated, "Unauthenticated"));
+    when(
+      mockAuthClient.getSession(),
+    ).thenThrow(ConnectException(Code.unauthenticated, "Unauthenticated"));
     when(mockSessionStorage.getToken()).thenAnswer((_) async => null);
   });
 
@@ -56,19 +58,22 @@ void main() {
   }
 
   // Basic login screen should render without crashing and show email and password fields when unauthenticated (no token set in session storage on load)
-  testWidgets("LoginScreen renders email and password fields when unauthenticated", (
-    WidgetTester tester,
-  ) async {
-    await tester.pumpWidget(createLoginScreen());
-    await tester.pumpAndSettle();
+  testWidgets(
+    "LoginScreen renders email and password fields when unauthenticated",
+    (WidgetTester tester) async {
+      await tester.pumpWidget(createLoginScreen());
+      await tester.pumpAndSettle();
 
-    expect(find.byType(TextField), findsNWidgets(2));
-    expect(find.widgetWithText(TextField, "Email"), findsOneWidget);
-    expect(find.widgetWithText(TextField, "Password"), findsOneWidget);
-  });
+      expect(find.byType(TextField), findsNWidgets(2));
+      expect(find.widgetWithText(TextField, "Email"), findsOneWidget);
+      expect(find.widgetWithText(TextField, "Password"), findsOneWidget);
+    },
+  );
 
   // The login screen should show loading state when we are trying to fetch the session (simulate this by making getSession return a Future that never completes) and not show the form fields
-  testWidgets("LoginScreen shows loading state when fetching session", (WidgetTester tester) async {
+  testWidgets("LoginScreen shows loading state when fetching session", (
+    WidgetTester tester,
+  ) async {
     // Setup artificial delay on getSession to simulate AuthInitial state for longer and display loading indicator
     when(mockAuthClient.getSession()).thenAnswer(
       (_) => Future.delayed(
@@ -90,61 +95,89 @@ void main() {
   });
 
   // When we tap the login button, it should call the passwordLogin method on the auth client with the email and password from the text fields
-  testWidgets("LoginScreen calls passwordLogin on auth client with email and password", (
-    WidgetTester tester,
-  ) async {
-    when(mockAuthClient.passwordLogin("correct-email", "correct-password")).thenAnswer(
-      (_) async => Session(
-        sessionToken: "token",
-        user: User(id: "id", email: "correct-email", firstName: "First", lastName: "Last"),
-      ),
-    );
-    await tester.pumpWidget(createLoginScreen());
-    await tester.pumpAndSettle();
+  testWidgets(
+    "LoginScreen calls passwordLogin on auth client with email and password",
+    (WidgetTester tester) async {
+      when(
+        mockAuthClient.passwordLogin("correct-email", "correct-password"),
+      ).thenAnswer(
+        (_) async => Session(
+          sessionToken: "token",
+          user: User(
+            id: "id",
+            email: "correct-email",
+            firstName: "First",
+            lastName: "Last",
+          ),
+        ),
+      );
+      await tester.pumpWidget(createLoginScreen());
+      await tester.pumpAndSettle();
 
-    // Enter email and password
-    await tester.enterText(find.widgetWithText(TextField, "Email"), "correct-email");
-    await tester.enterText(find.widgetWithText(TextField, "Password"), "correct-password");
-    await tester.tap(find.widgetWithText(ElevatedButton, "Login"));
-    await tester.pump(); // Start the login process
+      // Enter email and password
+      await tester.enterText(
+        find.widgetWithText(TextField, "Email"),
+        "correct-email",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Password"),
+        "correct-password",
+      );
+      await tester.tap(find.widgetWithText(ElevatedButton, "Login"));
+      await tester.pump(); // Start the login process
 
-    verify(mockAuthClient.passwordLogin("correct-email", "correct-password")).called(1);
-  });
+      verify(
+        mockAuthClient.passwordLogin("correct-email", "correct-password"),
+      ).called(1);
+    },
+  );
 
   // Login screen should show loading indicator when we tap the login button and the login future is not completed yet, then show error message if login fails
-  testWidgets("LoginScreen shows loading indicator on login and error message on failure", (
-    WidgetTester tester,
-  ) async {
-    when(mockAuthClient.passwordLogin(any, any)).thenAnswer(
-      (_) => Future.delayed(const Duration(seconds: 5), () => throw AuthException("Login failed")),
-    );
-    await tester.pumpWidget(createLoginScreen());
-    await tester.pumpAndSettle();
+  testWidgets(
+    "LoginScreen shows loading indicator on login and error message on failure",
+    (WidgetTester tester) async {
+      when(mockAuthClient.passwordLogin(any, any)).thenAnswer(
+        (_) => Future.delayed(
+          const Duration(seconds: 5),
+          () => throw AuthException("Login failed"),
+        ),
+      );
+      await tester.pumpWidget(createLoginScreen());
+      await tester.pumpAndSettle();
 
-    // Enter email and password
-    await tester.enterText(find.widgetWithText(TextField, "Email"), "sam@example.com");
-    await tester.enterText(find.widgetWithText(TextField, "Password"), "password123");
-    await tester.tap(find.widgetWithText(ElevatedButton, "Login"));
-    await tester.pump(); // Start the login process
+      // Enter email and password
+      await tester.enterText(
+        find.widgetWithText(TextField, "Email"),
+        "sam@example.com",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Password"),
+        "password123",
+      );
+      await tester.tap(find.widgetWithText(ElevatedButton, "Login"));
+      await tester.pump(); // Start the login process
 
-    // Should show loading indicator and nothing else while waiting for login future to complete
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    expect(find.text("Login failed"), findsNothing);
-    expect(find.byType(TextField), findsNothing);
+      // Should show loading indicator and nothing else while waiting for login future to complete
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.text("Login failed"), findsNothing);
+      expect(find.byType(TextField), findsNothing);
 
-    // After the future completes, it should show the error message and the form fields again
-    await tester.pumpAndSettle();
-    expect(find.byType(CircularProgressIndicator), findsNothing);
-    // The general error is rendered as a bullet line ("- Login failed").
-    expect(find.textContaining("Login failed"), findsOneWidget);
-    expect(find.byType(TextField), findsNWidgets(2));
+      // After the future completes, it should show the error message and the form fields again
+      await tester.pumpAndSettle();
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      // The general error is rendered as a bullet line ("- Login failed").
+      expect(find.textContaining("Login failed"), findsOneWidget);
+      expect(find.byType(TextField), findsNWidgets(2));
 
-    // Drain the pending auto-clear timer so it doesn't outlive the test.
-    await tester.pump(const Duration(seconds: 5));
-  });
+      // Drain the pending auto-clear timer so it doesn't outlive the test.
+      await tester.pump(const Duration(seconds: 5));
+    },
+  );
 
   // Check We display field validation errors completely and correctly
-  testWidgets("LoginScreen shows field validation errors correctly", (WidgetTester tester) async {
+  testWidgets("LoginScreen shows field validation errors correctly", (
+    WidgetTester tester,
+  ) async {
     // AuthClient translates a BadRequest ConnectException into a ValidationException
     // before the provider sees it, so the mocked client throws the translated type.
     when(mockAuthClient.passwordLogin(any, any)).thenThrow(
@@ -163,7 +196,10 @@ void main() {
     await tester.pumpAndSettle();
 
     // Enter email and password
-    await tester.enterText(find.widgetWithText(TextField, "Email"), "invalid-email");
+    await tester.enterText(
+      find.widgetWithText(TextField, "Email"),
+      "invalid-email",
+    );
     await tester.enterText(find.widgetWithText(TextField, "Password"), "short");
     await tester.tap(find.widgetWithText(ElevatedButton, "Login"));
     await tester.pump(); // Start the login process
@@ -180,30 +216,44 @@ void main() {
   });
 
   // Successful login
-  testWidgets("LoginScreen successful login saves session and updates auth state", (
-    WidgetTester tester,
-  ) async {
-    when(mockAuthClient.passwordLogin("correct-email", "correct-password")).thenAnswer(
-      (_) async => Session(
-        sessionToken: "token",
-        user: User(id: "id", email: "correct-email", firstName: "First", lastName: "Last"),
-      ),
-    );
-    await tester.pumpWidget(createLoginScreen());
-    await tester.pumpAndSettle();
+  testWidgets(
+    "LoginScreen successful login saves session and updates auth state",
+    (WidgetTester tester) async {
+      when(
+        mockAuthClient.passwordLogin("correct-email", "correct-password"),
+      ).thenAnswer(
+        (_) async => Session(
+          sessionToken: "token",
+          user: User(
+            id: "id",
+            email: "correct-email",
+            firstName: "First",
+            lastName: "Last",
+          ),
+        ),
+      );
+      await tester.pumpWidget(createLoginScreen());
+      await tester.pumpAndSettle();
 
-    // Enter email and password
-    await tester.enterText(find.widgetWithText(TextField, "Email"), "correct-email");
-    await tester.enterText(find.widgetWithText(TextField, "Password"), "correct-password");
-    await tester.tap(find.widgetWithText(ElevatedButton, "Login"));
-    await tester.pump(); // Start the login process
-    await tester.pumpAndSettle(); // Wait for the login process to complete
+      // Enter email and password
+      await tester.enterText(
+        find.widgetWithText(TextField, "Email"),
+        "correct-email",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Password"),
+        "correct-password",
+      );
+      await tester.tap(find.widgetWithText(ElevatedButton, "Login"));
+      await tester.pump(); // Start the login process
+      await tester.pumpAndSettle(); // Wait for the login process to complete
 
-    // Check auth state is updated to AuthAuthenticated
-    final authState = container.read(authProvider);
-    expect(authState, isA<AuthAuthenticated>());
-    final authStateData = authState as AuthAuthenticated;
-    expect(authStateData.sessionToken, "token");
-    expect(authStateData.user.email, "correct-email");
-  });
+      // Check auth state is updated to AuthAuthenticated
+      final authState = container.read(authProvider);
+      expect(authState, isA<AuthAuthenticated>());
+      final authStateData = authState as AuthAuthenticated;
+      expect(authStateData.sessionToken, "token");
+      expect(authStateData.user.email, "correct-email");
+    },
+  );
 }

@@ -53,7 +53,8 @@ class AudioGenerator {
   List<WordTimestamp> _wordTimestamps = [];
   double _accumulatedSeconds = 0.0;
 
-  final StreamController<TTSSessionState> _stateController = StreamController<TTSSessionState>.broadcast();
+  final StreamController<TTSSessionState> _stateController =
+      StreamController<TTSSessionState>.broadcast();
   TTSSessionState _state = const TTSSessionState();
 
   AudioGenerator({
@@ -76,9 +77,11 @@ class AudioGenerator {
   Stream<TTSSessionState> get stateStream => _stateController.stream;
   TTSSessionState get currentState => _state;
   String? get filePath => _audioFile?.filePath;
-  Duration get bufferedDuration => _audioFile?.bufferedDuration ?? Duration.zero;
+  Duration get bufferedDuration =>
+      _audioFile?.bufferedDuration ?? Duration.zero;
   bool get isComplete => _state.isComplete;
-  Stream<Duration>? get bufferedDurationStream => _audioFile?.bufferedDurationStream;
+  Stream<Duration>? get bufferedDurationStream =>
+      _audioFile?.bufferedDurationStream;
   List<WordTimestamp> get wordTimestamps => List.unmodifiable(_wordTimestamps);
 
   /// Returns the cache path if a complete (no .meta companion) file is cached.
@@ -105,7 +108,10 @@ class AudioGenerator {
       await _ensurePipeline();
       if (_disposed) return;
 
-      final totalTokens = chunks.fold<int>(0, (sum, c) => sum + c.tokenIds.length);
+      final totalTokens = chunks.fold<int>(
+        0,
+        (sum, c) => sum + c.tokenIds.length,
+      );
       int processedTokens = 0;
       for (int i = 0; i < startIndex && i < chunks.length; i++) {
         processedTokens += chunks[i].tokenIds.length;
@@ -129,13 +135,15 @@ class AudioGenerator {
 
         _appendTimestamps(result.timestamps);
         await _audioFile!.addChunk(result.audio, i);
-        _accumulatedSeconds = _audioFile!.bufferedDuration.inMilliseconds / 1000.0;
+        _accumulatedSeconds =
+            _audioFile!.bufferedDuration.inMilliseconds / 1000.0;
         // Save timestamps incrementally so they survive interrupted generation
         await cache.saveTimestamps(cacheKey, _wordTimestamps);
         _updateEstimation(processedTokens, totalTokens);
 
         // Call onBufferReady if we have reached the threshold and haven't called it since the last chunk was added
-        if (!bufferReadyCalled && _audioFile!.bufferedDuration >= bufferThreshold) {
+        if (!bufferReadyCalled &&
+            _audioFile!.bufferedDuration >= bufferThreshold) {
           bufferReadyCalled = true;
           await onBufferReady();
         }
@@ -203,7 +211,8 @@ class AudioGenerator {
     );
   }
 
-  Future<List<WordTimestamp>?> loadCachedTimestamps() => cache.loadTimestamps(cacheKey);
+  Future<List<WordTimestamp>?> loadCachedTimestamps() =>
+      cache.loadTimestamps(cacheKey);
 
   Future<void> _ensurePipeline() async {
     _pipeline ??= await _pipelineFactory(voice);
@@ -212,7 +221,8 @@ class AudioGenerator {
   void _updateEstimation(int processedTokens, int totalTokens) {
     if (_audioFile == null || processedTokens == 0) return;
     final generatedMs = _audioFile!.bufferedDuration.inMilliseconds;
-    final estimatedTotalMs = (generatedMs * totalTokens / processedTokens).round();
+    final estimatedTotalMs = (generatedMs * totalTokens / processedTokens)
+        .round();
     _emitState(
       _state.copyWith(
         estimatedDuration: Duration(milliseconds: estimatedTotalMs),
@@ -243,7 +253,13 @@ List<PhonemeChunk> protoToChunks(List<PhonemizerData> protoChunks) {
       graphemes: pd.graphemes,
       tokenIds: pd.tokenIds.map((id) => id.toInt()).toList(),
       tokenMeta: pd.tokenMeta
-          .map((m) => TokenMeta(text: m.text, phonemeLen: m.phonemeLen, hasWhitespace: m.hasWhitespace))
+          .map(
+            (m) => TokenMeta(
+              text: m.text,
+              phonemeLen: m.phonemeLen,
+              hasWhitespace: m.hasWhitespace,
+            ),
+          )
           .toList(),
     );
   }).toList();

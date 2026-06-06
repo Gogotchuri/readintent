@@ -8,7 +8,8 @@ import "package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart
 import "package:readintent_flutter/features/articles/presentation/article_detail_screen.dart";
 import "package:readintent_flutter/features/articles/providers/article_detail_provider.dart";
 import "package:readintent_flutter/features/articles/providers/article_player_provider.dart";
-import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
+import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
+    as articles_pb;
 
 final articleMock = articles_pb.Article(
   id: Int64(1),
@@ -29,7 +30,9 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         // ignore: deprecated_member_use
-        articleDetailProvider.overrideWith(() => _TestArticleDetail(fetchArticle)),
+        articleDetailProvider.overrideWith(
+          () => _TestArticleDetail(fetchArticle),
+        ),
         activePlayerProvider.overrideWithValue(const ActivePlayerState()),
       ],
     );
@@ -42,9 +45,7 @@ void main() {
   testWidgets("shows loading state", (WidgetTester tester) async {
     final completer = Completer<articles_pb.Article>();
 
-    await tester.pumpWidget(createWidget(
-      fetchArticle: () => completer.future,
-    ));
+    await tester.pumpWidget(createWidget(fetchArticle: () => completer.future));
     await tester.pump();
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -54,29 +55,33 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets("shows error state with retry button", (WidgetTester tester) async {
-    await tester.pumpWidget(createWidget(
-      fetchArticle: () => throw Exception("Server error"),
-    ));
+  testWidgets("shows error state with retry button", (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      createWidget(fetchArticle: () => throw Exception("Server error")),
+    );
     await tester.pumpAndSettle();
 
     expect(find.textContaining("Server error"), findsOneWidget);
     expect(find.text("Retry"), findsOneWidget);
   });
 
-  testWidgets("shows article title in AppBar and header", (WidgetTester tester) async {
-    await tester.pumpWidget(createWidget(
-      fetchArticle: () async => articleMock,
-    ));
+  testWidgets("shows article title in AppBar and header", (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      createWidget(fetchArticle: () async => articleMock),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text("Test Article"), findsNWidgets(2));
   });
 
   testWidgets("shows author and date with icons", (WidgetTester tester) async {
-    await tester.pumpWidget(createWidget(
-      fetchArticle: () async => articleMock,
-    ));
+    await tester.pumpWidget(
+      createWidget(fetchArticle: () async => articleMock),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text("John Doe"), findsOneWidget);
@@ -91,9 +96,9 @@ void main() {
       title: "Test Article",
       extractedHtml: "<p>Hello world</p>",
     );
-    await tester.pumpWidget(createWidget(
-      fetchArticle: () async => emptyArticle,
-    ));
+    await tester.pumpWidget(
+      createWidget(fetchArticle: () async => emptyArticle),
+    );
     await tester.pumpAndSettle();
 
     expect(find.byIcon(Icons.person_outline), findsNothing);
@@ -106,18 +111,20 @@ void main() {
       title: "Test Article",
       extractedHtml: "<p>Hello world</p>",
     );
-    await tester.pumpWidget(createWidget(
-      fetchArticle: () async => noImageArticle,
-    ));
+    await tester.pumpWidget(
+      createWidget(fetchArticle: () async => noImageArticle),
+    );
     await tester.pumpAndSettle();
 
     expect(find.byType(Image), findsNothing);
   });
 
-  testWidgets("renders HtmlWidget with extracted HTML", (WidgetTester tester) async {
-    await tester.pumpWidget(createWidget(
-      fetchArticle: () async => articleMock,
-    ));
+  testWidgets("renders HtmlWidget with extracted HTML", (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      createWidget(fetchArticle: () async => articleMock),
+    );
     await tester.pumpAndSettle();
 
     expect(find.byType(HtmlWidget), findsOneWidget);

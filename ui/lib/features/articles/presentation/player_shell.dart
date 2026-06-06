@@ -109,8 +109,10 @@ class _PlayerShellState extends ConsumerState<PlayerShell>
               children: [
                 Icon(Icons.cloud_off, size: 16, color: Colors.white),
                 SizedBox(width: 8),
-                Text("You're offline",
-                    style: TextStyle(color: Colors.white, fontSize: 13)),
+                Text(
+                  "You're offline",
+                  style: TextStyle(color: Colors.white, fontSize: 13),
+                ),
               ],
             ),
           ),
@@ -120,10 +122,7 @@ class _PlayerShellState extends ConsumerState<PlayerShell>
           child: isOnHome
               ? IndexedStack(
                   index: _selectedTabIndex,
-                  children: const [
-                    ArticlesScreen(),
-                    SettingsScreen(),
-                  ],
+                  children: const [ArticlesScreen(), SettingsScreen()],
                 )
               : widget.child,
         ),
@@ -133,7 +132,7 @@ class _PlayerShellState extends ConsumerState<PlayerShell>
         if (hasActiveArticle && !hasDownloadStatus)
           // We will show a player of the current article always on the details page.
           // In order to avoid flashing the player when user navigates between articles due to frame timing
-          // we show mini player and give the full player enough time to load and take over 
+          // we show mini player and give the full player enough time to load and take over
           isOnMatchingDetail
               ? const ArticlePlayerWidget()
               : const MiniPlayerWidget(),

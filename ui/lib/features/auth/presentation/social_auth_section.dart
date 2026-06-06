@@ -15,7 +15,11 @@ class SocialAuthSection extends ConsumerWidget {
         onPressed: () {
           ref.read(authProvider.notifier).googleSignIn();
         },
-        icon: SvgPicture.asset("assets/images/google_logo.svg", height: 20, width: 20),
+        icon: SvgPicture.asset(
+          "assets/images/google_logo.svg",
+          height: 20,
+          width: 20,
+        ),
         label: const Text("Continue with Google"),
       ),
     );

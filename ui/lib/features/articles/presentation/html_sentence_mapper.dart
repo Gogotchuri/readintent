@@ -26,7 +26,13 @@ String injectSentenceSpans(String html, List<SentenceText> sentences) {
     final words = sentence.text.split(RegExp(r"\s+"));
     if (words.isEmpty) continue;
 
-    final match = _findAndWrapSentence(textNodes, currentNode, currentChar, words, sentence.index);
+    final match = _findAndWrapSentence(
+      textNodes,
+      currentNode,
+      currentChar,
+      words,
+      sentence.index,
+    );
     if (match == null) break; // Graceful degradation
 
     currentNode = match.nodeIndex;
@@ -116,7 +122,13 @@ _Cursor? _findAndWrapSentence(
     final (start, end) = nodeRanges[ni]!;
     // Add an id anchor only on the first span of each sentence
     final anchorId = ni == firstNode ? "sentence-$sentenceIndex" : null;
-    final afterNode = _wrapTextRange(textNodes[ni], start, end, sentenceIndex, anchorId: anchorId);
+    final afterNode = _wrapTextRange(
+      textNodes[ni],
+      start,
+      end,
+      sentenceIndex,
+      anchorId: anchorId,
+    );
     // Replace the old (now detached) text node reference with the leftover
     // "after" text node so the next sentence can find remaining text.
     if (afterNode != null) {
@@ -128,13 +140,20 @@ _Cursor? _findAndWrapSentence(
   // If that node was wrapped, textNodes[nodeIdx] is now the "after" portion,
   // which starts at what was `end` in the original. Shift accordingly.
   final wrappedRange = nodeRanges[nodeIdx];
-  final adjustedCharIdx = wrappedRange != null ? charIdx - wrappedRange.$2 : charIdx;
+  final adjustedCharIdx = wrappedRange != null
+      ? charIdx - wrappedRange.$2
+      : charIdx;
 
   return _Cursor(nodeIdx, adjustedCharIdx.clamp(0, double.maxFinite.toInt()));
 }
 
 /// Scans forward through text nodes to find [word] starting at the given position.
-_Cursor? _findWord(List<dom.Text> textNodes, int nodeIdx, int charIdx, String word) {
+_Cursor? _findWord(
+  List<dom.Text> textNodes,
+  int nodeIdx,
+  int charIdx,
+  String word,
+) {
   while (nodeIdx < textNodes.length) {
     final text = textNodes[nodeIdx].data;
 
@@ -145,7 +164,8 @@ _Cursor? _findWord(List<dom.Text> textNodes, int nodeIdx, int charIdx, String wo
     }
 
     // Try exact match at current position first
-    if (i + word.length <= text.length && text.substring(i, i + word.length) == word) {
+    if (i + word.length <= text.length &&
+        text.substring(i, i + word.length) == word) {
       return _Cursor(nodeIdx, i);
     }
 
@@ -164,7 +184,13 @@ _Cursor? _findWord(List<dom.Text> textNodes, int nodeIdx, int charIdx, String wo
 /// `<span data-sentence="N">` element.
 /// Returns the "after" [dom.Text] node if one was created, so the caller
 /// can update its text node list for subsequent matching.
-dom.Text? _wrapTextRange(dom.Text textNode, int start, int end, int sentenceIndex, {String? anchorId}) {
+dom.Text? _wrapTextRange(
+  dom.Text textNode,
+  int start,
+  int end,
+  int sentenceIndex, {
+  String? anchorId,
+}) {
   final text = textNode.data;
   final parent = textNode.parentNode;
   if (parent == null) return null;
@@ -182,7 +208,6 @@ dom.Text? _wrapTextRange(dom.Text textNode, int start, int end, int sentenceInde
 
   parent.nodes.removeAt(nodeIndex);
 
-  
   int insertAt = nodeIndex;
   if (before.isNotEmpty) {
     parent.nodes.insert(insertAt, dom.Text(before));

@@ -15,24 +15,37 @@ class _AddArticleDialogState extends ConsumerState<AddArticleDialog> {
   String? _error;
 
   @override
-  void dispose() { _urlController.dispose(); super.dispose(); }
+  void dispose() {
+    _urlController.dispose();
+    super.dispose();
+  }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() { _isSubmitting = true; _error = null; });
+    setState(() {
+      _isSubmitting = true;
+      _error = null;
+    });
     try {
-      final result = await ref.read(articlesProvider.notifier).parseArticle(
-        _urlController.text.trim());
+      final result = await ref
+          .read(articlesProvider.notifier)
+          .parseArticle(_urlController.text.trim());
       if (mounted) {
         Navigator.of(context).pop();
         if (result.queued) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Article will be added when you're back online")),
+            const SnackBar(
+              content: Text("Article will be added when you're back online"),
+            ),
           );
         }
       }
     } catch (e) {
-      if (mounted) setState(() { _error = e.toString(); _isSubmitting = false; });
+      if (mounted)
+        setState(() {
+          _error = e.toString();
+          _isSubmitting = false;
+        });
     }
   }
 
@@ -60,7 +73,8 @@ class _AddArticleDialogState extends ConsumerState<AddArticleDialog> {
                 border: OutlineInputBorder(),
               ),
               validator: (value) {
-                if (value == null || value.trim().isEmpty) return "Please enter a URL";
+                if (value == null || value.trim().isEmpty)
+                  return "Please enter a URL";
                 final uri = Uri.tryParse(value.trim());
                 if (uri == null || !uri.hasScheme || !uri.hasAuthority) {
                   return "Please enter a valid URL";
@@ -70,7 +84,10 @@ class _AddArticleDialogState extends ConsumerState<AddArticleDialog> {
             ),
             if (_error != null) ...[
               const SizedBox(height: 12),
-              Text(_error!, style: TextStyle(color: Colors.red[700], fontSize: 13)),
+              Text(
+                _error!,
+                style: TextStyle(color: Colors.red[700], fontSize: 13),
+              ),
             ],
           ],
         ),
@@ -83,8 +100,11 @@ class _AddArticleDialogState extends ConsumerState<AddArticleDialog> {
         ElevatedButton(
           onPressed: _isSubmitting ? null : _submit,
           child: _isSubmitting
-              ? const SizedBox(width: 20, height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2))
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
               : const Text("Add"),
         ),
       ],

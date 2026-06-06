@@ -53,7 +53,10 @@ connect_p.Transport connectTransport(Ref ref) {
   return connect_p.Transport(
     baseUrl: connectBaseUrl,
     httpClient: createHttpClient(),
-    interceptors: [_createAuthInterceptor(sessionStorage), _createServerHealthInterceptor(ref)],
+    interceptors: [
+      _createAuthInterceptor(sessionStorage),
+      _createServerHealthInterceptor(ref),
+    ],
     codec: const ProtoCodec(),
   );
 }

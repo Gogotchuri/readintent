@@ -68,7 +68,8 @@ void main() {
 
       final metaFile = File("$path.meta");
       expect(metaFile.existsSync(), true);
-      final meta = jsonDecode(metaFile.readAsStringSync()) as Map<String, dynamic>;
+      final meta =
+          jsonDecode(metaFile.readAsStringSync()) as Map<String, dynamic>;
       expect(meta["lastChunkIndex"], 3);
       expect(meta["pcmLength"], 24000 * 2);
 
@@ -135,7 +136,9 @@ void main() {
     test("tryResume returns null when meta exists but mp3 missing", () async {
       final path = tempPath();
       // Write only the meta file, no mp3
-      File("$path.meta").writeAsStringSync(jsonEncode({"lastChunkIndex": 2, "pcmLength": 48000}));
+      File("$path.meta").writeAsStringSync(
+        jsonEncode({"lastChunkIndex": 2, "pcmLength": 48000}),
+      );
 
       final result = GrowingAudioFile.tryResume(path);
       expect(result, isNull);
@@ -148,7 +151,10 @@ void main() {
       await file.dispose();
 
       bool streamDone = false;
-      file.bufferedDurationStream.listen((_) {}, onDone: () => streamDone = true);
+      file.bufferedDurationStream.listen(
+        (_) {},
+        onDone: () => streamDone = true,
+      );
       await Future<void>.delayed(const Duration(milliseconds: 50));
       expect(streamDone, true);
     });

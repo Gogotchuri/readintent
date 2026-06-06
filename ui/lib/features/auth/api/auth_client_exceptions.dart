@@ -1,5 +1,6 @@
 import "package:connectrpc/connect.dart";
-import "package:readintent_flutter/proto/google/rpc/error_details.pb.dart" as rpc;
+import "package:readintent_flutter/proto/google/rpc/error_details.pb.dart"
+    as rpc;
 
 /// Represents a field-level validation error from a BadRequest response.
 class FieldError {
@@ -83,7 +84,10 @@ Never handleConnectException(ConnectException e, String context) {
     final fieldErrors = badRequest.fieldViolations
         .map((v) => FieldError(field: v.field_1, description: v.description))
         .toList();
-    throw ValidationException(message: "Failed to $context", fieldErrors: fieldErrors);
+    throw ValidationException(
+      message: "Failed to $context",
+      fieldErrors: fieldErrors,
+    );
   }
   throw AuthException("Failed to $context: ${e.message}");
 }

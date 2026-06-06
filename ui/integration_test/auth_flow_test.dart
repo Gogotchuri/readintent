@@ -11,7 +11,8 @@ import "package:readintent_flutter/features/auth/api/auth_service_client.dart";
 import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
 import "package:readintent_flutter/main.dart";
 import "package:readintent_flutter/models/user.dart";
-import "package:readintent_flutter/proto/auth/v1/auth_service.pb.dart" as auth_pb;
+import "package:readintent_flutter/proto/auth/v1/auth_service.pb.dart"
+    as auth_pb;
 import "package:readintent_flutter/proto/google/rpc/error_details.pbserver.dart";
 
 @GenerateMocks([AuthServiceClientI, SessionStorage])
@@ -58,7 +59,10 @@ void main() {
         }),
       ],
     );
-    return UncontrolledProviderScope(container: container, child: const MyApp());
+    return UncontrolledProviderScope(
+      container: container,
+      child: const MyApp(),
+    );
   }
 
   group("Initialization flows", () {
@@ -69,12 +73,18 @@ void main() {
       expect(find.text("Login"), findsOneWidget);
     });
 
-    testWidgets("valid session goes to home screen", (WidgetTester tester) async {
+    testWidgets("valid session goes to home screen", (
+      WidgetTester tester,
+    ) async {
+      when(mockRPCClient.getSession(any)).thenAnswer(
+        (_) async => auth_pb.GetSessionResponse(session: protoSession),
+      );
       when(
-        mockRPCClient.getSession(any),
-      ).thenAnswer((_) async => auth_pb.GetSessionResponse(session: protoSession));
-      when(mockSessionStorage.getToken()).thenAnswer((_) async => "test-session-token");
-      when(mockSessionStorage.getUser()).thenAnswer((_) async => User.fromRpcIdentity(protoSession.identity));
+        mockSessionStorage.getToken(),
+      ).thenAnswer((_) async => "test-session-token");
+      when(
+        mockSessionStorage.getUser(),
+      ).thenAnswer((_) async => User.fromRpcIdentity(protoSession.identity));
 
       await tester.pumpWidget(createApp());
       await tester.pumpAndSettle();
@@ -85,9 +95,15 @@ void main() {
       ); // TODO change this once we actually have a home screen
     });
 
-    testWidgets("invalid session goes to login screen", (WidgetTester tester) async {
-      when(mockRPCClient.getSession(any)).thenThrow(Exception("Invalid session"));
-      when(mockSessionStorage.getToken()).thenAnswer((_) async => "invalid-session-token");
+    testWidgets("invalid session goes to login screen", (
+      WidgetTester tester,
+    ) async {
+      when(
+        mockRPCClient.getSession(any),
+      ).thenThrow(Exception("Invalid session"));
+      when(
+        mockSessionStorage.getToken(),
+      ).thenAnswer((_) async => "invalid-session-token");
       await tester.pumpWidget(createApp());
       await tester.pumpAndSettle();
 
@@ -97,16 +113,22 @@ void main() {
 
   group("Authentication flows", () {
     testWidgets("Login success", (WidgetTester tester) async {
-      when(
-        mockRPCClient.passwordLogin(any),
-      ).thenAnswer((_) async => auth_pb.PasswordLoginResponse(session: protoSession));
+      when(mockRPCClient.passwordLogin(any)).thenAnswer(
+        (_) async => auth_pb.PasswordLoginResponse(session: protoSession),
+      );
 
       await tester.pumpWidget(createApp());
       await tester.pumpAndSettle();
 
       // Enter email and password and submit
-      await tester.enterText(find.widgetWithText(TextField, "Email"), "user@example.com");
-      await tester.enterText(find.widgetWithText(TextField, "Password"), "password");
+      await tester.enterText(
+        find.widgetWithText(TextField, "Email"),
+        "user@example.com",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Password"),
+        "password",
+      );
       await tester.tap(find.widgetWithText(ElevatedButton, "Login"));
       await tester.pumpAndSettle();
 
@@ -114,14 +136,22 @@ void main() {
     });
 
     testWidgets("Login general fail", (WidgetTester tester) async {
-      when(mockRPCClient.passwordLogin(any)).thenThrow(Exception("Login failed"));
+      when(
+        mockRPCClient.passwordLogin(any),
+      ).thenThrow(Exception("Login failed"));
 
       await tester.pumpWidget(createApp());
       await tester.pumpAndSettle();
 
       // Enter email and password and submit
-      await tester.enterText(find.widgetWithText(TextField, "Email"), "user@example.com");
-      await tester.enterText(find.widgetWithText(TextField, "Password"), "password");
+      await tester.enterText(
+        find.widgetWithText(TextField, "Email"),
+        "user@example.com",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Password"),
+        "password",
+      );
       await tester.tap(find.widgetWithText(ElevatedButton, "Login"));
       await tester.pumpAndSettle();
 
@@ -131,9 +161,18 @@ void main() {
     testWidgets("Login field validation", (WidgetTester tester) async {
       final badRequest = BadRequest(
         fieldViolations: [
-          BadRequest_FieldViolation(field_1: "general", description: "general issue 1"),
-          BadRequest_FieldViolation(field_1: "general", description: "general issue 2"),
-          BadRequest_FieldViolation(field_1: "email", description: "Invalid email format"),
+          BadRequest_FieldViolation(
+            field_1: "general",
+            description: "general issue 1",
+          ),
+          BadRequest_FieldViolation(
+            field_1: "general",
+            description: "general issue 2",
+          ),
+          BadRequest_FieldViolation(
+            field_1: "email",
+            description: "Invalid email format",
+          ),
         ],
       );
 
@@ -141,7 +180,9 @@ void main() {
         ConnectException(
           Code.invalidArgument,
           "Validation failed",
-          details: [ErrorDetail("google.rpc.BadRequest", badRequest.writeToBuffer())],
+          details: [
+            ErrorDetail("google.rpc.BadRequest", badRequest.writeToBuffer()),
+          ],
         ),
       );
 
@@ -149,8 +190,14 @@ void main() {
       await tester.pumpAndSettle();
 
       // Enter login details and submit
-      await tester.enterText(find.widgetWithText(TextField, "Email"), "user@example.com");
-      await tester.enterText(find.widgetWithText(TextField, "Password"), "password");
+      await tester.enterText(
+        find.widgetWithText(TextField, "Email"),
+        "user@example.com",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Password"),
+        "password",
+      );
       await tester.tap(find.widgetWithText(ElevatedButton, "Login"));
       await tester.pumpAndSettle();
 
@@ -162,9 +209,10 @@ void main() {
 
     group("Registration flows", () {
       testWidgets("Registration success", (WidgetTester tester) async {
-        when(
-          mockRPCClient.passwordRegistration(any),
-        ).thenAnswer((_) async => auth_pb.PasswordRegistrationResponse(session: protoSession));
+        when(mockRPCClient.passwordRegistration(any)).thenAnswer(
+          (_) async =>
+              auth_pb.PasswordRegistrationResponse(session: protoSession),
+        );
 
         await tester.pumpWidget(createApp());
         await tester.pumpAndSettle();
@@ -174,11 +222,26 @@ void main() {
         await tester.pumpAndSettle();
 
         // Enter registration details and submit
-        await tester.enterText(find.widgetWithText(TextField, "Email"), "user@example.com");
-        await tester.enterText(find.widgetWithText(TextField, "First Name"), "John");
-        await tester.enterText(find.widgetWithText(TextField, "Last Name"), "Doe");
-        await tester.enterText(find.widgetWithText(TextField, "Password"), "password");
-        await tester.enterText(find.widgetWithText(TextField, "Confirm Password"), "password");
+        await tester.enterText(
+          find.widgetWithText(TextField, "Email"),
+          "user@example.com",
+        );
+        await tester.enterText(
+          find.widgetWithText(TextField, "First Name"),
+          "John",
+        );
+        await tester.enterText(
+          find.widgetWithText(TextField, "Last Name"),
+          "Doe",
+        );
+        await tester.enterText(
+          find.widgetWithText(TextField, "Password"),
+          "password",
+        );
+        await tester.enterText(
+          find.widgetWithText(TextField, "Confirm Password"),
+          "password",
+        );
         await tester.tap(find.widgetWithText(ElevatedButton, "Sign Up"));
         await tester.pumpAndSettle();
 
@@ -187,7 +250,9 @@ void main() {
     });
 
     testWidgets("Registration general fail", (WidgetTester tester) async {
-      when(mockRPCClient.passwordRegistration(any)).thenThrow(Exception("Registration failed"));
+      when(
+        mockRPCClient.passwordRegistration(any),
+      ).thenThrow(Exception("Registration failed"));
 
       await tester.pumpWidget(createApp());
       await tester.pumpAndSettle();
@@ -197,11 +262,26 @@ void main() {
       await tester.pumpAndSettle();
 
       // Enter registration details and submit
-      await tester.enterText(find.widgetWithText(TextField, "Email"), "user@example.com");
-      await tester.enterText(find.widgetWithText(TextField, "First Name"), "John");
-      await tester.enterText(find.widgetWithText(TextField, "Last Name"), "Doe");
-      await tester.enterText(find.widgetWithText(TextField, "Password"), "password");
-      await tester.enterText(find.widgetWithText(TextField, "Confirm Password"), "password");
+      await tester.enterText(
+        find.widgetWithText(TextField, "Email"),
+        "user@example.com",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "First Name"),
+        "John",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Last Name"),
+        "Doe",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Password"),
+        "password",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Confirm Password"),
+        "password",
+      );
       await tester.tap(find.widgetWithText(ElevatedButton, "Sign Up"));
       await tester.pumpAndSettle();
 
@@ -211,10 +291,22 @@ void main() {
     testWidgets("Registration field validation", (WidgetTester tester) async {
       final badRequest = BadRequest(
         fieldViolations: [
-          BadRequest_FieldViolation(field_1: "general", description: "general issue 1"),
-          BadRequest_FieldViolation(field_1: "general", description: "general issue 2"),
-          BadRequest_FieldViolation(field_1: "email", description: "Invalid email format"),
-          BadRequest_FieldViolation(field_1: "password", description: "Password too short"),
+          BadRequest_FieldViolation(
+            field_1: "general",
+            description: "general issue 1",
+          ),
+          BadRequest_FieldViolation(
+            field_1: "general",
+            description: "general issue 2",
+          ),
+          BadRequest_FieldViolation(
+            field_1: "email",
+            description: "Invalid email format",
+          ),
+          BadRequest_FieldViolation(
+            field_1: "password",
+            description: "Password too short",
+          ),
         ],
       );
 
@@ -222,7 +314,9 @@ void main() {
         ConnectException(
           Code.invalidArgument,
           "Validation failed",
-          details: [ErrorDetail("google.rpc.BadRequest", badRequest.writeToBuffer())],
+          details: [
+            ErrorDetail("google.rpc.BadRequest", badRequest.writeToBuffer()),
+          ],
         ),
       );
 
@@ -234,11 +328,26 @@ void main() {
       await tester.pumpAndSettle();
 
       // Enter registration details and submit
-      await tester.enterText(find.widgetWithText(TextField, "Email"), "user@example.com");
-      await tester.enterText(find.widgetWithText(TextField, "First Name"), "John");
-      await tester.enterText(find.widgetWithText(TextField, "Last Name"), "Doe");
-      await tester.enterText(find.widgetWithText(TextField, "Password"), "password");
-      await tester.enterText(find.widgetWithText(TextField, "Confirm Password"), "password");
+      await tester.enterText(
+        find.widgetWithText(TextField, "Email"),
+        "user@example.com",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "First Name"),
+        "John",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Last Name"),
+        "Doe",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Password"),
+        "password",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Confirm Password"),
+        "password",
+      );
       await tester.tap(find.widgetWithText(ElevatedButton, "Sign Up"));
       await tester.pumpAndSettle();
 
@@ -252,16 +361,22 @@ void main() {
     });
 
     testWidgets("Logout", (WidgetTester tester) async {
-      when(
-        mockRPCClient.passwordLogin(any),
-      ).thenAnswer((_) async => auth_pb.PasswordLoginResponse(session: protoSession));
+      when(mockRPCClient.passwordLogin(any)).thenAnswer(
+        (_) async => auth_pb.PasswordLoginResponse(session: protoSession),
+      );
 
       await tester.pumpWidget(createApp());
       await tester.pumpAndSettle();
 
       // Login first
-      await tester.enterText(find.widgetWithText(TextField, "Email"), "user@example.com");
-      await tester.enterText(find.widgetWithText(TextField, "Password"), "password");
+      await tester.enterText(
+        find.widgetWithText(TextField, "Email"),
+        "user@example.com",
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, "Password"),
+        "password",
+      );
       await tester.tap(find.widgetWithText(ElevatedButton, "Login"));
       await tester.pumpAndSettle();
 

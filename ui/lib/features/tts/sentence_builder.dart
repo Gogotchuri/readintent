@@ -35,11 +35,13 @@ List<SentenceText> buildSentenceTexts(List<PhonemeChunk> chunks) {
       if (token.phonemeLen > 0) wordsInSentence++;
 
       if (_sentenceEndPattern.hasMatch(token.text.trim())) {
-        sentences.add(SentenceText(
-          index: sentences.length,
-          text: buffer.toString().trim(),
-          wordCount: wordsInSentence,
-        ));
+        sentences.add(
+          SentenceText(
+            index: sentences.length,
+            text: buffer.toString().trim(),
+            wordCount: wordsInSentence,
+          ),
+        );
         buffer.clear();
         wordsInSentence = 0;
       }
@@ -47,11 +49,13 @@ List<SentenceText> buildSentenceTexts(List<PhonemeChunk> chunks) {
   }
 
   if (buffer.isNotEmpty) {
-    sentences.add(SentenceText(
-      index: sentences.length,
-      text: buffer.toString().trim(),
-      wordCount: wordsInSentence,
-    ));
+    sentences.add(
+      SentenceText(
+        index: sentences.length,
+        text: buffer.toString().trim(),
+        wordCount: wordsInSentence,
+      ),
+    );
   }
 
   return sentences;
@@ -73,17 +77,22 @@ List<SentenceTimestamp> assignSentenceTimestamps(
     if (sentence.wordCount == 0 || wordIdx >= wordTimestamps.length) continue;
 
     final firstWord = wordIdx;
-    final lastWord = (wordIdx + sentence.wordCount - 1).clamp(0, wordTimestamps.length - 1);
+    final lastWord = (wordIdx + sentence.wordCount - 1).clamp(
+      0,
+      wordTimestamps.length - 1,
+    );
     wordIdx = lastWord + 1;
 
-    result.add(SentenceTimestamp(
-      index: sentence.index,
-      text: sentence.text,
-      startSeconds: wordTimestamps[firstWord].start,
-      endSeconds: wordTimestamps[lastWord].end,
-      startWordIndex: firstWord,
-      endWordIndex: lastWord,
-    ));
+    result.add(
+      SentenceTimestamp(
+        index: sentence.index,
+        text: sentence.text,
+        startSeconds: wordTimestamps[firstWord].start,
+        endSeconds: wordTimestamps[lastWord].end,
+        startWordIndex: firstWord,
+        endWordIndex: lastWord,
+      ),
+    );
   }
 
   return result;

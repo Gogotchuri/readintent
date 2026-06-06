@@ -2,6 +2,7 @@ import "package:flutter_riverpod/flutter_riverpod.dart";
 
 class DownloadStatus {
   final String label;
+
   /// 0.0-1.0 for determinate progress, -1 for indeterminate
   final double progress;
 
@@ -18,4 +19,6 @@ class DownloadStatusNotifier extends Notifier<DownloadStatus?> {
 }
 
 final downloadStatusProvider =
-    NotifierProvider<DownloadStatusNotifier, DownloadStatus?>(DownloadStatusNotifier.new);
+    NotifierProvider<DownloadStatusNotifier, DownloadStatus?>(
+      DownloadStatusNotifier.new,
+    );

@@ -1,7 +1,8 @@
 import "dart:async";
 import "dart:math";
 
-import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
+import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
+    as articles_pb;
 
 // Streaming reconnect with backoff.
 const _defaultMinReconnect = Duration(seconds: 1);
@@ -19,7 +20,8 @@ const _defaultFallbackRetryInterval = Duration(seconds: 120);
 /// (start/connectivity/suspend/resume/dispose). The consumer owns the actual polling and data state.
 class ArticleUpdatesChannel {
   ArticleUpdatesChannel({
-    required Stream<articles_pb.StreamArticleUpdatesResponse> Function() connect,
+    required Stream<articles_pb.StreamArticleUpdatesResponse> Function()
+    connect,
     required bool Function() isOnline,
     Duration minReconnect = _defaultMinReconnect,
     Duration maxReconnect = _defaultMaxReconnect,
@@ -187,7 +189,10 @@ class ArticleUpdatesChannel {
       start();
     });
     _reconnectBackoff = Duration(
-      milliseconds: min(_reconnectBackoff.inMilliseconds * 2, _maxReconnect.inMilliseconds),
+      milliseconds: min(
+        _reconnectBackoff.inMilliseconds * 2,
+        _maxReconnect.inMilliseconds,
+      ),
     );
   }
 

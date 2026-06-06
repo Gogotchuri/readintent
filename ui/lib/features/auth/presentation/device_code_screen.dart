@@ -28,9 +28,13 @@ class _DeviceCodeScreenState extends ConsumerState<DeviceCodeScreen> {
       _error = null;
     });
     try {
-      await ref.read(authProvider.notifier).claimGrantCode(_codeController.text.trim());
+      await ref
+          .read(authProvider.notifier)
+          .claimGrantCode(_codeController.text.trim());
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Paired successfully")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Paired successfully")));
         // Go back
         Navigator.of(context).pop();
       }
@@ -85,7 +89,10 @@ class _DeviceCodeScreenState extends ConsumerState<DeviceCodeScreen> {
                   ),
                   if (_error != null) ...[
                     const SizedBox(height: 12),
-                    Text(_error!, style: TextStyle(color: Colors.red[700], fontSize: 13)),
+                    Text(
+                      _error!,
+                      style: TextStyle(color: Colors.red[700], fontSize: 13),
+                    ),
                   ],
                 ],
               ),
@@ -94,7 +101,11 @@ class _DeviceCodeScreenState extends ConsumerState<DeviceCodeScreen> {
           ElevatedButton(
             onPressed: _isSubmitting ? null : _submit,
             child: _isSubmitting
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : const Text("Submit"),
           ),
         ],

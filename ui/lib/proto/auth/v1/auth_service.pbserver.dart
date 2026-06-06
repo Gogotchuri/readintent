@@ -21,41 +21,66 @@ import 'auth_service.pbjson.dart';
 export 'auth_service.pb.dart';
 
 abstract class AuthServiceBase extends $pb.GeneratedService {
-  $async.Future<$0.PasswordLoginResponse> passwordLogin($pb.ServerContext ctx, $0.PasswordLoginRequest request);
-  $async.Future<$0.PasswordRegistrationResponse> passwordRegistration($pb.ServerContext ctx, $0.PasswordRegistrationRequest request);
-  $async.Future<$0.LogoutResponse> logout($pb.ServerContext ctx, $0.LogoutRequest request);
-  $async.Future<$0.GetSessionResponse> getSession($pb.ServerContext ctx, $0.GetSessionRequest request);
-  $async.Future<$0.HealthResponse> health($pb.ServerContext ctx, $0.HealthRequest request);
-  $async.Future<$0.ClaimGrantCodeResponse> claimGrantCode($pb.ServerContext ctx, $0.ClaimGrantCodeRequest request);
-  $async.Future<$0.OIDCLoginResponse> oIDCLogin($pb.ServerContext ctx, $0.OIDCLoginRequest request);
+  $async.Future<$0.PasswordLoginResponse> passwordLogin(
+      $pb.ServerContext ctx, $0.PasswordLoginRequest request);
+  $async.Future<$0.PasswordRegistrationResponse> passwordRegistration(
+      $pb.ServerContext ctx, $0.PasswordRegistrationRequest request);
+  $async.Future<$0.LogoutResponse> logout(
+      $pb.ServerContext ctx, $0.LogoutRequest request);
+  $async.Future<$0.GetSessionResponse> getSession(
+      $pb.ServerContext ctx, $0.GetSessionRequest request);
+  $async.Future<$0.HealthResponse> health(
+      $pb.ServerContext ctx, $0.HealthRequest request);
+  $async.Future<$0.ClaimGrantCodeResponse> claimGrantCode(
+      $pb.ServerContext ctx, $0.ClaimGrantCodeRequest request);
+  $async.Future<$0.OIDCLoginResponse> oIDCLogin(
+      $pb.ServerContext ctx, $0.OIDCLoginRequest request);
 
   $pb.GeneratedMessage createRequest($core.String methodName) {
     switch (methodName) {
-      case 'PasswordLogin': return $0.PasswordLoginRequest();
-      case 'PasswordRegistration': return $0.PasswordRegistrationRequest();
-      case 'Logout': return $0.LogoutRequest();
-      case 'GetSession': return $0.GetSessionRequest();
-      case 'Health': return $0.HealthRequest();
-      case 'ClaimGrantCode': return $0.ClaimGrantCodeRequest();
-      case 'OIDCLogin': return $0.OIDCLoginRequest();
-      default: throw $core.ArgumentError('Unknown method: $methodName');
+      case 'PasswordLogin':
+        return $0.PasswordLoginRequest();
+      case 'PasswordRegistration':
+        return $0.PasswordRegistrationRequest();
+      case 'Logout':
+        return $0.LogoutRequest();
+      case 'GetSession':
+        return $0.GetSessionRequest();
+      case 'Health':
+        return $0.HealthRequest();
+      case 'ClaimGrantCode':
+        return $0.ClaimGrantCodeRequest();
+      case 'OIDCLogin':
+        return $0.OIDCLoginRequest();
+      default:
+        throw $core.ArgumentError('Unknown method: $methodName');
     }
   }
 
-  $async.Future<$pb.GeneratedMessage> handleCall($pb.ServerContext ctx, $core.String methodName, $pb.GeneratedMessage request) {
+  $async.Future<$pb.GeneratedMessage> handleCall($pb.ServerContext ctx,
+      $core.String methodName, $pb.GeneratedMessage request) {
     switch (methodName) {
-      case 'PasswordLogin': return this.passwordLogin(ctx, request as $0.PasswordLoginRequest);
-      case 'PasswordRegistration': return this.passwordRegistration(ctx, request as $0.PasswordRegistrationRequest);
-      case 'Logout': return this.logout(ctx, request as $0.LogoutRequest);
-      case 'GetSession': return this.getSession(ctx, request as $0.GetSessionRequest);
-      case 'Health': return this.health(ctx, request as $0.HealthRequest);
-      case 'ClaimGrantCode': return this.claimGrantCode(ctx, request as $0.ClaimGrantCodeRequest);
-      case 'OIDCLogin': return this.oIDCLogin(ctx, request as $0.OIDCLoginRequest);
-      default: throw $core.ArgumentError('Unknown method: $methodName');
+      case 'PasswordLogin':
+        return this.passwordLogin(ctx, request as $0.PasswordLoginRequest);
+      case 'PasswordRegistration':
+        return this.passwordRegistration(
+            ctx, request as $0.PasswordRegistrationRequest);
+      case 'Logout':
+        return this.logout(ctx, request as $0.LogoutRequest);
+      case 'GetSession':
+        return this.getSession(ctx, request as $0.GetSessionRequest);
+      case 'Health':
+        return this.health(ctx, request as $0.HealthRequest);
+      case 'ClaimGrantCode':
+        return this.claimGrantCode(ctx, request as $0.ClaimGrantCodeRequest);
+      case 'OIDCLogin':
+        return this.oIDCLogin(ctx, request as $0.OIDCLoginRequest);
+      default:
+        throw $core.ArgumentError('Unknown method: $methodName');
     }
   }
 
   $core.Map<$core.String, $core.dynamic> get $json => AuthServiceBase$json;
-  $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> get $messageJson => AuthServiceBase$messageJson;
+  $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>>
+      get $messageJson => AuthServiceBase$messageJson;
 }
-

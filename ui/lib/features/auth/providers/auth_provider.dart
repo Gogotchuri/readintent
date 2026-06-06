@@ -14,7 +14,8 @@ part "auth_provider.g.dart";
 
 const _googleServerClientId = String.fromEnvironment(
   "GOOGLE_WEB_CLIENT_ID",
-  defaultValue: "1036129511964-3s27nho51k8fsukpkgmbqr7lha7pvq1k.apps.googleusercontent.com",
+  defaultValue:
+      "1036129511964-3s27nho51k8fsukpkgmbqr7lha7pvq1k.apps.googleusercontent.com",
 );
 
 /// AuthProvider is the main provider for authentication state management
@@ -69,7 +70,8 @@ class Auth extends _$Auth {
       return _validateSession();
     }
     // Since _restoreSession is called only during initialization, this will not interrup disconnected users with a valid session
-    _sessionValidated = false; // We haven't validated the session with the server yet
+    _sessionValidated =
+        false; // We haven't validated the session with the server yet
     // If we're offline but have a token, we can optimistically set the state to authenticated with cached user data
     final cachedUser = await _sessionStorage.getUser();
     if (cachedUser != null) {
@@ -87,7 +89,10 @@ class Auth extends _$Auth {
     try {
       final session = await _authClient.getSession();
       _sessionValidated = true; // Session validation succeeded
-      state = AuthAuthenticated(sessionToken: session.sessionToken, user: session.user);
+      state = AuthAuthenticated(
+        sessionToken: session.sessionToken,
+        user: session.user,
+      );
     } on ServerUnavailableException {
       // The backend is unreachable/unhealthy - this is not an auth failure, so
       // keep the optimistic cached session rather than logging the user out.
@@ -135,7 +140,10 @@ class Auth extends _$Auth {
       await _sessionStorage.saveUser(session.user);
       _sessionValidated = true;
       _errorTimer?.cancel();
-      state = AuthAuthenticated(sessionToken: session.sessionToken, user: session.user);
+      state = AuthAuthenticated(
+        sessionToken: session.sessionToken,
+        user: session.user,
+      );
     } on ValidationException catch (e) {
       state = AuthError(message: e.message, fieldErrors: e.fieldErrors);
       _scheduleErrorClear(const Duration(seconds: 5));
@@ -146,15 +154,28 @@ class Auth extends _$Auth {
   }
 
   /// passwordRegistration attempts to create a new account with email and password
-  Future<void> passwordRegistration(String email, String password, String firstName, String lastName) async {
+  Future<void> passwordRegistration(
+    String email,
+    String password,
+    String firstName,
+    String lastName,
+  ) async {
     state = const AuthLoading();
     try {
-      final session = await _authClient.passwordRegistration(email, password, firstName, lastName);
+      final session = await _authClient.passwordRegistration(
+        email,
+        password,
+        firstName,
+        lastName,
+      );
       await _sessionStorage.saveToken(session.sessionToken);
       await _sessionStorage.saveUser(session.user);
 
       _sessionValidated = true;
-      state = AuthAuthenticated(sessionToken: session.sessionToken, user: session.user);
+      state = AuthAuthenticated(
+        sessionToken: session.sessionToken,
+        user: session.user,
+      );
     } on ValidationException catch (e) {
       state = AuthError(message: e.message, fieldErrors: e.fieldErrors);
       _scheduleErrorClear(const Duration(seconds: 5));
@@ -168,7 +189,10 @@ class Auth extends _$Auth {
   Future<void> googleSignIn() async {
     state = const AuthLoading();
     try {
-      developer.log("GoogleSignIn: starting with serverClientId=$_googleServerClientId", name: "auth");
+      developer.log(
+        "GoogleSignIn: starting with serverClientId=$_googleServerClientId",
+        name: "auth",
+      );
       final gSignIn = GoogleSignIn(serverClientId: _googleServerClientId);
       final account = await gSignIn.signIn();
       if (account == null) {
@@ -184,7 +208,9 @@ class Auth extends _$Auth {
         name: "auth",
       );
       if (idToken == null) {
-        state = const AuthError(message: "Failed to obtain ID token from Google");
+        state = const AuthError(
+          message: "Failed to obtain ID token from Google",
+        );
         _scheduleErrorClear(const Duration(seconds: 5));
         return;
       }
@@ -194,9 +220,15 @@ class Auth extends _$Auth {
       await _sessionStorage.saveUser(session.user);
       _sessionValidated = true;
       _errorTimer?.cancel();
-      state = AuthAuthenticated(sessionToken: session.sessionToken, user: session.user);
+      state = AuthAuthenticated(
+        sessionToken: session.sessionToken,
+        user: session.user,
+      );
     } on ValidationException catch (e) {
-      developer.log("GoogleSignIn: ValidationException: ${e.message}", name: "auth");
+      developer.log(
+        "GoogleSignIn: ValidationException: ${e.message}",
+        name: "auth",
+      );
       state = AuthError(message: e.message, fieldErrors: e.fieldErrors);
       _scheduleErrorClear(const Duration(seconds: 5));
     } catch (e, st) {

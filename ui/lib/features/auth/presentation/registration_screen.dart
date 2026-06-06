@@ -123,7 +123,9 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             border: const OutlineInputBorder(),
             errorText: fieldError("password"),
             suffixIcon: IconButton(
-              icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+              icon: Icon(
+                _obscurePassword ? Icons.visibility_off : Icons.visibility,
+              ),
               onPressed: () {
                 setState(() {
                   _obscurePassword = !_obscurePassword;
@@ -152,7 +154,11 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             prefixIcon: const Icon(Icons.lock_outlined),
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
-              icon: Icon(_obscureConfirmPassword ? Icons.visibility_off : Icons.visibility),
+              icon: Icon(
+                _obscureConfirmPassword
+                    ? Icons.visibility_off
+                    : Icons.visibility,
+              ),
               onPressed: () {
                 setState(() {
                   _obscureConfirmPassword = !_obscureConfirmPassword;

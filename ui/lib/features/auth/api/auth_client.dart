@@ -5,7 +5,8 @@ import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
 import "package:readintent_flutter/models/user.dart";
 import "package:connectrpc/connect.dart";
 import "package:readintent_flutter/proto/auth/v1/auth_service.connect.client.dart";
-import "package:readintent_flutter/proto/auth/v1/auth_service.pb.dart" as auth_pb;
+import "package:readintent_flutter/proto/auth/v1/auth_service.pb.dart"
+    as auth_pb;
 
 import "package:riverpod_annotation/riverpod_annotation.dart";
 
@@ -17,7 +18,10 @@ class Session {
 
   Session({required this.sessionToken, required this.user});
   factory Session.fromRpcSession(auth_pb.Session session) {
-    return Session(sessionToken: session.sessionToken, user: User.fromRpcIdentity(session.identity));
+    return Session(
+      sessionToken: session.sessionToken,
+      user: User.fromRpcIdentity(session.identity),
+    );
   }
 }
 
@@ -26,7 +30,8 @@ class AuthClient {
 
   late final AuthServiceClientI _client;
 
-  AuthClient({required this.onUnauthorized, required AuthServiceClientI client}) : _client = client;
+  AuthClient({required this.onUnauthorized, required AuthServiceClientI client})
+    : _client = client;
 
   Future<Session> getSession() async {
     try {
@@ -43,7 +48,9 @@ class AuthClient {
 
   Future<void> claimGrantCode(String code) async {
     try {
-      await _client.claimGrantCode(auth_pb.ClaimGrantCodeRequest(userCode: code));
+      await _client.claimGrantCode(
+        auth_pb.ClaimGrantCodeRequest(userCode: code),
+      );
     } on ConnectException catch (e) {
       handleConnectException(e, "claim grant code");
     } catch (e) {

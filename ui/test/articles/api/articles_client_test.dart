@@ -6,7 +6,8 @@ import "package:mockito/mockito.dart";
 import "package:readintent_flutter/features/articles/api/articles_client.dart";
 import "package:readintent_flutter/features/articles/api/articles_client_exceptions.dart";
 import "package:readintent_flutter/features/articles/api/articles_service_client.dart";
-import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
+import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
+    as articles_pb;
 
 @GenerateMocks([ArticlesServiceClientI])
 import "articles_client_test.mocks.dart";
@@ -43,15 +44,19 @@ void main() {
   });
 
   test("getArticle throws ArticlesException on ConnectException", () async {
-    when(mockClient.getArticle(any)).thenThrow(
-      ConnectException(Code.notFound, "Not found"),
-    );
+    when(
+      mockClient.getArticle(any),
+    ).thenThrow(ConnectException(Code.notFound, "Not found"));
 
     expect(
       () => articlesClient.getArticle("1"),
       throwsA(
         isA<ArticlesException>()
-            .having((e) => e.message, "message", contains("Failed to fetch article"))
+            .having(
+              (e) => e.message,
+              "message",
+              contains("Failed to fetch article"),
+            )
             .having((e) => e.message, "message", contains("Not found")),
       ),
     );
@@ -64,7 +69,11 @@ void main() {
       () => articlesClient.getArticle("1"),
       throwsA(
         isA<ArticlesException>()
-            .having((e) => e.message, "message", contains("Failed to fetch article"))
+            .having(
+              (e) => e.message,
+              "message",
+              contains("Failed to fetch article"),
+            )
             .having((e) => e.message, "message", contains("Network error")),
       ),
     );

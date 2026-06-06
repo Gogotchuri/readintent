@@ -8,23 +8,17 @@ part of 'voice_preview_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Generates short, on-device voice previews from a bundled sample-sentence
-/// phoneme payload. Phoneme token IDs are voice-independent, so one sample runs
-/// through the real ONNX pipeline for any voice (only the style vector differs).
+/// Generates short, on-device voice previews.
 /// Generated WAV clips are cached in the temp dir keyed by voice.
 
 @ProviderFor(VoicePreview)
 final voicePreviewProvider = VoicePreviewProvider._();
 
-/// Generates short, on-device voice previews from a bundled sample-sentence
-/// phoneme payload. Phoneme token IDs are voice-independent, so one sample runs
-/// through the real ONNX pipeline for any voice (only the style vector differs).
+/// Generates short, on-device voice previews.
 /// Generated WAV clips are cached in the temp dir keyed by voice.
 final class VoicePreviewProvider
     extends $NotifierProvider<VoicePreview, VoicePreviewState> {
-  /// Generates short, on-device voice previews from a bundled sample-sentence
-  /// phoneme payload. Phoneme token IDs are voice-independent, so one sample runs
-  /// through the real ONNX pipeline for any voice (only the style vector differs).
+  /// Generates short, on-device voice previews.
   /// Generated WAV clips are cached in the temp dir keyed by voice.
   VoicePreviewProvider._()
     : super(
@@ -53,11 +47,9 @@ final class VoicePreviewProvider
   }
 }
 
-String _$voicePreviewHash() => r'37c9a3aec5f04494bfe2e1a508bb79223b5b246c';
+String _$voicePreviewHash() => r'3f218c1aa78c53d56649f623b2e4e44ef5ca588b';
 
-/// Generates short, on-device voice previews from a bundled sample-sentence
-/// phoneme payload. Phoneme token IDs are voice-independent, so one sample runs
-/// through the real ONNX pipeline for any voice (only the style vector differs).
+/// Generates short, on-device voice previews.
 /// Generated WAV clips are cached in the temp dir keyed by voice.
 
 abstract class _$VoicePreview extends $Notifier<VoicePreviewState> {

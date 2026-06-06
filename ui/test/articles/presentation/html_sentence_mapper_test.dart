@@ -3,7 +3,8 @@ import "package:readintent_flutter/features/articles/presentation/html_sentence_
 import "package:readintent_flutter/features/tts/sentence_builder.dart";
 
 /// Helper to build a [SentenceText] with only the fields the mapper uses.
-SentenceText _sentence(int index, String text) => SentenceText(index: index, text: text, wordCount: 0);
+SentenceText _sentence(int index, String text) =>
+    SentenceText(index: index, text: text, wordCount: 0);
 
 void main() {
   group("injectSentenceSpans", () {
@@ -34,7 +35,10 @@ void main() {
 
     test("wraps sentences across multiple paragraphs", () {
       const html = "<p>First.</p><p>Second.</p>";
-      final result = injectSentenceSpans(html, [_sentence(0, "First."), _sentence(1, "Second.")]);
+      final result = injectSentenceSpans(html, [
+        _sentence(0, "First."),
+        _sentence(1, "Second."),
+      ]);
 
       expect(result, contains('data-sentence="0"'));
       expect(result, contains('data-sentence="1"'));
@@ -42,7 +46,9 @@ void main() {
 
     test("handles sentence spanning multiple HTML tags", () {
       const html = "<p>Start of <b>sentence</b> here.</p>";
-      final result = injectSentenceSpans(html, [_sentence(0, "Start of sentence here.")]);
+      final result = injectSentenceSpans(html, [
+        _sentence(0, "Start of sentence here."),
+      ]);
 
       // The sentence should be wrapped across the text nodes
       expect(result, contains('data-sentence="0"'));
@@ -52,7 +58,10 @@ void main() {
 
     test("preserves HTML structure around sentences", () {
       const html = '<p>Hello.</p><div class="x">World.</div>';
-      final result = injectSentenceSpans(html, [_sentence(0, "Hello."), _sentence(1, "World.")]);
+      final result = injectSentenceSpans(html, [
+        _sentence(0, "Hello."),
+        _sentence(1, "World."),
+      ]);
 
       expect(result, contains('<div class="x"'));
       expect(result, contains('data-sentence="0"'));
@@ -88,7 +97,9 @@ void main() {
 
     test("handles nested inline tags", () {
       const html = "<p>A <em>quick <b>brown</b></em> fox.</p>";
-      final result = injectSentenceSpans(html, [_sentence(0, "A quick brown fox.")]);
+      final result = injectSentenceSpans(html, [
+        _sentence(0, "A quick brown fox."),
+      ]);
 
       expect(result, contains('data-sentence="0"'));
       expect(result, contains("<em>"));

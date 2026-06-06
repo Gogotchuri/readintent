@@ -12,7 +12,8 @@ import "package:readintent_flutter/core/connectivity.dart";
 import "package:readintent_flutter/core/database/app_database.dart";
 import "package:readintent_flutter/features/articles/api/articles_client.dart";
 import "package:readintent_flutter/features/articles/repository/article_repository.dart";
-import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
+import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
+    as articles_pb;
 
 @GenerateMocks([AppDatabase, ArticlesClient])
 import "article_repository_test.mocks.dart";
@@ -136,7 +137,11 @@ void main() {
         isOnlineProvider.overrideWithValue(isOnline),
       ],
     );
-    return ArticleRepository(mockDb, mockRemote, container.read(providerRefProvider));
+    return ArticleRepository(
+      mockDb,
+      mockRemote,
+      container.read(providerRefProvider),
+    );
   }
 
   setUp(() {
@@ -150,7 +155,10 @@ void main() {
 
   group("getArticles", () {
     test("returns cached articles immediately", () async {
-      final rows = [makePreviewRow(id: 1), makePreviewRow(id: 2, title: "Second")];
+      final rows = [
+        makePreviewRow(id: 1),
+        makePreviewRow(id: 2, title: "Second"),
+      ];
       when(mockDb.getAllPreviews()).thenAnswer((_) async => rows);
 
       repository = createRepository(isOnline: false);
@@ -164,9 +172,15 @@ void main() {
     test("triggers background fetch when online", () async {
       when(mockDb.getAllPreviews()).thenAnswer((_) async => []);
 
-      final serverResponse = articles_pb.GetArticlesResponse(articles: [makePreviewProto()], totalCount: 1);
+      final serverResponse = articles_pb.GetArticlesResponse(
+        articles: [makePreviewProto()],
+        totalCount: 1,
+      );
       when(
-        mockRemote.getArticles(pageSize: anyNamed("pageSize"), pageToken: anyNamed("pageToken")),
+        mockRemote.getArticles(
+          pageSize: anyNamed("pageSize"),
+          pageToken: anyNamed("pageToken"),
+        ),
       ).thenAnswer((_) async => serverResponse);
       when(mockDb.replacePreviews(any)).thenAnswer((_) async {});
 
@@ -177,7 +191,10 @@ void main() {
       await Future.delayed(Duration.zero);
 
       verify(
-        mockRemote.getArticles(pageSize: anyNamed("pageSize"), pageToken: anyNamed("pageToken")),
+        mockRemote.getArticles(
+          pageSize: anyNamed("pageSize"),
+          pageToken: anyNamed("pageToken"),
+        ),
       ).called(1);
       verify(mockDb.replacePreviews(any)).called(1);
     });
@@ -190,14 +207,19 @@ void main() {
         totalCount: 1,
       );
       when(
-        mockRemote.getArticles(pageSize: anyNamed("pageSize"), pageToken: anyNamed("pageToken")),
+        mockRemote.getArticles(
+          pageSize: anyNamed("pageSize"),
+          pageToken: anyNamed("pageToken"),
+        ),
       ).thenAnswer((_) async => serverResponse);
       when(mockDb.replacePreviews(any)).thenAnswer((_) async {});
 
       repository = createRepository(isOnline: true);
       final completer = Completer<articles_pb.GetArticlesResponse>();
 
-      await repository.getArticles(onUpdated: (updated) => completer.complete(updated));
+      await repository.getArticles(
+        onUpdated: (updated) => completer.complete(updated),
+      );
 
       final updated = await completer.future;
       expect(updated.articles[0].title, "Fresh");
@@ -210,13 +232,21 @@ void main() {
       await repository.getArticles();
 
       await Future.delayed(Duration.zero);
-      verifyNever(mockRemote.getArticles(pageSize: anyNamed("pageSize"), pageToken: anyNamed("pageToken")));
+      verifyNever(
+        mockRemote.getArticles(
+          pageSize: anyNamed("pageSize"),
+          pageToken: anyNamed("pageToken"),
+        ),
+      );
     });
 
     test("ignores background fetch errors", () async {
       when(mockDb.getAllPreviews()).thenAnswer((_) async => []);
       when(
-        mockRemote.getArticles(pageSize: anyNamed("pageSize"), pageToken: anyNamed("pageToken")),
+        mockRemote.getArticles(
+          pageSize: anyNamed("pageSize"),
+          pageToken: anyNamed("pageToken"),
+        ),
       ).thenThrow(Exception("Network error"));
 
       repository = createRepository(isOnline: true);
@@ -305,9 +335,11 @@ void main() {
 
       expect(result.queued, true);
       final captured =
-          verify(mockDb.insertPendingOp(captureAny)).captured.single as PendingOperationsCompanion;
+          verify(mockDb.insertPendingOp(captureAny)).captured.single
+              as PendingOperationsCompanion;
       expect(captured.type.value, "parse_article");
-      final payload = jsonDecode(captured.payload.value) as Map<String, dynamic>;
+      final payload =
+          jsonDecode(captured.payload.value) as Map<String, dynamic>;
       expect(payload["url"], "https://example.com");
     });
   });
