@@ -53,7 +53,7 @@ func (i *Issuer) Generate(identityID string) (string, error) {
 
 func (i *Issuer) Parse(raw string) (*jwt.RegisteredClaims, error) {
 	var claims jwt.RegisteredClaims
-	_, err := jwt.ParseWithClaims(raw, &claims, func(t *jwt.Token) (interface{}, error) {
+	_, err := jwt.ParseWithClaims(raw, &claims, func(t *jwt.Token) (any, error) {
 		return &i.key.PublicKey, nil
 	},
 		jwt.WithValidMethods([]string{jwt.SigningMethodES256.Alg()}),

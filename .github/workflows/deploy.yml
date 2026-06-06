@@ -15,19 +15,20 @@ jobs:
         id: target
         run: |
           BRANCH="${{ github.event.workflow_run.head_branch }}"
+          # Pin to the exact image built for this commit
+          SHA=$(echo "${{ github.event.workflow_run.head_sha }}" | head -c 7)
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
           if [ "$BRANCH" = "master" ]; then
             echo "host=${{ secrets.PROD_SERVER_HOST }}" >> "$GITHUB_OUTPUT"
             echo "env=prod" >> "$GITHUB_OUTPUT"
-            echo "tag=latest" >> "$GITHUB_OUTPUT"
           elif [ "$BRANCH" = "dev" ]; then
             echo "host=${{ secrets.DEV_SERVER_HOST }}" >> "$GITHUB_OUTPUT"
             echo "env=dev" >> "$GITHUB_OUTPUT"
-            echo "tag=dev" >> "$GITHUB_OUTPUT"
           else
             echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Deploy via SSH
+      - name: Deploy via SSH (blue-green flip)
         if: ${{ steps.target.outputs.skip != 'true' }}
         uses: appleboy/ssh-action@v1
         with:
@@ -36,8 +37,5 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
             set -euo pipefail
-            cd /opt/readintent
-            sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=${{ steps.target.outputs.tag }}/' .env
-            docker compose pull
-            docker compose up -d --remove-orphans
+            /opt/readintent/deploy.sh "${{ steps.target.outputs.sha }}"
             docker image prune -f

@@ -7,11 +7,9 @@ services:
       - "443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./bff_upstream.caddy:/etc/caddy/bff_upstream.caddy:ro
       - caddy_data:/data
       - caddy_config:/config
-    depends_on:
-      bff:
-        condition: service_started
     networks:
       - intranet
 
@@ -48,8 +46,12 @@ services:
       retries: 10
       start_period: 10s
 
-  bff:
-    image: ${DOCKER_REPO}/readintent_bff:${IMAGE_TAG:-latest}
+  # Blue-green backend pair. Only one color runs at steady state; deploy.sh
+  # brings up the inactive color, waits for it to be healthy, flips the Caddy
+  # upstream (bff_upstream.caddy), then stops the old one
+  bff_blue:
+    image: ${DOCKER_REPO}/readintent_bff:${BFF_BLUE_TAG:-latest}
+    profiles: ["blue"]
     restart: unless-stopped
     depends_on:
       redis:
@@ -73,9 +75,55 @@ services:
       REDIS_PASSWORD: ""
       REDIS_DB: "0"
       REDIS_GROUP_NAME: bff-group
-      REDIS_CONSUMER_NAME: bff-1
+      REDIS_CONSUMER_NAME: bff-blue
+      REDIS_MIN_IDLE_TIME: 60s
     networks:
       - intranet
+    healthcheck:
+      test:
+        ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:5050/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+
+  bff_green:
+    image: ${DOCKER_REPO}/readintent_bff:${BFF_GREEN_TAG:-latest}
+    profiles: ["green"]
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      kratos:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      PORT: "5050"
+      KRATOS_PUBLIC_URL: http://kratos:4433
+      DATABASE_CONFIG_HOSTNAME: postgres
+      DATABASE_CONFIG_PORT: "5432"
+      DATABASE_CONFIG_USERNAME: bff
+      DATABASE_CONFIG_PASSWORD: ${BFF_DB_PASSWORD}
+      DATABASE_CONFIG_DATABASE: articles_db
+      DATABASE_CONFIG_SSLMODE: disable
+      REDIS_HOSTNAME: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ""
+      REDIS_DB: "0"
+      REDIS_GROUP_NAME: bff-group
+      REDIS_CONSUMER_NAME: bff-green
+      REDIS_MIN_IDLE_TIME: 60s
+    networks:
+      - intranet
+    healthcheck:
+      test:
+        ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:5050/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
 
   scraper:
     image: ${DOCKER_REPO}/readintent_scraper:${IMAGE_TAG:-latest}
@@ -145,7 +193,17 @@ services:
     networks:
       - intranet
     healthcheck:
-      test: ["CMD", "pg_isready", "-h", "localhost", "-p", "5432", "-U", "${POSTGRES_ADMIN_USER}"]
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "-h",
+          "localhost",
+          "-p",
+          "5432",
+          "-U",
+          "${POSTGRES_ADMIN_USER}",
+        ]
       interval: 5s
       timeout: 5s
       retries: 5

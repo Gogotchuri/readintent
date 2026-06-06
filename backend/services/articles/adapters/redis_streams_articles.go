@@ -39,7 +39,7 @@ func NewArticlesHub(client *redis.Client, conf config.RedisStreams) *ArticlesHub
 }
 
 func (h *ArticlesHub) SubmitArticle(ctx context.Context, articleID int64, url, html string) error {
-	values := map[string]interface{}{
+	values := map[string]any{
 		"article_id": strconv.FormatInt(articleID, 10),
 		"url":        url,
 	}
@@ -84,7 +84,12 @@ func (h *ArticlesHub) Listen(ctx context.Context) error {
 	if err := h.ensureGroups(ctx); err != nil {
 		return err
 	}
+	// Reclaim entries left pending by another consumer that died/stopped. Done once before we start listening
+	h.reclaimPending(ctx, ScrapeResultStream)
+	h.reclaimPending(ctx, PhonemizerResultStream)
+
 	for {
+
 		res, err := h.client.XReadGroup(ctx, &redis.XReadGroupArgs{
 			Group:    h.conf.GroupName,
 			Consumer: h.conf.ConsumerName,
@@ -119,6 +124,36 @@ func (h *ArticlesHub) Listen(ctx context.Context) error {
 			return nil
 		default:
 		}
+	}
+}
+
+// reclaimPending takes over entries on the stream that were never acked and
+// have been idle longer than MinIdleTime. Without this, a stopped consumer will lose
+// the events recieved by them
+func (h *ArticlesHub) reclaimPending(ctx context.Context, eventStream string) {
+	start := "0-0"
+	for {
+		messages, next, err := h.client.XAutoClaim(ctx, &redis.XAutoClaimArgs{
+			Stream:   eventStream,
+			Group:    h.conf.GroupName,
+			Consumer: h.conf.ConsumerName,
+			MinIdle:  h.conf.MinIdleTime,
+			Start:    start,
+			Count:    10,
+		}).Result()
+		if err != nil {
+			slog.Error(fmt.Sprintf("error reclaiming pending from stream %s: %v", eventStream, err))
+			return
+		}
+		if len(messages) > 0 {
+			slog.Info(fmt.Sprintf("Reclaimed %d pending message(s) from stream %s", len(messages), eventStream))
+			h.publishToListeners(ctx, eventStream, messages)
+		}
+		// next == "0-0" means we've scanned the whole pending list.
+		if next == "0-0" || next == "" {
+			return
+		}
+		start = next
 	}
 }
 

@@ -50,9 +50,17 @@ SOPS_AGE_KEY_FILE=./age-key.txt tofu apply -var-file=envs/prod.tfvars
 
 ## Manual Deploy
 
+The backend (`bff`) runs blue-green: two color services (`bff_blue`/`bff_green`)
+behind Compose profiles, only one active at a time, with Caddy flipped between
+them. `deploy.sh` orchestrates the whole flip.
+The routing state lives in a single file on the server:
+- bff_upstream.caddy contains the current caddy upstream config
 ```bash
-ssh deploy@dev-api.readintent.app "cd /opt/readintent && docker compose pull && docker compose up -d"
-ssh deploy@api.readintent.app "cd /opt/readintent && docker compose pull && docker compose up -d"
+ssh deploy@dev-api.readintent.app "/opt/readintent/deploy.sh <sha7>"
+ssh deploy@api.readintent.app   "/opt/readintent/deploy.sh <sha7>"
+
+# Instant rollback to the previous (retained) color:
+ssh deploy@api.readintent.app "/opt/readintent/deploy.sh --rollback"
 ```
 
 ## CI/CD (GitHub Actions)

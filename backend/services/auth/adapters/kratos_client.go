@@ -208,9 +208,9 @@ func getRegisterFlowBody(r authmodels.PasswordRegistrationRequest) kratos.Update
 		kratos.NewUpdateRegistrationFlowWithPasswordMethod(
 			authmodels.MethodPassword,
 			r.Password,
-			map[string]interface{}{
+			map[string]any{
 				"email": r.Email,
-				"name": map[string]interface{}{
+				"name": map[string]any{
 					"first": r.FirstName,
 					"last":  r.LastName,
 				},
@@ -228,15 +228,15 @@ func sessionFromKratosSession(kratosSession *kratos.Session, sessionToken string
 }
 
 func identityFromKratosIdentity(kratosIdentity *kratos.Identity) authmodels.Identity {
-	traits, ok := kratosIdentity.Traits.(map[string]interface{})
+	traits, ok := kratosIdentity.Traits.(map[string]any)
 	if !ok {
 		return authmodels.Identity{
 			ID: kratosIdentity.Id,
 		}
 	}
 	email, _ := traits["email"].(string)
-	firstName, _ := traits["name"].(map[string]interface{})["first"].(string)
-	lastName, _ := traits["name"].(map[string]interface{})["last"].(string)
+	firstName, _ := traits["name"].(map[string]any)["first"].(string)
+	lastName, _ := traits["name"].(map[string]any)["last"].(string)
 
 	return authmodels.Identity{
 		ID:        kratosIdentity.Id,

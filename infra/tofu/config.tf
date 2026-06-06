@@ -1,6 +1,6 @@
 locals {
   # Per-environment rolling image tag. consistent with the tag the CI
-  # deploy workflow seds into .env (master -> latest, dev -> dev) 
+  # deploy workflow seds into .env (master -> latest, dev -> dev)
   image_tag = var.environment == "dev" ? "dev" : "latest"
 
   # All mutable application config delivered to the server, keyed by path
@@ -12,12 +12,19 @@ locals {
       content = file("${path.module}/files/docker-compose.yml")
     }
 
+    "deploy.sh" = {
+      mode    = "0755"
+      content = file("${path.module}/files/deploy.sh")
+    }
+
     ".env" = {
       mode    = "0600"
       content = <<-EOT
         ENVIRONMENT=${var.environment}
         DOCKER_REPO=${data.sops_file.secrets.data["dockerhub_username"]}
         IMAGE_TAG=${local.image_tag}
+        BFF_BLUE_TAG=${local.image_tag}
+        BFF_GREEN_TAG=${local.image_tag}
         POSTGRES_ADMIN_USER=${data.sops_file.secrets.data["postgres_user"]}
         POSTGRES_ADMIN_PASSWORD=${data.sops_file.secrets.data["postgres_password"]}
         KRATOS_DB_USER=kratos
@@ -128,11 +135,15 @@ resource "terraform_data" "config" {
 
   # 3. Run the script, then bring the stack up. No secrets referenced here, so
   #    `docker compose` progress prints normally.
+  #
+  #    bff_upstream.caddy is the blue-green routing state owned by the server
   provisioner "remote-exec" {
     inline = [
       "bash /tmp/ri-config-setup.sh",
       "rm -f /tmp/ri-config-setup.sh",
-      "cd /opt/readintent && docker compose pull && docker compose up -d --remove-orphans",
+      # Seed the routing snippet (defaults to blue) if the server doesn't have one yet.
+      "test -f /opt/readintent/bff_upstream.caddy || printf 'reverse_proxy bff_blue:5050 {\\n\\tflush_interval -1\\n}\\n' > /opt/readintent/bff_upstream.caddy",
+      "cd /opt/readintent && ACTIVE=$(grep -oE 'bff_(blue|green)' bff_upstream.caddy | head -n1 | sed 's/bff_//') && COMPOSE_PROFILES=$ACTIVE docker compose pull && COMPOSE_PROFILES=$ACTIVE docker compose up -d --remove-orphans",
     ]
   }
 
