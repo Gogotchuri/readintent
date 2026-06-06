@@ -5,10 +5,11 @@ ${domain} {
 	}
 
 	handle /* {
-		# flush_interval -1 disables response buffering so server-streaming
-		# RPC writes are flushed to the client immediately.
-		reverse_proxy bff:5050 {
-			flush_interval -1
-		}
+		# The bff upstream lives in a separate file so the
+		# blue-green deploy (deploy.sh) can flip blue<->green by rewriting it
+		# in place + `caddy reload` without touching this templated file.
+		# The snippet additionally carries `flush_interval -1` (disables response buffering
+		# so server-streaming RPC writes flush immediately).
+		import /etc/caddy/bff_upstream.caddy
 	}
 }

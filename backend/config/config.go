@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/caarlos0/env/v6"
 	"github.com/joho/godotenv"
@@ -27,6 +28,10 @@ type RedisStreams struct {
 
 	GroupName    string `env:"GROUP_NAME" envDefault:""`
 	ConsumerName string `env:"CONSUMER_NAME" envDefault:""`
+
+	// used via XAUTOCLAIM. Which in turn is necessary for recovering from failures and
+	// Blue-Green deployments
+	MinIdleTime time.Duration `env:"MIN_IDLE_TIME" envDefault:"60s"`
 }
 
 type DatabaseConfig struct {

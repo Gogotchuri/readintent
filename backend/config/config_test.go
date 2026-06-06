@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 )
@@ -31,6 +32,7 @@ func TestLoadConfig(t *testing.T) {
 			DB:           2,
 			GroupName:    "grp",
 			ConsumerName: "cons",
+			MinIdleTime:  90 * time.Second,
 		},
 	}
 	// SetEnvFromFile does not override variables already present in the
@@ -40,7 +42,7 @@ func TestLoadConfig(t *testing.T) {
 		"DATABASE_CONFIG_HOSTNAME", "DATABASE_CONFIG_PORT", "DATABASE_CONFIG_USERNAME",
 		"DATABASE_CONFIG_PASSWORD", "DATABASE_CONFIG_DATABASE", "DATABASE_CONFIG_SSLMODE",
 		"REDIS_HOSTNAME", "REDIS_PORT", "REDIS_PASSWORD", "REDIS_DB",
-		"REDIS_GROUP_NAME", "REDIS_CONSUMER_NAME",
+		"REDIS_GROUP_NAME", "REDIS_CONSUMER_NAME", "REDIS_MIN_IDLE_TIME",
 	}
 	for _, k := range keys {
 		t.Setenv(k, "") // registers cleanup to restore the original value
@@ -65,6 +67,7 @@ REDIS_PASSWORD=redispass
 REDIS_DB=2
 REDIS_GROUP_NAME=grp
 REDIS_CONSUMER_NAME=cons
+REDIS_MIN_IDLE_TIME=90s
 `), 0644)
 
 	if err != nil {
