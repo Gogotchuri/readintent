@@ -5,6 +5,7 @@ import "package:just_audio/just_audio.dart";
 import "package:readintent_flutter/core/player_persistence.dart";
 import "package:readintent_flutter/features/articles/repository/article_repository.dart";
 import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
+import "package:readintent_flutter/features/settings/providers/app_settings_provider.dart";
 import "package:readintent_flutter/features/tts/phoneme.dart";
 import "package:readintent_flutter/features/tts/pipeline.dart";
 import "package:readintent_flutter/features/tts/sentence_builder.dart";
@@ -142,6 +143,13 @@ class ActivePlayer extends _$ActivePlayer {
       if (next is AuthUnauthenticated) stop();
     });
 
+    // Restart the current article with the new voice when the user changes it.
+    ref.listen(appSettingsProvider, (prev, next) {
+      if (prev != null && prev.voice != next.voice && state.hasActiveArticle) {
+        restartWithVoice(next.voice);
+      }
+    });
+
     // Restore last-played on startup
     _restoreLastPlayed();
 
@@ -178,9 +186,11 @@ class ActivePlayer extends _$ActivePlayer {
 
   Future<void> play({
     required articles_pb.Article article,
-    VoiceStyle voice = VoiceStyle.afSky,
+    VoiceStyle? voice,
     double speed = 1.0,
   }) async {
+    // Default to the user's selected voice from settings.
+    final selectedVoice = voice ?? ref.read(appSettingsProvider).voice;
     _restoring = false; // Cancel any in-progress restore
     final newArticleId = article.id.toString();
 
@@ -230,7 +240,7 @@ class ActivePlayer extends _$ActivePlayer {
     try {
       _session = AudioGenerator(
         article: article,
-        voice: voice,
+        voice: selectedVoice,
         speed: speed,
         cache: _cache,
         pipelineFactory: _pipelineFactory,
@@ -463,6 +473,16 @@ class ActivePlayer extends _$ActivePlayer {
     await _handler.setSpeed(speed);
     state = state.copyWith(playbackSpeed: speed);
     persistState();
+  }
+
+  /// Regenerate the current article with a new voice.
+  /// The cache key includes the voice, so this produces a fresh session.
+  Future<void> restartWithVoice(VoiceStyle voice) async {
+    final article = _loadedArticle;
+    if (article == null || !_playerStarted) return;
+    // Force full regeneration instead of the same-article resume shortcut.
+    _playerStarted = false;
+    await play(article: article, voice: voice, speed: state.playbackSpeed);
   }
 
   Future<void> pause() async => _handler.pause();

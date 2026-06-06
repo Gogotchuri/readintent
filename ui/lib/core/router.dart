@@ -8,6 +8,7 @@ import "package:readintent_flutter/features/articles/presentation/article_detail
 import "package:readintent_flutter/features/articles/presentation/player_shell.dart";
 import "package:readintent_flutter/features/auth/presentation/device_code_screen.dart";
 import "package:readintent_flutter/features/articles/presentation/home.dart";
+import "package:readintent_flutter/features/settings/presentation/voice_settings_screen.dart";
 import "package:readintent_flutter/models/auth_state.dart";
 import "package:riverpod_annotation/riverpod_annotation.dart";
 
@@ -71,6 +72,7 @@ GoRouter appRouter(Ref ref) {
         routes: [
           GoRoute(path: "/home", builder: (context, state) => const HomeScreen()),
           GoRoute(path: "/pair-extension", builder: (context, state) => const DeviceCodeScreen()),
+          GoRoute(path: "/voice-settings", builder: (context, state) => const VoiceSettingsScreen()),
           GoRoute(
             path: "/articles/:id",
             builder: (context, state) {

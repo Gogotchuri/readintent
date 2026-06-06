@@ -11,12 +11,20 @@ import "package:readintent_flutter/features/tts/voice_style.dart";
 typedef PipelineFactory = Future<TTSPipeline> Function(VoiceStyle voiceStyle);
 
 Future<TTSPipeline> defaultPipelineFactory(VoiceStyle voiceStyle) async {
-  final assetPaths = await KokoroDownloader.ensureAssets(modelType: ModelType.q4, voiceStyle: voiceStyle);
-  return TTSPipeline.create(assetPaths);
+  final assetPaths = await KokoroDownloader.ensureAssets(
+    modelType: ModelType.q4,
+    voiceStyle: voiceStyle,
+  );
+  final pipeline = await TTSPipeline.create(assetPaths);
+  await pipeline.ensureVoice(voiceStyle);
+  return pipeline;
 }
 
 final pipelineFactoryProvider = Provider<PipelineFactory>((ref) {
-  return (VoiceStyle voiceStyle) async {
+  // Build the model session exactly once and share it across every caller
+  Future<TTSPipeline>? cached;
+
+  Future<TTSPipeline> build(VoiceStyle voiceStyle) async {
     final notifier = ref.read(downloadStatusProvider.notifier);
     try {
       final assetPaths = await KokoroDownloader.ensureAssets(
@@ -33,6 +41,19 @@ final pipelineFactoryProvider = Provider<PipelineFactory>((ref) {
       notifier.set(null);
       rethrow;
     }
+  }
+
+  return (VoiceStyle voiceStyle) async {
+    cached ??= build(voiceStyle);
+    try {
+      final pipeline = await cached!;
+      // Ensure the requested voice is downloaded and loaded
+      await pipeline.ensureVoice(voiceStyle);
+      return pipeline;
+    } catch (e) {
+      cached = null; // allow a retry on the next play/preview
+      rethrow;
+    }
   };
 });
 
@@ -43,9 +64,19 @@ class TTSPipeline {
   TTSPipeline._(this._session, this._voiceStyles);
 
   static Future<TTSPipeline> create(KokoroAssetPaths assetPaths) async {
-    final voiceStyles = await VoiceStyles.loadVoiceStyles(assetPaths.voiceStylePath);
-    final session = await TTSPipeline.initializeONNXSession(assetPaths.modelPath);
+    final voiceStyles = await VoiceStyles.loadVoiceStyles(
+      assetPaths.voiceStylePath,
+    );
+    final session = await TTSPipeline.initializeONNXSession(
+      assetPaths.modelPath,
+    );
     return TTSPipeline._(session, voiceStyles);
+  }
+
+  Future<void> ensureVoice(VoiceStyle voice) async {
+    if (_voiceStyles.hasVoice(voice)) return;
+    final path = await KokoroDownloader.ensureVoice(voice);
+    _voiceStyles.ensureVoiceLoaded(voice, await File(path).readAsBytes());
   }
 
   static Future<OrtSession> initializeONNXSession(String modelPath) async {
@@ -70,20 +101,36 @@ class TTSPipeline {
     return session;
   }
 
-  Future<KokoroResult> runInference(PhonemeChunk chunk, VoiceStyle style) async {
+  Future<KokoroResult> runInference(
+    PhonemeChunk chunk,
+    VoiceStyle style,
+  ) async {
     final seqLen = chunk.tokenIds.length;
     final tokenIds = chunk.tokenIds;
 
     // Create input tensors
-    final tokenTensor = OrtValueTensor.createTensorWithDataList([tokenIds], [1, seqLen]);
+    final tokenTensor = OrtValueTensor.createTensorWithDataList(
+      [tokenIds],
+      [1, seqLen],
+    );
 
     // Get the style vector for the specified voice style
     final styleVector = _voiceStyles.getStyleVector(style, seqLen);
-    final styleTensor = OrtValueTensor.createTensorWithDataList(styleVector, [1, 256]);
+    final styleTensor = OrtValueTensor.createTensorWithDataList(styleVector, [
+      1,
+      256,
+    ]);
 
-    final speedTensor = OrtValueTensor.createTensorWithDataList(Float32List.fromList([1.2]), [1]);
+    final speedTensor = OrtValueTensor.createTensorWithDataList(
+      Float32List.fromList([1.1]),
+      [1],
+    );
 
-    final inputs = {"input_ids": tokenTensor, "style": styleTensor, "speed": speedTensor};
+    final inputs = {
+      "input_ids": tokenTensor,
+      "style": styleTensor,
+      "speed": speedTensor,
+    };
 
     final runOpts = OrtRunOptions();
     Float32List? audio;
@@ -101,9 +148,19 @@ class TTSPipeline {
         timestamps = joinTimestamps(chunk.tokenMeta, predDur);
       } else {
         // If no timestamps are provided, create a single timestamp for the whole audio
-        timestamps = [WordTimestamp(word: chunk.graphemes, start: 0.0, end: audio.length / 24000.0)];
+        timestamps = [
+          WordTimestamp(
+            word: chunk.graphemes,
+            start: 0.0,
+            end: audio.length / 24000.0,
+          ),
+        ];
       }
-      return KokoroResult(audio: audio, timestamps: timestamps, graphemes: chunk.graphemes);
+      return KokoroResult(
+        audio: audio,
+        timestamps: timestamps,
+        graphemes: chunk.graphemes,
+      );
       //TODO
     } catch (e) {
       rethrow;
@@ -129,7 +186,10 @@ class TTSPipeline {
 /// [tokens] maps to chunk.tokenMeta - one entry per word/punctuation token.
 /// [predDur] is the flattened predicted duration tensor (output[1]).
 /// MAGIC_DIVISOR = 80 converts half-frames to seconds (hop_size=600, sr=24000).
-List<WordTimestamp> joinTimestamps(List<TokenMeta> tokens, List<double> predDur) {
+List<WordTimestamp> joinTimestamps(
+  List<TokenMeta> tokens,
+  List<double> predDur,
+) {
   const magicDivisor = 80.0;
 
   if (tokens.isEmpty || predDur.length < 3) return [];

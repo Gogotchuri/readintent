@@ -17,7 +17,6 @@ class $ArticlePreviewsTable extends ArticlePreviews
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
@@ -743,7 +742,6 @@ class $ArticleDetailsTable extends ArticleDetails
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
   static const VerificationMeta _extractedHtmlMeta = const VerificationMeta(
     'extractedHtml',

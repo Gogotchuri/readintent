@@ -68,6 +68,7 @@ class _PlayerShellState extends ConsumerState<PlayerShell>
     if (currentPath == "/home") return _selectedTabIndex;
     if (currentPath.startsWith("/articles/")) return 0; // Articles tab
     if (currentPath == "/pair-extension") return 1; // Settings tab
+    if (currentPath == "/voice-settings") return 1; // Settings tab
     return _selectedTabIndex;
   }
 

@@ -2,12 +2,14 @@ import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
+import "package:readintent_flutter/features/settings/providers/app_settings_provider.dart";
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final voice = ref.watch(appSettingsProvider.select((s) => s.voice));
     return Scaffold(
       appBar: AppBar(title: const Text("Settings")),
       body: ListView(
@@ -17,6 +19,14 @@ class SettingsScreen extends ConsumerWidget {
             title: const Text("Pair Extension"),
             subtitle: const Text("Connect your browser extension"),
             onTap: () => context.push("/pair-extension"),
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.record_voice_over),
+            title: const Text("Voice"),
+            subtitle: Text(voice.label),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push("/voice-settings"),
           ),
           const Divider(),
           ListTile(
