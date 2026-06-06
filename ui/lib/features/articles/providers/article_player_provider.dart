@@ -15,7 +15,8 @@ import "package:readintent_flutter/features/tts/audio_cache.dart";
 import "package:readintent_flutter/features/tts/audio_handler.dart";
 import "package:readintent_flutter/features/tts/audio_generator.dart";
 import "package:readintent_flutter/features/tts/voice_style.dart";
-import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
+import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
+    as articles_pb;
 
 part "article_player_provider.g.dart";
 
@@ -23,7 +24,8 @@ const Object _sentinel = Object();
 
 /// Resolves a sentinel-guarded copyWith parameter:
 /// returns [current] if [value] was not passed, otherwise casts [value] to T.
-T _resolve<T>(Object? value, T current) => identical(value, _sentinel) ? current : value as T;
+T _resolve<T>(Object? value, T current) =>
+    identical(value, _sentinel) ? current : value as T;
 
 class ActivePlayerState {
   final String? articleId;
@@ -91,7 +93,10 @@ class ActivePlayerState {
       isLoading: isLoading ?? this.isLoading,
       ttsComplete: ttsComplete ?? this.ttsComplete,
       error: _resolve(error, this.error),
-      activeSentenceIndex: _resolve(activeSentenceIndex, this.activeSentenceIndex),
+      activeSentenceIndex: _resolve(
+        activeSentenceIndex,
+        this.activeSentenceIndex,
+      ),
       totalSentences: totalSentences ?? this.totalSentences,
       syncEnabled: syncEnabled ?? this.syncEnabled,
       playbackSpeed: playbackSpeed ?? this.playbackSpeed,
@@ -102,9 +107,11 @@ class ActivePlayerState {
 @Riverpod(keepAlive: true)
 class ActivePlayer extends _$ActivePlayer {
   final AudioCache _cache = AudioCache();
-  late final PlayerPersistence _persistence;
-  late final AudioHandlerInterface _handler;
-  late final PipelineFactory _pipelineFactory;
+  // Not `final`: assigned in build(), which Riverpod may re-run on the same
+  // instance. `late final` would throw LateInitializationError on a rebuild.
+  late PlayerPersistence _persistence;
+  late AudioHandlerInterface _handler;
+  late PipelineFactory _pipelineFactory;
   AudioGenerator? _session;
   StreamSubscription? _sessionStateSub;
   StreamSubscription? _positionSub;
@@ -184,11 +191,15 @@ class ActivePlayer extends _$ActivePlayer {
     }
 
     // Preserve restored position if resuming the same article
-    _resumePosition = state.articleId == newArticleId ? state.position : Duration.zero;
+    _resumePosition = state.articleId == newArticleId
+        ? state.position
+        : Duration.zero;
 
     // If no local position, use server position from the article proto
     if (_resumePosition == Duration.zero && article.playerPositionMs > 0) {
-      _resumePosition = Duration(milliseconds: article.playerPositionMs.toInt());
+      _resumePosition = Duration(
+        milliseconds: article.playerPositionMs.toInt(),
+      );
     }
 
     // Use server's playback speed if available and no local override
@@ -247,7 +258,9 @@ class ActivePlayer extends _$ActivePlayer {
         );
 
         if (sessionState.estimatedDuration != null && _mediaItem != null) {
-          _handler.updateMediaItem(_mediaItem!.copyWith(duration: sessionState.estimatedDuration));
+          _handler.updateMediaItem(
+            _mediaItem!.copyWith(duration: sessionState.estimatedDuration),
+          );
         }
 
         if (sessionState.isComplete) {
@@ -258,7 +271,9 @@ class ActivePlayer extends _$ActivePlayer {
             bufferedDuration: actualDuration,
           );
           if (_mediaItem != null) {
-            _handler.updateMediaItem(_mediaItem!.copyWith(duration: actualDuration));
+            _handler.updateMediaItem(
+              _mediaItem!.copyWith(duration: actualDuration),
+            );
           }
           _reloadPlayer();
         }
@@ -357,7 +372,9 @@ class ActivePlayer extends _$ActivePlayer {
 
   Future<void> _loadPlayerSource() async {
     if (_session?.filePath == null) return;
-    final tag = _mediaItem?.copyWith(duration: state.estimatedDuration ?? state.bufferedDuration);
+    final tag = _mediaItem?.copyWith(
+      duration: state.estimatedDuration ?? state.bufferedDuration,
+    );
     try {
       await _handler.setSource(_session!.filePath!, tag: tag);
       _loadedDuration = state.bufferedDuration;
@@ -436,7 +453,8 @@ class ActivePlayer extends _$ActivePlayer {
       state = state.copyWith(
         isPlaying: s.playing,
         isLoading:
-            s.processingState == ProcessingState.loading || s.processingState == ProcessingState.buffering,
+            s.processingState == ProcessingState.loading ||
+            s.processingState == ProcessingState.buffering,
       );
     });
   }
@@ -478,7 +496,10 @@ class ActivePlayer extends _$ActivePlayer {
       final repository = ref.read(articleRepositoryProvider);
       final article = await repository.getArticle(articleId);
       if (article == null) {
-        state = state.copyWith(isLoading: false, error: "Article not available offline");
+        state = state.copyWith(
+          isLoading: false,
+          error: "Article not available offline",
+        );
         return;
       }
       await play(article: article);
@@ -497,15 +518,15 @@ class ActivePlayer extends _$ActivePlayer {
       await _reloadPlayer();
     }
 
-    final maxMs = (state.bufferedDuration - const Duration(milliseconds: 500)).inMilliseconds.clamp(
-      0,
-      state.bufferedDuration.inMilliseconds,
-    );
+    final maxMs = (state.bufferedDuration - const Duration(milliseconds: 500))
+        .inMilliseconds
+        .clamp(0, state.bufferedDuration.inMilliseconds);
     final clampedMs = target.inMilliseconds.clamp(0, maxMs);
     await _handler.seek(Duration(milliseconds: clampedMs));
   }
 
-  Future<void> jumpForward() async => seekTo(state.position + const Duration(seconds: 15));
+  Future<void> jumpForward() async =>
+      seekTo(state.position + const Duration(seconds: 15));
 
   Future<void> jumpBackward() async {
     final target = state.position - const Duration(seconds: 15);
@@ -572,7 +593,11 @@ class ActivePlayer extends _$ActivePlayer {
         if (article != null) {
           // Take the largest position between local and server, to avoid regressions
           if (article.playerPositionMs.toInt() > localPositionMs) {
-            state = state.copyWith(position: Duration(milliseconds: article.playerPositionMs.toInt()));
+            state = state.copyWith(
+              position: Duration(
+                milliseconds: article.playerPositionMs.toInt(),
+              ),
+            );
           }
           // Use server's playback speed if it's set and local is default
           if (article.playbackSpeed > 0 && state.playbackSpeed == 1.0) {
@@ -600,7 +625,10 @@ class ActivePlayer extends _$ActivePlayer {
   /// Called when word timestamps become available (from cache or generation).
   void _updateSentenceTimestamps(List<WordTimestamp> wordTimestamps) {
     if (_sentenceTexts == null || wordTimestamps.isEmpty) return;
-    _sentenceTimestamps = assignSentenceTimestamps(_sentenceTexts!, wordTimestamps);
+    _sentenceTimestamps = assignSentenceTimestamps(
+      _sentenceTexts!,
+      wordTimestamps,
+    );
   }
 
   /// Finds the sentence containing [position] via binary search.
