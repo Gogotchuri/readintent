@@ -61,7 +61,10 @@ class KokoroDownloader {
       ]);
 
       // Cache the paths for future calls
-      _cachedPaths = KokoroAssetPaths(voiceStylePath: results[0], modelPath: results[1]);
+      _cachedPaths = KokoroAssetPaths(
+        voiceStylePath: results[0],
+        modelPath: results[1],
+      );
 
       return _cachedPaths!;
     } catch (e) {
@@ -80,13 +83,32 @@ class KokoroDownloader {
     ]);
   }
 
-  static Future<String> _downloadVoice(VoiceStyle voiceStyle, DownloadProgressCallback? onProgress) async {
+  // Download (or reuse) a single voice's style file and return its path.
+  static Future<String> ensureVoice(
+    VoiceStyle voiceStyle, {
+    DownloadProgressCallback? onProgress,
+  }) {
+    return _downloadVoice(voiceStyle, onProgress);
+  }
+
+  static Future<String> _downloadVoice(
+    VoiceStyle voiceStyle,
+    DownloadProgressCallback? onProgress,
+  ) async {
     // Each is around 0.5MB in size
     return _ensureFile(voiceStyle.url, voiceStyle.filepath, 0.5, onProgress);
   }
 
-  static Future<String> _downloadModel(ModelType modelType, DownloadProgressCallback? onProgress) async {
-    return _ensureFile(modelType.url, modelType.filepath, modelType.sizeInMB, onProgress);
+  static Future<String> _downloadModel(
+    ModelType modelType,
+    DownloadProgressCallback? onProgress,
+  ) async {
+    return _ensureFile(
+      modelType.url,
+      modelType.filepath,
+      modelType.sizeInMB,
+      onProgress,
+    );
   }
 
   static Future<String> _ensureFile(
@@ -107,7 +129,13 @@ class KokoroDownloader {
       return _inFlight[filePath]!;
     }
 
-    final future = _doDownload(url, filePath, filepath, fallbackSizeInMb, onProgress);
+    final future = _doDownload(
+      url,
+      filePath,
+      filepath,
+      fallbackSizeInMb,
+      onProgress,
+    );
     _inFlight[filePath] = future;
     try {
       return await future;
@@ -130,7 +158,8 @@ class KokoroDownloader {
       filePath,
       onReceiveProgress: (received, total) {
         if (total == -1) {
-          total = (fallbackSizeInMb * 1024 * 1024).toInt(); // Use fallback size if total is unknown
+          total = (fallbackSizeInMb * 1024 * 1024)
+              .toInt(); // Use fallback size if total is unknown
         }
         if (total > 0 && received <= total) {
           final progress = received / total;

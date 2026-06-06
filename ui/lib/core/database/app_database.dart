@@ -12,7 +12,7 @@ import "package:sqlite3/sqlite3.dart";
 part "app_database.g.dart";
 
 class ArticlePreviews extends Table {
-  IntColumn get id => integer().unique()();
+  IntColumn get id => integer()();
   TextColumn get status => text()();
   TextColumn get title => text().withDefault(const Constant(""))();
   TextColumn get author => text().withDefault(const Constant(""))();
@@ -31,9 +31,11 @@ class ArticlePreviews extends Table {
 }
 
 class ArticleDetails extends Table {
-  IntColumn get id => integer().unique()();
+  IntColumn get id => integer()();
   TextColumn get extractedHtml => text().withDefault(const Constant(""))();
-  TextColumn get processedHtml => text().withDefault(const Constant(""))(); // HTML with injected sentence spans for TTS highlighting
+  TextColumn get processedHtml => text().withDefault(
+    const Constant(""),
+  )(); // HTML with injected sentence spans for TTS highlighting
   TextColumn get pureText => text().withDefault(const Constant(""))();
   BlobColumn get phonemizerBlob => blob().nullable()();
   IntColumn get cachedAt => integer()();
@@ -82,18 +84,24 @@ class AppDatabase extends _$AppDatabase {
   // -- Articles --
 
   Future<List<ArticlePreview>> getAllPreviews() {
-    return (select(articlePreviews)..orderBy([(t) => OrderingTerm.asc(t.sortOrder)])).get();
+    return (select(
+      articlePreviews,
+    )..orderBy([(t) => OrderingTerm.asc(t.sortOrder)])).get();
   }
 
   Future<void> upsertPreview(ArticlePreviewsCompanion entry) {
-    return into(articlePreviews).insert(entry, mode: InsertMode.insertOrReplace);
+    return into(
+      articlePreviews,
+    ).insert(entry, mode: InsertMode.insertOrReplace);
   }
 
   // Replace all previews in a single transaction
   Future<void> replacePreviews(List<ArticlePreviewsCompanion> entries) {
     return transaction(() async {
       for (final entry in entries) {
-        await into(articlePreviews).insert(entry, mode: InsertMode.insertOrReplace);
+        await into(
+          articlePreviews,
+        ).insert(entry, mode: InsertMode.insertOrReplace);
       }
     });
   }
@@ -103,22 +111,36 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<ArticlePreview?> getPreview(int articleId) {
-    return (select(articlePreviews)..where((t) => t.id.equals(articleId))).getSingleOrNull();
+    return (select(
+      articlePreviews,
+    )..where((t) => t.id.equals(articleId))).getSingleOrNull();
   }
 
   Future<ArticleDetail?> getDetail(int articleId) {
-    return (select(articleDetails)..where((t) => t.id.equals(articleId))).getSingleOrNull();
+    return (select(
+      articleDetails,
+    )..where((t) => t.id.equals(articleId))).getSingleOrNull();
   }
 
   Future<void> upsertDetail(ArticleDetailsCompanion entry) {
     return into(articleDetails).insert(entry, mode: InsertMode.insertOrReplace);
   }
 
-  Future<void> updateProgress(int articleId, int playerPositionMs, double scrollPosition) {
-    return (update(articlePreviews)..where((t) => t.id.equals(articleId))).write(
+  Future<void> updateProgress(
+    int articleId,
+    int playerPositionMs,
+    double scrollPosition,
+  ) {
+    return (update(
+      articlePreviews,
+    )..where((t) => t.id.equals(articleId))).write(
       ArticlePreviewsCompanion(
-        playerPositionMs: playerPositionMs > 0 ? Value(playerPositionMs) : const Value.absent(),
-        scrollPosition: scrollPosition > 0 ? Value(scrollPosition) : const Value.absent(),
+        playerPositionMs: playerPositionMs > 0
+            ? Value(playerPositionMs)
+            : const Value.absent(),
+        scrollPosition: scrollPosition > 0
+            ? Value(scrollPosition)
+            : const Value.absent(),
       ),
     );
   }
@@ -140,10 +162,17 @@ class AppDatabase extends _$AppDatabase {
     return (delete(pendingOperations)..where((t) => t.id.equals(opId))).go();
   }
 
-  Future<void> updatePendingOp(int opId, {int? retryCount, String? lastError, String? status}) {
+  Future<void> updatePendingOp(
+    int opId, {
+    int? retryCount,
+    String? lastError,
+    String? status,
+  }) {
     return (update(pendingOperations)..where((t) => t.id.equals(opId))).write(
       PendingOperationsCompanion(
-        retryCount: retryCount != null ? Value(retryCount) : const Value.absent(),
+        retryCount: retryCount != null
+            ? Value(retryCount)
+            : const Value.absent(),
         lastError: lastError != null ? Value(lastError) : const Value.absent(),
         status: status != null ? Value(status) : const Value.absent(),
       ),

@@ -33,7 +33,7 @@ final class ArticlesProvider
   Articles create() => Articles();
 }
 
-String _$articlesHash() => r'9bf5a0277f2b57ea836c5812c37710970726173f';
+String _$articlesHash() => r'439dac059ef2a537e2dd5a5b81f93e25c8d10d22';
 
 abstract class _$Articles extends $AsyncNotifier<ArticlesState> {
   FutureOr<ArticlesState> build();
