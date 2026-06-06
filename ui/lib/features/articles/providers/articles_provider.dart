@@ -4,7 +4,8 @@ import "dart:math";
 import "package:readintent_flutter/core/connectivity.dart";
 import "package:readintent_flutter/features/articles/providers/article_updates_channel.dart";
 import "package:readintent_flutter/features/articles/repository/article_repository.dart";
-import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart" as articles_pb;
+import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
+    as articles_pb;
 import "package:riverpod_annotation/riverpod_annotation.dart";
 
 part "articles_provider.g.dart";
@@ -50,8 +51,10 @@ class ArticlesState {
 
 @riverpod
 class Articles extends _$Articles {
-  late final ArticleRepository _repository;
-  late final ArticleUpdatesChannel _channel;
+  // Not `final`: assigned in build(), which Riverpod may re-run on the same
+  // instance. `late final` would throw LateInitializationError on a rebuild.
+  late ArticleRepository _repository;
+  late ArticleUpdatesChannel _channel;
   static const int _pageSize = 20;
 
   Timer? _checkTimer;
@@ -74,7 +77,9 @@ class Articles extends _$Articles {
     final subs = <StreamSubscription>[
       _channel.previews.listen(_mergePreview),
       _channel.resyncRequests.listen((_) => _resync()),
-      _channel.pollingMode.listen((poll) => poll ? _startChecking() : _stopChecking()),
+      _channel.pollingMode.listen(
+        (poll) => poll ? _startChecking() : _stopChecking(),
+      ),
     ];
     ref.onDispose(() {
       for (final s in subs) {
@@ -84,7 +89,10 @@ class Articles extends _$Articles {
     ref.onDispose(_channel.dispose);
     ref.onDispose(_stopChecking);
 
-    ref.listen(isOnlineProvider, (_, online) => _channel.onConnectivity(online));
+    ref.listen(
+      isOnlineProvider,
+      (_, online) => _channel.onConnectivity(online),
+    );
 
     final initialState = await _fetchInitialPage();
     _channel.start();
@@ -100,7 +108,9 @@ class Articles extends _$Articles {
           final newState = ArticlesState(
             articles: updated.articles,
             totalCount: updated.totalCount,
-            nextPageToken: updated.nextPageToken.isEmpty ? null : updated.nextPageToken,
+            nextPageToken: updated.nextPageToken.isEmpty
+                ? null
+                : updated.nextPageToken,
           );
           state = AsyncData(newState);
           _lastCheckedAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -109,7 +119,9 @@ class Articles extends _$Articles {
       return ArticlesState(
         articles: result.articles,
         totalCount: result.totalCount,
-        nextPageToken: result.nextPageToken.isEmpty ? null : result.nextPageToken,
+        nextPageToken: result.nextPageToken.isEmpty
+            ? null
+            : result.nextPageToken,
       );
     } catch (e) {
       return ArticlesState(error: e.toString());
@@ -118,7 +130,8 @@ class Articles extends _$Articles {
 
   Future<void> loadMore() async {
     final currentState = state.value;
-    if (currentState == null || !currentState.hasMore || currentState.isLoading) return;
+    if (currentState == null || !currentState.hasMore || currentState.isLoading)
+      return;
     if (!ref.read(isOnlineProvider)) return; // No pagination when offline
 
     state = AsyncData(currentState.copyWith(isLoading: true));
@@ -130,12 +143,16 @@ class Articles extends _$Articles {
       state = AsyncData(
         ArticlesState(
           articles: [...currentState.articles, ...response.articles],
-          nextPageToken: response.nextPageToken.isEmpty ? null : response.nextPageToken,
+          nextPageToken: response.nextPageToken.isEmpty
+              ? null
+              : response.nextPageToken,
           totalCount: response.totalCount,
         ),
       );
     } catch (e) {
-      state = AsyncData(currentState.copyWith(isLoading: false, error: e.toString()));
+      state = AsyncData(
+        currentState.copyWith(isLoading: false, error: e.toString()),
+      );
     }
   }
 
@@ -202,7 +219,10 @@ class Articles extends _$Articles {
       } else {
         // multiply by 1.3 can't exceed max
         _checkInterval = Duration(
-          milliseconds: min((_checkInterval.inMilliseconds * 1.3).round(), _maxCheckInterval.inMilliseconds),
+          milliseconds: min(
+            (_checkInterval.inMilliseconds * 1.3).round(),
+            _maxCheckInterval.inMilliseconds,
+          ),
         );
       }
     } catch (_) {
@@ -223,7 +243,9 @@ class Articles extends _$Articles {
     return ArticlesState(
       articles: response.articles,
       totalCount: response.totalCount,
-      nextPageToken: response.nextPageToken.isEmpty ? null : response.nextPageToken,
+      nextPageToken: response.nextPageToken.isEmpty
+          ? null
+          : response.nextPageToken,
     );
   }
 
