@@ -2,6 +2,7 @@ import "package:fixnum/fixnum.dart";
 import "package:readintent_flutter/core/connect_transport.dart";
 import "package:readintent_flutter/features/articles/api/articles_client_exceptions.dart";
 import "package:readintent_flutter/features/articles/api/articles_service_client.dart";
+import "package:readintent_flutter/features/articles/models/article_view.dart";
 import "package:readintent_flutter/proto/articles/v1/articles_service.connect.client.dart";
 import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
     as articles_pb;
@@ -17,12 +18,14 @@ class ArticlesClient {
   Future<articles_pb.GetArticlesResponse> getArticles({
     int pageSize = 20,
     String? pageToken,
+    required ArticleView view,
   }) async {
     try {
       return await _client.getArticles(
         articles_pb.GetArticlesRequest(
           pageSize: pageSize,
           pageToken: pageToken,
+          view: view.proto,
         ),
       );
     } on ConnectException catch (e) {
@@ -62,6 +65,25 @@ class ArticlesClient {
       handleArticlesConnectException(e, "delete article");
     } catch (e) {
       throw ArticlesException("Failed to delete article: $e");
+    }
+  }
+
+  /// Moves an article between lists or toggles its favorite flag. Only the
+  /// provided properties are sent, so each can be changed independently.
+  Future<void> setArticleState(
+    String id, {
+    ArticleListState? listState,
+    bool? isFavorite,
+  }) async {
+    try {
+      final request = articles_pb.SetArticleStateRequest(id: id);
+      if (listState != null) request.listState = listState.proto;
+      if (isFavorite != null) request.isFavorite = isFavorite;
+      await _client.setArticleState(request);
+    } on ConnectException catch (e) {
+      handleArticlesConnectException(e, "set article state");
+    } catch (e) {
+      throw ArticlesException("Failed to set article state: $e");
     }
   }
 

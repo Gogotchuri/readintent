@@ -78,6 +78,7 @@ func (a *ArticlesServer) GetArticles(ctx context.Context, req *connect.Request[v
 	searchQ := iomodels.GetArticlesRequest{
 		PageSize:  req.Msg.GetPageSize(),
 		PageToken: req.Msg.GetPageToken(),
+		View:      viewFromProto(req.Msg.GetView()),
 	}
 	if req.Msg.SearchQuery != nil {
 		searchQ.SearchQuery = *req.Msg.SearchQuery
@@ -137,6 +138,35 @@ func (a *ArticlesServer) DeleteArticle(ctx context.Context, req *connect.Request
 	}
 
 	return connect.NewResponse(&v1.DeleteArticleResponse{}), nil
+}
+
+func (a *ArticlesServer) SetArticleState(ctx context.Context, req *connect.Request[v1.SetArticleStateRequest]) (*connect.Response[v1.SetArticleStateResponse], error) {
+	session := middlewares.SessionFromCtx(ctx)
+	if session == nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("no valid session"))
+	}
+
+	id, err := strconv.ParseInt(req.Msg.GetId(), 10, 64)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid article id: %w", err))
+	}
+
+	var listState *string
+	if req.Msg.ListState != nil {
+		s := dbListStateFromProto(req.Msg.GetListState())
+		listState = &s
+	}
+	var isFavorite *bool
+	if req.Msg.IsFavorite != nil {
+		b := req.Msg.GetIsFavorite()
+		isFavorite = &b
+	}
+
+	if err := a.service.SetArticleState(ctx, session.Identity.ID, id, listState, isFavorite); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("setting article state: %w", err))
+	}
+
+	return connect.NewResponse(&v1.SetArticleStateResponse{}), nil
 }
 
 func (a *ArticlesServer) CheckForUpdates(ctx context.Context, req *connect.Request[v1.CheckForUpdatesRequest]) (*connect.Response[v1.CheckForUpdatesResponse], error) {
@@ -232,6 +262,8 @@ func protoArticleFromArticle(article *models.Article) *v1.Article {
 		PlayerPositionMs: article.PlayerPositionMs,
 		ScrollPosition:   article.ScrollPosition,
 		PlaybackSpeed:    article.PlaybackSpeed,
+		ListState:        protoListStateFromDB(article.ListState),
+		IsFavorite:       article.IsFavorite,
 	}
 	return protoArticle
 }
@@ -265,6 +297,42 @@ func protoArticlePreviewFromArticlePreview(a *models.ArticlePreview) *v1.Article
 		Url:              a.Url,
 		PlayerPositionMs: a.PlayerPositionMs,
 		ScrollPosition:   a.ScrollPosition,
+		ListState:        protoListStateFromDB(a.ListState),
+		IsFavorite:       a.IsFavorite,
+	}
+}
+
+// viewFromProto maps the request's ArticleView enum to the repository's view
+// string. Unspecified defaults to inbox.
+func viewFromProto(v v1.ArticleView) string {
+	switch v {
+	case v1.ArticleView_ARTICLE_VIEW_FAVORITE:
+		return iomodels.ViewFavorite
+	case v1.ArticleView_ARTICLE_VIEW_ARCHIVE:
+		return iomodels.ViewArchive
+	default:
+		return iomodels.ViewInbox
+	}
+}
+
+// protoListStateFromDB maps the stored list_state string to its proto enum.
+func protoListStateFromDB(s string) v1.ArticleListState {
+	switch s {
+	case models.ArticleListStateArchive:
+		return v1.ArticleListState_ARTICLE_LIST_STATE_ARCHIVE
+	default:
+		return v1.ArticleListState_ARTICLE_LIST_STATE_INBOX
+	}
+}
+
+// dbListStateFromProto maps a proto ArticleListState to the stored string,
+// defaulting unspecified/inbox to inbox.
+func dbListStateFromProto(s v1.ArticleListState) string {
+	switch s {
+	case v1.ArticleListState_ARTICLE_LIST_STATE_ARCHIVE:
+		return models.ArticleListStateArchive
+	default:
+		return models.ArticleListStateInbox
 	}
 }
 

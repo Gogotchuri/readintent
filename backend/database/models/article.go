@@ -16,6 +16,13 @@ const (
 	ArticleStatusFailed        = "failed"
 )
 
+// Per-user list placement. inbox and archive are mutually exclusive; favorite
+// is tracked separately via the is_favorite flag.
+const (
+	ArticleListStateInbox   = "inbox"
+	ArticleListStateArchive = "archive"
+)
+
 type PhonemizerTokenMeta struct {
 	Text          string `json:"text"`
 	PhonemeLen    uint32 `json:"phoneme_len"`
@@ -45,6 +52,8 @@ type Article struct {
 	PlayerPositionMs int64                   `db:"player_position_ms" json:"player_position_ms"`
 	ScrollPosition   float64                 `db:"scroll_position" json:"scroll_position"`
 	PlaybackSpeed    float64                 `db:"playback_speed" json:"playback_speed"`
+	ListState        string                  `db:"list_state" json:"list_state"`
+	IsFavorite       bool                    `db:"is_favorite" json:"is_favorite"`
 }
 
 func (a *Article) GenerateDescriptionIfNone(l int) {
@@ -83,4 +92,6 @@ type ArticlePreview struct {
 	CreatedAt        time.Time  `db:"created_at" json:"created_at"`
 	PlayerPositionMs int64      `db:"player_position_ms" json:"player_position_ms"`
 	ScrollPosition   float64    `db:"scroll_position" json:"scroll_position"`
+	ListState        string     `db:"list_state" json:"list_state"`
+	IsFavorite       bool       `db:"is_favorite" json:"is_favorite"`
 }

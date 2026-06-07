@@ -421,6 +421,7 @@ type mockRepository struct {
 	ApplyScrapeResultFn        func(ctx context.Context, article models.Article) error
 	ApplyPhonemizerResultFn    func(ctx context.Context, articleID int64, data models.JSONB[[]models.PhonemizerData]) error
 	DeleteArticleFn            func(ctx context.Context, userID string, id int64) error
+	SetArticleStateFn          func(ctx context.Context, userID string, articleID int64, listState *string, isFavorite *bool) error
 	HasUpdatedArticlesFn       func(ctx context.Context, userID string, since time.Time) (bool, error)
 	SaveArticleProgressFn      func(ctx context.Context, userID string, articleID int64, playerPositionMs int64, scrollPosition float64, playbackSpeed float64) error
 	GetUserIDsForArticleFn     func(ctx context.Context, articleID int64) ([]string, error)
@@ -459,6 +460,12 @@ func (m *mockRepository) ApplyPhonemizerResult(ctx context.Context, articleID in
 }
 func (m *mockRepository) DeleteArticle(ctx context.Context, userID string, id int64) error {
 	return m.DeleteArticleFn(ctx, userID, id)
+}
+func (m *mockRepository) SetArticleState(ctx context.Context, userID string, articleID int64, listState *string, isFavorite *bool) error {
+	if m.SetArticleStateFn != nil {
+		return m.SetArticleStateFn(ctx, userID, articleID, listState, isFavorite)
+	}
+	return nil
 }
 func (m *mockRepository) SaveArticleProgress(ctx context.Context, userID string, articleID int64, playerPositionMs int64, scrollPosition float64, playbackSpeed float64) error {
 	if m.SaveArticleProgressFn != nil {

@@ -150,6 +150,33 @@ class $ArticlePreviewsTable extends ArticlePreviews
     requiredDuringInsert: false,
     defaultValue: const Constant(0.0),
   );
+  static const VerificationMeta _listStateMeta = const VerificationMeta(
+    'listState',
+  );
+  @override
+  late final GeneratedColumn<String> listState = GeneratedColumn<String>(
+    'list_state',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant("inbox"),
+  );
+  static const VerificationMeta _isFavoriteMeta = const VerificationMeta(
+    'isFavorite',
+  );
+  @override
+  late final GeneratedColumn<bool> isFavorite = GeneratedColumn<bool>(
+    'is_favorite',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_favorite" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -165,6 +192,8 @@ class $ArticlePreviewsTable extends ArticlePreviews
     cachedAt,
     playerPositionMs,
     scrollPosition,
+    listState,
+    isFavorite,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -266,6 +295,18 @@ class $ArticlePreviewsTable extends ArticlePreviews
         ),
       );
     }
+    if (data.containsKey('list_state')) {
+      context.handle(
+        _listStateMeta,
+        listState.isAcceptableOrUnknown(data['list_state']!, _listStateMeta),
+      );
+    }
+    if (data.containsKey('is_favorite')) {
+      context.handle(
+        _isFavoriteMeta,
+        isFavorite.isAcceptableOrUnknown(data['is_favorite']!, _isFavoriteMeta),
+      );
+    }
     return context;
   }
 
@@ -327,6 +368,14 @@ class $ArticlePreviewsTable extends ArticlePreviews
         DriftSqlType.double,
         data['${effectivePrefix}scroll_position'],
       )!,
+      listState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}list_state'],
+      )!,
+      isFavorite: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_favorite'],
+      )!,
     );
   }
 
@@ -350,6 +399,8 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
   final int cachedAt;
   final int playerPositionMs;
   final double scrollPosition;
+  final String listState;
+  final bool isFavorite;
   const ArticlePreview({
     required this.id,
     required this.status,
@@ -364,6 +415,8 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
     required this.cachedAt,
     required this.playerPositionMs,
     required this.scrollPosition,
+    required this.listState,
+    required this.isFavorite,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -381,6 +434,8 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
     map['cached_at'] = Variable<int>(cachedAt);
     map['player_position_ms'] = Variable<int>(playerPositionMs);
     map['scroll_position'] = Variable<double>(scrollPosition);
+    map['list_state'] = Variable<String>(listState);
+    map['is_favorite'] = Variable<bool>(isFavorite);
     return map;
   }
 
@@ -399,6 +454,8 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
       cachedAt: Value(cachedAt),
       playerPositionMs: Value(playerPositionMs),
       scrollPosition: Value(scrollPosition),
+      listState: Value(listState),
+      isFavorite: Value(isFavorite),
     );
   }
 
@@ -421,6 +478,8 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
       cachedAt: serializer.fromJson<int>(json['cachedAt']),
       playerPositionMs: serializer.fromJson<int>(json['playerPositionMs']),
       scrollPosition: serializer.fromJson<double>(json['scrollPosition']),
+      listState: serializer.fromJson<String>(json['listState']),
+      isFavorite: serializer.fromJson<bool>(json['isFavorite']),
     );
   }
   @override
@@ -440,6 +499,8 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
       'cachedAt': serializer.toJson<int>(cachedAt),
       'playerPositionMs': serializer.toJson<int>(playerPositionMs),
       'scrollPosition': serializer.toJson<double>(scrollPosition),
+      'listState': serializer.toJson<String>(listState),
+      'isFavorite': serializer.toJson<bool>(isFavorite),
     };
   }
 
@@ -457,6 +518,8 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
     int? cachedAt,
     int? playerPositionMs,
     double? scrollPosition,
+    String? listState,
+    bool? isFavorite,
   }) => ArticlePreview(
     id: id ?? this.id,
     status: status ?? this.status,
@@ -471,6 +534,8 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
     cachedAt: cachedAt ?? this.cachedAt,
     playerPositionMs: playerPositionMs ?? this.playerPositionMs,
     scrollPosition: scrollPosition ?? this.scrollPosition,
+    listState: listState ?? this.listState,
+    isFavorite: isFavorite ?? this.isFavorite,
   );
   ArticlePreview copyWithCompanion(ArticlePreviewsCompanion data) {
     return ArticlePreview(
@@ -495,6 +560,10 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
       scrollPosition: data.scrollPosition.present
           ? data.scrollPosition.value
           : this.scrollPosition,
+      listState: data.listState.present ? data.listState.value : this.listState,
+      isFavorite: data.isFavorite.present
+          ? data.isFavorite.value
+          : this.isFavorite,
     );
   }
 
@@ -513,7 +582,9 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
           ..write('sortOrder: $sortOrder, ')
           ..write('cachedAt: $cachedAt, ')
           ..write('playerPositionMs: $playerPositionMs, ')
-          ..write('scrollPosition: $scrollPosition')
+          ..write('scrollPosition: $scrollPosition, ')
+          ..write('listState: $listState, ')
+          ..write('isFavorite: $isFavorite')
           ..write(')'))
         .toString();
   }
@@ -533,6 +604,8 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
     cachedAt,
     playerPositionMs,
     scrollPosition,
+    listState,
+    isFavorite,
   );
   @override
   bool operator ==(Object other) =>
@@ -550,7 +623,9 @@ class ArticlePreview extends DataClass implements Insertable<ArticlePreview> {
           other.sortOrder == this.sortOrder &&
           other.cachedAt == this.cachedAt &&
           other.playerPositionMs == this.playerPositionMs &&
-          other.scrollPosition == this.scrollPosition);
+          other.scrollPosition == this.scrollPosition &&
+          other.listState == this.listState &&
+          other.isFavorite == this.isFavorite);
 }
 
 class ArticlePreviewsCompanion extends UpdateCompanion<ArticlePreview> {
@@ -567,6 +642,8 @@ class ArticlePreviewsCompanion extends UpdateCompanion<ArticlePreview> {
   final Value<int> cachedAt;
   final Value<int> playerPositionMs;
   final Value<double> scrollPosition;
+  final Value<String> listState;
+  final Value<bool> isFavorite;
   const ArticlePreviewsCompanion({
     this.id = const Value.absent(),
     this.status = const Value.absent(),
@@ -581,6 +658,8 @@ class ArticlePreviewsCompanion extends UpdateCompanion<ArticlePreview> {
     this.cachedAt = const Value.absent(),
     this.playerPositionMs = const Value.absent(),
     this.scrollPosition = const Value.absent(),
+    this.listState = const Value.absent(),
+    this.isFavorite = const Value.absent(),
   });
   ArticlePreviewsCompanion.insert({
     this.id = const Value.absent(),
@@ -596,6 +675,8 @@ class ArticlePreviewsCompanion extends UpdateCompanion<ArticlePreview> {
     required int cachedAt,
     this.playerPositionMs = const Value.absent(),
     this.scrollPosition = const Value.absent(),
+    this.listState = const Value.absent(),
+    this.isFavorite = const Value.absent(),
   }) : status = Value(status),
        cachedAt = Value(cachedAt);
   static Insertable<ArticlePreview> custom({
@@ -612,6 +693,8 @@ class ArticlePreviewsCompanion extends UpdateCompanion<ArticlePreview> {
     Expression<int>? cachedAt,
     Expression<int>? playerPositionMs,
     Expression<double>? scrollPosition,
+    Expression<String>? listState,
+    Expression<bool>? isFavorite,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -627,6 +710,8 @@ class ArticlePreviewsCompanion extends UpdateCompanion<ArticlePreview> {
       if (cachedAt != null) 'cached_at': cachedAt,
       if (playerPositionMs != null) 'player_position_ms': playerPositionMs,
       if (scrollPosition != null) 'scroll_position': scrollPosition,
+      if (listState != null) 'list_state': listState,
+      if (isFavorite != null) 'is_favorite': isFavorite,
     });
   }
 
@@ -644,6 +729,8 @@ class ArticlePreviewsCompanion extends UpdateCompanion<ArticlePreview> {
     Value<int>? cachedAt,
     Value<int>? playerPositionMs,
     Value<double>? scrollPosition,
+    Value<String>? listState,
+    Value<bool>? isFavorite,
   }) {
     return ArticlePreviewsCompanion(
       id: id ?? this.id,
@@ -659,6 +746,8 @@ class ArticlePreviewsCompanion extends UpdateCompanion<ArticlePreview> {
       cachedAt: cachedAt ?? this.cachedAt,
       playerPositionMs: playerPositionMs ?? this.playerPositionMs,
       scrollPosition: scrollPosition ?? this.scrollPosition,
+      listState: listState ?? this.listState,
+      isFavorite: isFavorite ?? this.isFavorite,
     );
   }
 
@@ -704,6 +793,12 @@ class ArticlePreviewsCompanion extends UpdateCompanion<ArticlePreview> {
     if (scrollPosition.present) {
       map['scroll_position'] = Variable<double>(scrollPosition.value);
     }
+    if (listState.present) {
+      map['list_state'] = Variable<String>(listState.value);
+    }
+    if (isFavorite.present) {
+      map['is_favorite'] = Variable<bool>(isFavorite.value);
+    }
     return map;
   }
 
@@ -722,7 +817,9 @@ class ArticlePreviewsCompanion extends UpdateCompanion<ArticlePreview> {
           ..write('sortOrder: $sortOrder, ')
           ..write('cachedAt: $cachedAt, ')
           ..write('playerPositionMs: $playerPositionMs, ')
-          ..write('scrollPosition: $scrollPosition')
+          ..write('scrollPosition: $scrollPosition, ')
+          ..write('listState: $listState, ')
+          ..write('isFavorite: $isFavorite')
           ..write(')'))
         .toString();
   }
@@ -1624,6 +1721,8 @@ typedef $$ArticlePreviewsTableCreateCompanionBuilder =
       required int cachedAt,
       Value<int> playerPositionMs,
       Value<double> scrollPosition,
+      Value<String> listState,
+      Value<bool> isFavorite,
     });
 typedef $$ArticlePreviewsTableUpdateCompanionBuilder =
     ArticlePreviewsCompanion Function({
@@ -1640,6 +1739,8 @@ typedef $$ArticlePreviewsTableUpdateCompanionBuilder =
       Value<int> cachedAt,
       Value<int> playerPositionMs,
       Value<double> scrollPosition,
+      Value<String> listState,
+      Value<bool> isFavorite,
     });
 
 class $$ArticlePreviewsTableFilterComposer
@@ -1713,6 +1814,16 @@ class $$ArticlePreviewsTableFilterComposer
 
   ColumnFilters<double> get scrollPosition => $composableBuilder(
     column: $table.scrollPosition,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get listState => $composableBuilder(
+    column: $table.listState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isFavorite => $composableBuilder(
+    column: $table.isFavorite,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -1790,6 +1901,16 @@ class $$ArticlePreviewsTableOrderingComposer
     column: $table.scrollPosition,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get listState => $composableBuilder(
+    column: $table.listState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isFavorite => $composableBuilder(
+    column: $table.isFavorite,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ArticlePreviewsTableAnnotationComposer
@@ -1847,6 +1968,14 @@ class $$ArticlePreviewsTableAnnotationComposer
     column: $table.scrollPosition,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get listState =>
+      $composableBuilder(column: $table.listState, builder: (column) => column);
+
+  GeneratedColumn<bool> get isFavorite => $composableBuilder(
+    column: $table.isFavorite,
+    builder: (column) => column,
+  );
 }
 
 class $$ArticlePreviewsTableTableManager
@@ -1899,6 +2028,8 @@ class $$ArticlePreviewsTableTableManager
                 Value<int> cachedAt = const Value.absent(),
                 Value<int> playerPositionMs = const Value.absent(),
                 Value<double> scrollPosition = const Value.absent(),
+                Value<String> listState = const Value.absent(),
+                Value<bool> isFavorite = const Value.absent(),
               }) => ArticlePreviewsCompanion(
                 id: id,
                 status: status,
@@ -1913,6 +2044,8 @@ class $$ArticlePreviewsTableTableManager
                 cachedAt: cachedAt,
                 playerPositionMs: playerPositionMs,
                 scrollPosition: scrollPosition,
+                listState: listState,
+                isFavorite: isFavorite,
               ),
           createCompanionCallback:
               ({
@@ -1929,6 +2062,8 @@ class $$ArticlePreviewsTableTableManager
                 required int cachedAt,
                 Value<int> playerPositionMs = const Value.absent(),
                 Value<double> scrollPosition = const Value.absent(),
+                Value<String> listState = const Value.absent(),
+                Value<bool> isFavorite = const Value.absent(),
               }) => ArticlePreviewsCompanion.insert(
                 id: id,
                 status: status,
@@ -1943,6 +2078,8 @@ class $$ArticlePreviewsTableTableManager
                 cachedAt: cachedAt,
                 playerPositionMs: playerPositionMs,
                 scrollPosition: scrollPosition,
+                listState: listState,
+                isFavorite: isFavorite,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

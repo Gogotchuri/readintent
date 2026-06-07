@@ -38,6 +38,13 @@ abstract final class ArticlesService {
     articlesv1articles_service.DeleteArticleResponse.new,
   );
 
+  static const setArticleState = connect.Spec(
+    '/$name/SetArticleState',
+    connect.StreamType.unary,
+    articlesv1articles_service.SetArticleStateRequest.new,
+    articlesv1articles_service.SetArticleStateResponse.new,
+  );
+
   static const checkForUpdates = connect.Spec(
     '/$name/CheckForUpdates',
     connect.StreamType.unary,
@@ -53,8 +60,8 @@ abstract final class ArticlesService {
   );
 
   /// StreamArticleUpdates pushes the full updated ArticlePreview whenever an
-  /// article's status changes for the authenticated user. Periodic heartbeat
-  /// events keep the connection alive through idle proxy timeouts.
+  /// article's status changes for the authenticated user.
+  /// Or send a Periodic heartbeat events tp keep the connection alive
   static const streamArticleUpdates = connect.Spec(
     '/$name/StreamArticleUpdates',
     connect.StreamType.server,

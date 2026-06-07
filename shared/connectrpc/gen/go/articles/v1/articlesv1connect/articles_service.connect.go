@@ -45,6 +45,9 @@ const (
 	// ArticlesServiceDeleteArticleProcedure is the fully-qualified name of the ArticlesService's
 	// DeleteArticle RPC.
 	ArticlesServiceDeleteArticleProcedure = "/articles.v1.ArticlesService/DeleteArticle"
+	// ArticlesServiceSetArticleStateProcedure is the fully-qualified name of the ArticlesService's
+	// SetArticleState RPC.
+	ArticlesServiceSetArticleStateProcedure = "/articles.v1.ArticlesService/SetArticleState"
 	// ArticlesServiceCheckForUpdatesProcedure is the fully-qualified name of the ArticlesService's
 	// CheckForUpdates RPC.
 	ArticlesServiceCheckForUpdatesProcedure = "/articles.v1.ArticlesService/CheckForUpdates"
@@ -62,11 +65,12 @@ type ArticlesServiceClient interface {
 	GetArticles(context.Context, *connect.Request[v1.GetArticlesRequest]) (*connect.Response[v1.GetArticlesResponse], error)
 	GetArticle(context.Context, *connect.Request[v1.GetArticleRequest]) (*connect.Response[v1.GetArticleResponse], error)
 	DeleteArticle(context.Context, *connect.Request[v1.DeleteArticleRequest]) (*connect.Response[v1.DeleteArticleResponse], error)
+	SetArticleState(context.Context, *connect.Request[v1.SetArticleStateRequest]) (*connect.Response[v1.SetArticleStateResponse], error)
 	CheckForUpdates(context.Context, *connect.Request[v1.CheckForUpdatesRequest]) (*connect.Response[v1.CheckForUpdatesResponse], error)
 	SaveArticleProgress(context.Context, *connect.Request[v1.SaveArticleProgressRequest]) (*connect.Response[v1.SaveArticleProgressResponse], error)
 	// StreamArticleUpdates pushes the full updated ArticlePreview whenever an
-	// article's status changes for the authenticated user. Periodic heartbeat
-	// events keep the connection alive through idle proxy timeouts.
+	// article's status changes for the authenticated user.
+	// Or send a Periodic heartbeat events tp keep the connection alive
 	StreamArticleUpdates(context.Context, *connect.Request[v1.StreamArticleUpdatesRequest]) (*connect.ServerStreamForClient[v1.StreamArticleUpdatesResponse], error)
 }
 
@@ -105,6 +109,12 @@ func NewArticlesServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(articlesServiceMethods.ByName("DeleteArticle")),
 			connect.WithClientOptions(opts...),
 		),
+		setArticleState: connect.NewClient[v1.SetArticleStateRequest, v1.SetArticleStateResponse](
+			httpClient,
+			baseURL+ArticlesServiceSetArticleStateProcedure,
+			connect.WithSchema(articlesServiceMethods.ByName("SetArticleState")),
+			connect.WithClientOptions(opts...),
+		),
 		checkForUpdates: connect.NewClient[v1.CheckForUpdatesRequest, v1.CheckForUpdatesResponse](
 			httpClient,
 			baseURL+ArticlesServiceCheckForUpdatesProcedure,
@@ -132,6 +142,7 @@ type articlesServiceClient struct {
 	getArticles          *connect.Client[v1.GetArticlesRequest, v1.GetArticlesResponse]
 	getArticle           *connect.Client[v1.GetArticleRequest, v1.GetArticleResponse]
 	deleteArticle        *connect.Client[v1.DeleteArticleRequest, v1.DeleteArticleResponse]
+	setArticleState      *connect.Client[v1.SetArticleStateRequest, v1.SetArticleStateResponse]
 	checkForUpdates      *connect.Client[v1.CheckForUpdatesRequest, v1.CheckForUpdatesResponse]
 	saveArticleProgress  *connect.Client[v1.SaveArticleProgressRequest, v1.SaveArticleProgressResponse]
 	streamArticleUpdates *connect.Client[v1.StreamArticleUpdatesRequest, v1.StreamArticleUpdatesResponse]
@@ -157,6 +168,11 @@ func (c *articlesServiceClient) DeleteArticle(ctx context.Context, req *connect.
 	return c.deleteArticle.CallUnary(ctx, req)
 }
 
+// SetArticleState calls articles.v1.ArticlesService.SetArticleState.
+func (c *articlesServiceClient) SetArticleState(ctx context.Context, req *connect.Request[v1.SetArticleStateRequest]) (*connect.Response[v1.SetArticleStateResponse], error) {
+	return c.setArticleState.CallUnary(ctx, req)
+}
+
 // CheckForUpdates calls articles.v1.ArticlesService.CheckForUpdates.
 func (c *articlesServiceClient) CheckForUpdates(ctx context.Context, req *connect.Request[v1.CheckForUpdatesRequest]) (*connect.Response[v1.CheckForUpdatesResponse], error) {
 	return c.checkForUpdates.CallUnary(ctx, req)
@@ -178,11 +194,12 @@ type ArticlesServiceHandler interface {
 	GetArticles(context.Context, *connect.Request[v1.GetArticlesRequest]) (*connect.Response[v1.GetArticlesResponse], error)
 	GetArticle(context.Context, *connect.Request[v1.GetArticleRequest]) (*connect.Response[v1.GetArticleResponse], error)
 	DeleteArticle(context.Context, *connect.Request[v1.DeleteArticleRequest]) (*connect.Response[v1.DeleteArticleResponse], error)
+	SetArticleState(context.Context, *connect.Request[v1.SetArticleStateRequest]) (*connect.Response[v1.SetArticleStateResponse], error)
 	CheckForUpdates(context.Context, *connect.Request[v1.CheckForUpdatesRequest]) (*connect.Response[v1.CheckForUpdatesResponse], error)
 	SaveArticleProgress(context.Context, *connect.Request[v1.SaveArticleProgressRequest]) (*connect.Response[v1.SaveArticleProgressResponse], error)
 	// StreamArticleUpdates pushes the full updated ArticlePreview whenever an
-	// article's status changes for the authenticated user. Periodic heartbeat
-	// events keep the connection alive through idle proxy timeouts.
+	// article's status changes for the authenticated user.
+	// Or send a Periodic heartbeat events tp keep the connection alive
 	StreamArticleUpdates(context.Context, *connect.Request[v1.StreamArticleUpdatesRequest], *connect.ServerStream[v1.StreamArticleUpdatesResponse]) error
 }
 
@@ -217,6 +234,12 @@ func NewArticlesServiceHandler(svc ArticlesServiceHandler, opts ...connect.Handl
 		connect.WithSchema(articlesServiceMethods.ByName("DeleteArticle")),
 		connect.WithHandlerOptions(opts...),
 	)
+	articlesServiceSetArticleStateHandler := connect.NewUnaryHandler(
+		ArticlesServiceSetArticleStateProcedure,
+		svc.SetArticleState,
+		connect.WithSchema(articlesServiceMethods.ByName("SetArticleState")),
+		connect.WithHandlerOptions(opts...),
+	)
 	articlesServiceCheckForUpdatesHandler := connect.NewUnaryHandler(
 		ArticlesServiceCheckForUpdatesProcedure,
 		svc.CheckForUpdates,
@@ -245,6 +268,8 @@ func NewArticlesServiceHandler(svc ArticlesServiceHandler, opts ...connect.Handl
 			articlesServiceGetArticleHandler.ServeHTTP(w, r)
 		case ArticlesServiceDeleteArticleProcedure:
 			articlesServiceDeleteArticleHandler.ServeHTTP(w, r)
+		case ArticlesServiceSetArticleStateProcedure:
+			articlesServiceSetArticleStateHandler.ServeHTTP(w, r)
 		case ArticlesServiceCheckForUpdatesProcedure:
 			articlesServiceCheckForUpdatesHandler.ServeHTTP(w, r)
 		case ArticlesServiceSaveArticleProgressProcedure:
@@ -274,6 +299,10 @@ func (UnimplementedArticlesServiceHandler) GetArticle(context.Context, *connect.
 
 func (UnimplementedArticlesServiceHandler) DeleteArticle(context.Context, *connect.Request[v1.DeleteArticleRequest]) (*connect.Response[v1.DeleteArticleResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("articles.v1.ArticlesService.DeleteArticle is not implemented"))
+}
+
+func (UnimplementedArticlesServiceHandler) SetArticleState(context.Context, *connect.Request[v1.SetArticleStateRequest]) (*connect.Response[v1.SetArticleStateResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("articles.v1.ArticlesService.SetArticleState is not implemented"))
 }
 
 func (UnimplementedArticlesServiceHandler) CheckForUpdates(context.Context, *connect.Request[v1.CheckForUpdatesRequest]) (*connect.Response[v1.CheckForUpdatesResponse], error) {

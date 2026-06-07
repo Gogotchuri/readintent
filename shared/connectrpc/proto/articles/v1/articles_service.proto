@@ -17,6 +17,23 @@ message PhonemizerData {
   repeated int64 token_ids = 3;
   repeated PhonemizerTokenMeta token_meta = 4;
 }
+// Which list an article lives in. inbox and archive are mutually exclusive;
+// favorite is an orthogonal flag (see is_favorite), not part of this enum.
+enum ArticleListState {
+  ARTICLE_LIST_STATE_UNSPECIFIED = 0; // treated as inbox
+  ARTICLE_LIST_STATE_INBOX = 1;
+  ARTICLE_LIST_STATE_ARCHIVE = 2;
+}
+
+// The view a GetArticles call is filtering for. favorite spans both inbox and
+// archive (any article with is_favorite set).
+enum ArticleView {
+  ARTICLE_VIEW_UNSPECIFIED = 0; // defaults to inbox
+  ARTICLE_VIEW_INBOX = 1;
+  ARTICLE_VIEW_FAVORITE = 2;
+  ARTICLE_VIEW_ARCHIVE = 3;
+}
+
 message ArticlePreview {
   int64 id = 1;
   // failed, processing, text_ready, ready
@@ -32,6 +49,8 @@ message ArticlePreview {
   optional string image = 9;
   int64 player_position_ms = 10;
   double scroll_position = 11;
+  ArticleListState list_state = 12;
+  bool is_favorite = 13;
 }
 
 // Full article with all content
@@ -52,6 +71,8 @@ message Article {
   int64 player_position_ms = 13;
   double scroll_position = 14;
   double playback_speed = 15;
+  ArticleListState list_state = 16;
+  bool is_favorite = 17;
 }
 
 message GetArticlesRequest {
@@ -62,6 +83,8 @@ message GetArticlesRequest {
   repeated string categories = 3;
   optional string search_query = 4;
   optional string author = 5;
+  // Which list to fetch. Unspecified defaults to inbox.
+  ArticleView view = 6;
 }
 
 message GetArticlesResponse {
@@ -84,6 +107,17 @@ message ParseArticleResponse {}
 message DeleteArticleRequest { string id = 1; }
 
 message DeleteArticleResponse {}
+
+// Moves an article between lists and/or toggles its favorite flag. Only the
+// provided fields are changed, so list_state and is_favorite can be updated
+// independently.
+message SetArticleStateRequest {
+  string id = 1;
+  optional ArticleListState list_state = 2;
+  optional bool is_favorite = 3;
+}
+
+message SetArticleStateResponse {}
 
 message SaveArticleProgressRequest {
   string article_id = 1;
@@ -114,6 +148,7 @@ service ArticlesService {
   rpc GetArticles(GetArticlesRequest) returns (GetArticlesResponse);
   rpc GetArticle(GetArticleRequest) returns (GetArticleResponse);
   rpc DeleteArticle(DeleteArticleRequest) returns (DeleteArticleResponse);
+  rpc SetArticleState(SetArticleStateRequest) returns (SetArticleStateResponse);
   rpc CheckForUpdates(CheckForUpdatesRequest) returns (CheckForUpdatesResponse);
   rpc SaveArticleProgress(SaveArticleProgressRequest)
       returns (SaveArticleProgressResponse);

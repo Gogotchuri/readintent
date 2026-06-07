@@ -25,6 +25,10 @@ class ArticlePreviews extends Table {
   IntColumn get cachedAt => integer()();
   IntColumn get playerPositionMs => integer().withDefault(const Constant(0))();
   RealColumn get scrollPosition => real().withDefault(const Constant(0.0))();
+  // "inbox" or "archive"
+  TextColumn get listState => text().withDefault(const Constant("inbox"))();
+  // favorite flag; an article can be favorited in either list.
+  BoolColumn get isFavorite => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -60,7 +64,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -87,6 +91,41 @@ class AppDatabase extends _$AppDatabase {
     return (select(
       articlePreviews,
     )..orderBy([(t) => OrderingTerm.asc(t.sortOrder)])).get();
+  }
+
+  /// Returns cached previews for a single view. [favoritesOnly] selects every
+  /// favorited article regardless of list; otherwise [listState] filters
+  Future<List<ArticlePreview>> getPreviewsByView({
+    String? listState,
+    bool favoritesOnly = false,
+  }) {
+    final query = select(articlePreviews);
+    if (favoritesOnly) {
+      query.where((t) => t.isFavorite.equals(true));
+    } else if (listState != null) {
+      query.where((t) => t.listState.equals(listState));
+    }
+    query.orderBy([(t) => OrderingTerm.asc(t.sortOrder)]);
+    return query.get();
+  }
+
+  /// Optimistically updates the list placement and/or favorite flag for one
+  /// article. Null arguments leave that column unchanged.
+  Future<void> updateArticleFlags(
+    int articleId, {
+    String? listState,
+    bool? isFavorite,
+  }) {
+    return (update(
+      articlePreviews,
+    )..where((t) => t.id.equals(articleId))).write(
+      ArticlePreviewsCompanion(
+        listState: listState != null ? Value(listState) : const Value.absent(),
+        isFavorite: isFavorite != null
+            ? Value(isFavorite)
+            : const Value.absent(),
+      ),
+    );
   }
 
   Future<void> upsertPreview(ArticlePreviewsCompanion entry) {

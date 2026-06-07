@@ -13,6 +13,39 @@ import 'dart:convert' as $convert;
 import 'dart:core' as $core;
 import 'dart:typed_data' as $typed_data;
 
+@$core.Deprecated('Use articleListStateDescriptor instead')
+const ArticleListState$json = {
+  '1': 'ArticleListState',
+  '2': [
+    {'1': 'ARTICLE_LIST_STATE_UNSPECIFIED', '2': 0},
+    {'1': 'ARTICLE_LIST_STATE_INBOX', '2': 1},
+    {'1': 'ARTICLE_LIST_STATE_ARCHIVE', '2': 2},
+  ],
+};
+
+/// Descriptor for `ArticleListState`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List articleListStateDescriptor = $convert.base64Decode(
+    'ChBBcnRpY2xlTGlzdFN0YXRlEiIKHkFSVElDTEVfTElTVF9TVEFURV9VTlNQRUNJRklFRBAAEh'
+    'wKGEFSVElDTEVfTElTVF9TVEFURV9JTkJPWBABEh4KGkFSVElDTEVfTElTVF9TVEFURV9BUkNI'
+    'SVZFEAI=');
+
+@$core.Deprecated('Use articleViewDescriptor instead')
+const ArticleView$json = {
+  '1': 'ArticleView',
+  '2': [
+    {'1': 'ARTICLE_VIEW_UNSPECIFIED', '2': 0},
+    {'1': 'ARTICLE_VIEW_INBOX', '2': 1},
+    {'1': 'ARTICLE_VIEW_FAVORITE', '2': 2},
+    {'1': 'ARTICLE_VIEW_ARCHIVE', '2': 3},
+  ],
+};
+
+/// Descriptor for `ArticleView`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List articleViewDescriptor = $convert.base64Decode(
+    'CgtBcnRpY2xlVmlldxIcChhBUlRJQ0xFX1ZJRVdfVU5TUEVDSUZJRUQQABIWChJBUlRJQ0xFX1'
+    'ZJRVdfSU5CT1gQARIZChVBUlRJQ0xFX1ZJRVdfRkFWT1JJVEUQAhIYChRBUlRJQ0xFX1ZJRVdf'
+    'QVJDSElWRRAD');
+
 @$core.Deprecated('Use phonemizerTokenMetaDescriptor instead')
 const PhonemizerTokenMeta$json = {
   '1': 'PhonemizerTokenMeta',
@@ -62,6 +95,8 @@ const ArticlePreview$json = {
     {'1': 'image', '3': 9, '4': 1, '5': 9, '9': 1, '10': 'image', '17': true},
     {'1': 'player_position_ms', '3': 10, '4': 1, '5': 3, '10': 'playerPositionMs'},
     {'1': 'scroll_position', '3': 11, '4': 1, '5': 1, '10': 'scrollPosition'},
+    {'1': 'list_state', '3': 12, '4': 1, '5': 14, '6': '.articles.v1.ArticleListState', '10': 'listState'},
+    {'1': 'is_favorite', '3': 13, '4': 1, '5': 8, '10': 'isFavorite'},
   ],
   '8': [
     {'1': '_description'},
@@ -76,8 +111,10 @@ final $typed_data.Uint8List articlePreviewDescriptor = $convert.base64Decode(
     'BSABKAlSBGRhdGUSEAoDdXJsGAYgASgJUgN1cmwSHgoKY2F0ZWdvcmllcxgHIAMoCVIKY2F0ZW'
     'dvcmllcxIlCgtkZXNjcmlwdGlvbhgIIAEoCUgAUgtkZXNjcmlwdGlvbogBARIZCgVpbWFnZRgJ'
     'IAEoCUgBUgVpbWFnZYgBARIsChJwbGF5ZXJfcG9zaXRpb25fbXMYCiABKANSEHBsYXllclBvc2'
-    'l0aW9uTXMSJwoPc2Nyb2xsX3Bvc2l0aW9uGAsgASgBUg5zY3JvbGxQb3NpdGlvbkIOCgxfZGVz'
-    'Y3JpcHRpb25CCAoGX2ltYWdl');
+    'l0aW9uTXMSJwoPc2Nyb2xsX3Bvc2l0aW9uGAsgASgBUg5zY3JvbGxQb3NpdGlvbhI8CgpsaXN0'
+    'X3N0YXRlGAwgASgOMh0uYXJ0aWNsZXMudjEuQXJ0aWNsZUxpc3RTdGF0ZVIJbGlzdFN0YXRlEh'
+    '8KC2lzX2Zhdm9yaXRlGA0gASgIUgppc0Zhdm9yaXRlQg4KDF9kZXNjcmlwdGlvbkIICgZfaW1h'
+    'Z2U=');
 
 @$core.Deprecated('Use articleDescriptor instead')
 const Article$json = {
@@ -98,6 +135,8 @@ const Article$json = {
     {'1': 'player_position_ms', '3': 13, '4': 1, '5': 3, '10': 'playerPositionMs'},
     {'1': 'scroll_position', '3': 14, '4': 1, '5': 1, '10': 'scrollPosition'},
     {'1': 'playback_speed', '3': 15, '4': 1, '5': 1, '10': 'playbackSpeed'},
+    {'1': 'list_state', '3': 16, '4': 1, '5': 14, '6': '.articles.v1.ArticleListState', '10': 'listState'},
+    {'1': 'is_favorite', '3': 17, '4': 1, '5': 8, '10': 'isFavorite'},
   ],
   '8': [
     {'1': '_description'},
@@ -115,8 +154,10 @@ final $typed_data.Uint8List articleDescriptor = $convert.base64Decode(
     '1hZ2UYCyABKAlIAVIFaW1hZ2WIAQESRAoPcGhvbmVtaXplcl9kYXRhGAwgAygLMhsuYXJ0aWNs'
     'ZXMudjEuUGhvbmVtaXplckRhdGFSDnBob25lbWl6ZXJEYXRhEiwKEnBsYXllcl9wb3NpdGlvbl'
     '9tcxgNIAEoA1IQcGxheWVyUG9zaXRpb25NcxInCg9zY3JvbGxfcG9zaXRpb24YDiABKAFSDnNj'
-    'cm9sbFBvc2l0aW9uEiUKDnBsYXliYWNrX3NwZWVkGA8gASgBUg1wbGF5YmFja1NwZWVkQg4KDF'
-    '9kZXNjcmlwdGlvbkIICgZfaW1hZ2U=');
+    'cm9sbFBvc2l0aW9uEiUKDnBsYXliYWNrX3NwZWVkGA8gASgBUg1wbGF5YmFja1NwZWVkEjwKCm'
+    'xpc3Rfc3RhdGUYECABKA4yHS5hcnRpY2xlcy52MS5BcnRpY2xlTGlzdFN0YXRlUglsaXN0U3Rh'
+    'dGUSHwoLaXNfZmF2b3JpdGUYESABKAhSCmlzRmF2b3JpdGVCDgoMX2Rlc2NyaXB0aW9uQggKBl'
+    '9pbWFnZQ==');
 
 @$core.Deprecated('Use getArticlesRequestDescriptor instead')
 const GetArticlesRequest$json = {
@@ -127,6 +168,7 @@ const GetArticlesRequest$json = {
     {'1': 'categories', '3': 3, '4': 3, '5': 9, '10': 'categories'},
     {'1': 'search_query', '3': 4, '4': 1, '5': 9, '9': 0, '10': 'searchQuery', '17': true},
     {'1': 'author', '3': 5, '4': 1, '5': 9, '9': 1, '10': 'author', '17': true},
+    {'1': 'view', '3': 6, '4': 1, '5': 14, '6': '.articles.v1.ArticleView', '10': 'view'},
   ],
   '8': [
     {'1': '_search_query'},
@@ -139,7 +181,8 @@ final $typed_data.Uint8List getArticlesRequestDescriptor = $convert.base64Decode
     'ChJHZXRBcnRpY2xlc1JlcXVlc3QSGwoJcGFnZV9zaXplGAEgASgFUghwYWdlU2l6ZRIdCgpwYW'
     'dlX3Rva2VuGAIgASgJUglwYWdlVG9rZW4SHgoKY2F0ZWdvcmllcxgDIAMoCVIKY2F0ZWdvcmll'
     'cxImCgxzZWFyY2hfcXVlcnkYBCABKAlIAFILc2VhcmNoUXVlcnmIAQESGwoGYXV0aG9yGAUgAS'
-    'gJSAFSBmF1dGhvcogBAUIPCg1fc2VhcmNoX3F1ZXJ5QgkKB19hdXRob3I=');
+    'gJSAFSBmF1dGhvcogBARIsCgR2aWV3GAYgASgOMhguYXJ0aWNsZXMudjEuQXJ0aWNsZVZpZXdS'
+    'BHZpZXdCDwoNX3NlYXJjaF9xdWVyeUIJCgdfYXV0aG9y');
 
 @$core.Deprecated('Use getArticlesResponseDescriptor instead')
 const GetArticlesResponse$json = {
@@ -223,6 +266,36 @@ const DeleteArticleResponse$json = {
 /// Descriptor for `DeleteArticleResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List deleteArticleResponseDescriptor = $convert.base64Decode(
     'ChVEZWxldGVBcnRpY2xlUmVzcG9uc2U=');
+
+@$core.Deprecated('Use setArticleStateRequestDescriptor instead')
+const SetArticleStateRequest$json = {
+  '1': 'SetArticleStateRequest',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'list_state', '3': 2, '4': 1, '5': 14, '6': '.articles.v1.ArticleListState', '9': 0, '10': 'listState', '17': true},
+    {'1': 'is_favorite', '3': 3, '4': 1, '5': 8, '9': 1, '10': 'isFavorite', '17': true},
+  ],
+  '8': [
+    {'1': '_list_state'},
+    {'1': '_is_favorite'},
+  ],
+};
+
+/// Descriptor for `SetArticleStateRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List setArticleStateRequestDescriptor = $convert.base64Decode(
+    'ChZTZXRBcnRpY2xlU3RhdGVSZXF1ZXN0Eg4KAmlkGAEgASgJUgJpZBJBCgpsaXN0X3N0YXRlGA'
+    'IgASgOMh0uYXJ0aWNsZXMudjEuQXJ0aWNsZUxpc3RTdGF0ZUgAUglsaXN0U3RhdGWIAQESJAoL'
+    'aXNfZmF2b3JpdGUYAyABKAhIAVIKaXNGYXZvcml0ZYgBAUINCgtfbGlzdF9zdGF0ZUIOCgxfaX'
+    'NfZmF2b3JpdGU=');
+
+@$core.Deprecated('Use setArticleStateResponseDescriptor instead')
+const SetArticleStateResponse$json = {
+  '1': 'SetArticleStateResponse',
+};
+
+/// Descriptor for `SetArticleStateResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List setArticleStateResponseDescriptor = $convert.base64Decode(
+    'ChdTZXRBcnRpY2xlU3RhdGVSZXNwb25zZQ==');
 
 @$core.Deprecated('Use saveArticleProgressRequestDescriptor instead')
 const SaveArticleProgressRequest$json = {
@@ -309,6 +382,7 @@ const $core.Map<$core.String, $core.dynamic> ArticlesServiceBase$json = {
     {'1': 'GetArticles', '2': '.articles.v1.GetArticlesRequest', '3': '.articles.v1.GetArticlesResponse'},
     {'1': 'GetArticle', '2': '.articles.v1.GetArticleRequest', '3': '.articles.v1.GetArticleResponse'},
     {'1': 'DeleteArticle', '2': '.articles.v1.DeleteArticleRequest', '3': '.articles.v1.DeleteArticleResponse'},
+    {'1': 'SetArticleState', '2': '.articles.v1.SetArticleStateRequest', '3': '.articles.v1.SetArticleStateResponse'},
     {'1': 'CheckForUpdates', '2': '.articles.v1.CheckForUpdatesRequest', '3': '.articles.v1.CheckForUpdatesResponse'},
     {'1': 'SaveArticleProgress', '2': '.articles.v1.SaveArticleProgressRequest', '3': '.articles.v1.SaveArticleProgressResponse'},
     {'1': 'StreamArticleUpdates', '2': '.articles.v1.StreamArticleUpdatesRequest', '3': '.articles.v1.StreamArticleUpdatesResponse', '6': true},
@@ -329,6 +403,8 @@ const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> ArticlesSe
   '.articles.v1.PhonemizerTokenMeta': PhonemizerTokenMeta$json,
   '.articles.v1.DeleteArticleRequest': DeleteArticleRequest$json,
   '.articles.v1.DeleteArticleResponse': DeleteArticleResponse$json,
+  '.articles.v1.SetArticleStateRequest': SetArticleStateRequest$json,
+  '.articles.v1.SetArticleStateResponse': SetArticleStateResponse$json,
   '.articles.v1.CheckForUpdatesRequest': CheckForUpdatesRequest$json,
   '.articles.v1.CheckForUpdatesResponse': CheckForUpdatesResponse$json,
   '.articles.v1.SaveArticleProgressRequest': SaveArticleProgressRequest$json,
@@ -345,10 +421,12 @@ final $typed_data.Uint8List articlesServiceDescriptor = $convert.base64Decode(
     'V0QXJ0aWNsZXNSZXNwb25zZRJNCgpHZXRBcnRpY2xlEh4uYXJ0aWNsZXMudjEuR2V0QXJ0aWNs'
     'ZVJlcXVlc3QaHy5hcnRpY2xlcy52MS5HZXRBcnRpY2xlUmVzcG9uc2USVgoNRGVsZXRlQXJ0aW'
     'NsZRIhLmFydGljbGVzLnYxLkRlbGV0ZUFydGljbGVSZXF1ZXN0GiIuYXJ0aWNsZXMudjEuRGVs'
-    'ZXRlQXJ0aWNsZVJlc3BvbnNlElwKD0NoZWNrRm9yVXBkYXRlcxIjLmFydGljbGVzLnYxLkNoZW'
-    'NrRm9yVXBkYXRlc1JlcXVlc3QaJC5hcnRpY2xlcy52MS5DaGVja0ZvclVwZGF0ZXNSZXNwb25z'
-    'ZRJoChNTYXZlQXJ0aWNsZVByb2dyZXNzEicuYXJ0aWNsZXMudjEuU2F2ZUFydGljbGVQcm9ncm'
-    'Vzc1JlcXVlc3QaKC5hcnRpY2xlcy52MS5TYXZlQXJ0aWNsZVByb2dyZXNzUmVzcG9uc2USbQoU'
-    'U3RyZWFtQXJ0aWNsZVVwZGF0ZXMSKC5hcnRpY2xlcy52MS5TdHJlYW1BcnRpY2xlVXBkYXRlc1'
-    'JlcXVlc3QaKS5hcnRpY2xlcy52MS5TdHJlYW1BcnRpY2xlVXBkYXRlc1Jlc3BvbnNlMAE=');
+    'ZXRlQXJ0aWNsZVJlc3BvbnNlElwKD1NldEFydGljbGVTdGF0ZRIjLmFydGljbGVzLnYxLlNldE'
+    'FydGljbGVTdGF0ZVJlcXVlc3QaJC5hcnRpY2xlcy52MS5TZXRBcnRpY2xlU3RhdGVSZXNwb25z'
+    'ZRJcCg9DaGVja0ZvclVwZGF0ZXMSIy5hcnRpY2xlcy52MS5DaGVja0ZvclVwZGF0ZXNSZXF1ZX'
+    'N0GiQuYXJ0aWNsZXMudjEuQ2hlY2tGb3JVcGRhdGVzUmVzcG9uc2USaAoTU2F2ZUFydGljbGVQ'
+    'cm9ncmVzcxInLmFydGljbGVzLnYxLlNhdmVBcnRpY2xlUHJvZ3Jlc3NSZXF1ZXN0GiguYXJ0aW'
+    'NsZXMudjEuU2F2ZUFydGljbGVQcm9ncmVzc1Jlc3BvbnNlEm0KFFN0cmVhbUFydGljbGVVcGRh'
+    'dGVzEiguYXJ0aWNsZXMudjEuU3RyZWFtQXJ0aWNsZVVwZGF0ZXNSZXF1ZXN0GikuYXJ0aWNsZX'
+    'MudjEuU3RyZWFtQXJ0aWNsZVVwZGF0ZXNSZXNwb25zZTAB');
 

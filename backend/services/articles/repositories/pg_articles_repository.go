@@ -23,22 +23,35 @@ func NewPgArticlesRepository(db *sqlx.DB) *PgArticlesRepository {
 	return &PgArticlesRepository{db: db}
 }
 
+func viewFilter(view string) string {
+	switch view {
+	case iomodels.ViewArchive:
+		return "AND ua.list_state = 'archive'"
+	case iomodels.ViewFavorite:
+		return "AND ua.is_favorite = TRUE"
+	default: // ViewInbox or empty
+		return "AND ua.list_state = 'inbox'"
+	}
+}
+
 func (p PgArticlesRepository) GetArticles(ctx context.Context, userID string, searchQ iomodels.GetArticlesRequest) (*iomodels.GetArticlesResponse, error) {
 	cursorTime, cursorID := iomodels.ParsePageToken(searchQ.PageToken)
 	var totalCount int32
 	var nextPageToken string
 	var previews []models.ArticlePreview
-	query := `
+	vf := viewFilter(searchQ.View)
+	query := fmt.Sprintf(`
 		SELECT a.id, a.url, a.status, a.title, a.author, a.published_date, a.categories, a.description, a.image_url, a.created_at,
-			ua.player_position_ms, ua.scroll_position
+			ua.player_position_ms, ua.scroll_position, ua.list_state, ua.is_favorite
 		FROM articles a
 		JOIN user_articles ua ON ua.article_id = a.id
 		WHERE ua.user_id = $1 AND ($2::timestamptz IS NULL OR (a.created_at, a.id) <= ($2, $3))
-			AND COALESCE(a.author, '') LIKE '%' || $5 || '%'
-			AND COALESCE(a.title, '') LIKE '%' || $6 || '%'
+			AND COALESCE(a.author, '') LIKE '%%' || $5 || '%%'
+			AND COALESCE(a.title, '') LIKE '%%' || $6 || '%%'
+			%s
 		ORDER BY a.created_at DESC, a.id DESC
 		LIMIT $4
-	`
+	`, vf)
 	err := p.db.SelectContext(ctx, &previews, query, userID, cursorTime, cursorID, searchQ.PageSize+1, searchQ.Author, searchQ.SearchQuery)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get articles for user %s: %w", userID, err)
@@ -52,14 +65,15 @@ func (p PgArticlesRepository) GetArticles(ctx context.Context, userID string, se
 	}
 
 	// Counting articles satisfying the condition
-	countQuery := `
+	countQuery := fmt.Sprintf(`
 		SELECT COUNT(*)
 		FROM articles a
 		JOIN user_articles ua ON ua.article_id = a.id
 		WHERE ua.user_id = $1
-			AND COALESCE(a.author, '') LIKE '%' || $2 || '%'
-			AND COALESCE(a.title, '') LIKE '%' || $3 || '%'
-	`
+			AND COALESCE(a.author, '') LIKE '%%' || $2 || '%%'
+			AND COALESCE(a.title, '') LIKE '%%' || $3 || '%%'
+			%s
+	`, vf)
 	err = p.db.GetContext(ctx, &totalCount, countQuery, userID, searchQ.Author, searchQ.SearchQuery)
 	if err != nil {
 		return nil, fmt.Errorf("failed to count articles for user %s: %w", userID, err)
@@ -94,7 +108,7 @@ func (p PgArticlesRepository) GetArticleForUser(ctx context.Context, userID stri
 	if err := p.db.GetContext(ctx, &article, `
 		SELECT a.id, a.url, a.status, a.title, a.author, a.published_date, a.extracted_html, a.pure_text,
 			a.categories, a.description, a.image_url, a.phonemizer_data, a.created_at,
-			ua.player_position_ms, ua.scroll_position, ua.playback_speed
+			ua.player_position_ms, ua.scroll_position, ua.playback_speed, ua.list_state, ua.is_favorite
 		FROM articles a
 		JOIN user_articles ua ON ua.article_id = a.id
 		WHERE ua.user_id = $1 AND a.id = $2
@@ -125,7 +139,7 @@ func (p PgArticlesRepository) GetArticlePreviewForUser(ctx context.Context, user
 	var preview models.ArticlePreview
 	if err := p.db.GetContext(ctx, &preview, `
 		SELECT a.id, a.url, a.status, a.title, a.author, a.published_date, a.categories, a.description, a.image_url, a.created_at,
-			ua.player_position_ms, ua.scroll_position
+			ua.player_position_ms, ua.scroll_position, ua.list_state, ua.is_favorite
 		FROM articles a
 		JOIN user_articles ua ON ua.article_id = a.id
 		WHERE ua.user_id = $1 AND a.id = $2
@@ -143,7 +157,7 @@ func (p PgArticlesRepository) GetArticleForUserWithURL(ctx context.Context, user
 	if err := p.db.GetContext(ctx, &article, `
 		SELECT a.id, a.url, a.status, a.title, a.author, a.published_date, a.extracted_html, a.pure_text,
 			a.categories, a.description, a.image_url, a.phonemizer_data, a.created_at,
-			ua.player_position_ms, ua.scroll_position, ua.playback_speed
+			ua.player_position_ms, ua.scroll_position, ua.playback_speed, ua.list_state, ua.is_favorite
 		FROM articles a
 		JOIN user_articles ua ON ua.article_id = a.id
 		WHERE ua.user_id = $1 AND a.url = $2
@@ -221,8 +235,8 @@ func (p PgArticlesRepository) UpdateArticle(ctx context.Context, article models.
 	return nil
 }
 
-// ApplyScrapeResult writes only every column from the passed article except phonemizer_data, 
-// and in the same statement (atomically) sets the status to 'ready' if phonemizer_data is already present, 
+// ApplyScrapeResult writes only every column from the passed article except phonemizer_data,
+// and in the same statement (atomically) sets the status to 'ready' if phonemizer_data is already present,
 // otherwise set 'text_ready'
 func (p PgArticlesRepository) ApplyScrapeResult(ctx context.Context, article models.Article) error {
 	query := fmt.Sprintf(`
@@ -244,9 +258,10 @@ func (p PgArticlesRepository) ApplyScrapeResult(ctx context.Context, article mod
 	return nil
 }
 
-// ApplyPhonemizerResult writes only the phonemizer_data column from the passed article, 
+// ApplyPhonemizerResult writes only the phonemizer_data column from the passed article,
 // and in the same statement (atomically) sets the status to 'ready' if extracted_html is already present,
-//  otherwise set 'phonemes_ready'
+//
+//	otherwise set 'phonemes_ready'
 func (p PgArticlesRepository) ApplyPhonemizerResult(ctx context.Context, articleID int64, data models.JSONB[[]models.PhonemizerData]) error {
 	query := fmt.Sprintf(`
 		UPDATE articles SET
@@ -275,6 +290,21 @@ func (p PgArticlesRepository) DeleteArticle(ctx context.Context, userID string, 
 	`, userID, id)
 	if err != nil {
 		return fmt.Errorf("failed to delete user-article relation for user %s and article %d: %w", userID, id, err)
+	}
+	return nil
+}
+
+// SetArticleState updates the per-user list placement or favorite flag.
+// Nil arguments leave the corresponding column unchanged
+func (p PgArticlesRepository) SetArticleState(ctx context.Context, userID string, articleID int64, listState *string, isFavorite *bool) error {
+	_, err := p.db.ExecContext(ctx, `
+		UPDATE user_articles SET
+			list_state = COALESCE($1, list_state),
+			is_favorite = COALESCE($2, is_favorite)
+		WHERE user_id = $3 AND article_id = $4
+	`, listState, isFavorite, userID, articleID)
+	if err != nil {
+		return fmt.Errorf("failed to set article state for user %s and article %d: %w", userID, articleID, err)
 	}
 	return nil
 }

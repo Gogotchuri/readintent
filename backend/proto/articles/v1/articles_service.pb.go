@@ -21,6 +21,111 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// Which list an article lives in. inbox and archive are mutually exclusive;
+// favorite is an orthogonal flag (see is_favorite), not part of this enum.
+type ArticleListState int32
+
+const (
+	ArticleListState_ARTICLE_LIST_STATE_UNSPECIFIED ArticleListState = 0 // treated as inbox
+	ArticleListState_ARTICLE_LIST_STATE_INBOX       ArticleListState = 1
+	ArticleListState_ARTICLE_LIST_STATE_ARCHIVE     ArticleListState = 2
+)
+
+// Enum value maps for ArticleListState.
+var (
+	ArticleListState_name = map[int32]string{
+		0: "ARTICLE_LIST_STATE_UNSPECIFIED",
+		1: "ARTICLE_LIST_STATE_INBOX",
+		2: "ARTICLE_LIST_STATE_ARCHIVE",
+	}
+	ArticleListState_value = map[string]int32{
+		"ARTICLE_LIST_STATE_UNSPECIFIED": 0,
+		"ARTICLE_LIST_STATE_INBOX":       1,
+		"ARTICLE_LIST_STATE_ARCHIVE":     2,
+	}
+)
+
+func (x ArticleListState) Enum() *ArticleListState {
+	p := new(ArticleListState)
+	*p = x
+	return p
+}
+
+func (x ArticleListState) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ArticleListState) Descriptor() protoreflect.EnumDescriptor {
+	return file_articles_v1_articles_service_proto_enumTypes[0].Descriptor()
+}
+
+func (ArticleListState) Type() protoreflect.EnumType {
+	return &file_articles_v1_articles_service_proto_enumTypes[0]
+}
+
+func (x ArticleListState) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ArticleListState.Descriptor instead.
+func (ArticleListState) EnumDescriptor() ([]byte, []int) {
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{0}
+}
+
+// The view a GetArticles call is filtering for. favorite spans both inbox and
+// archive (any article with is_favorite set).
+type ArticleView int32
+
+const (
+	ArticleView_ARTICLE_VIEW_UNSPECIFIED ArticleView = 0 // defaults to inbox
+	ArticleView_ARTICLE_VIEW_INBOX       ArticleView = 1
+	ArticleView_ARTICLE_VIEW_FAVORITE    ArticleView = 2
+	ArticleView_ARTICLE_VIEW_ARCHIVE     ArticleView = 3
+)
+
+// Enum value maps for ArticleView.
+var (
+	ArticleView_name = map[int32]string{
+		0: "ARTICLE_VIEW_UNSPECIFIED",
+		1: "ARTICLE_VIEW_INBOX",
+		2: "ARTICLE_VIEW_FAVORITE",
+		3: "ARTICLE_VIEW_ARCHIVE",
+	}
+	ArticleView_value = map[string]int32{
+		"ARTICLE_VIEW_UNSPECIFIED": 0,
+		"ARTICLE_VIEW_INBOX":       1,
+		"ARTICLE_VIEW_FAVORITE":    2,
+		"ARTICLE_VIEW_ARCHIVE":     3,
+	}
+)
+
+func (x ArticleView) Enum() *ArticleView {
+	p := new(ArticleView)
+	*p = x
+	return p
+}
+
+func (x ArticleView) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ArticleView) Descriptor() protoreflect.EnumDescriptor {
+	return file_articles_v1_articles_service_proto_enumTypes[1].Descriptor()
+}
+
+func (ArticleView) Type() protoreflect.EnumType {
+	return &file_articles_v1_articles_service_proto_enumTypes[1]
+}
+
+func (x ArticleView) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ArticleView.Descriptor instead.
+func (ArticleView) EnumDescriptor() ([]byte, []int) {
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{1}
+}
+
 type PhonemizerTokenMeta struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Text          string                 `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
@@ -161,10 +266,12 @@ type ArticlePreview struct {
 	Categories []string `protobuf:"bytes,7,rep,name=categories,proto3" json:"categories,omitempty"`
 	// If the description failed to be extracted from the metadata,
 	// we should add put the first few hundred characters in
-	Description      *string `protobuf:"bytes,8,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	Image            *string `protobuf:"bytes,9,opt,name=image,proto3,oneof" json:"image,omitempty"`
-	PlayerPositionMs int64   `protobuf:"varint,10,opt,name=player_position_ms,json=playerPositionMs,proto3" json:"player_position_ms,omitempty"`
-	ScrollPosition   float64 `protobuf:"fixed64,11,opt,name=scroll_position,json=scrollPosition,proto3" json:"scroll_position,omitempty"`
+	Description      *string          `protobuf:"bytes,8,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	Image            *string          `protobuf:"bytes,9,opt,name=image,proto3,oneof" json:"image,omitempty"`
+	PlayerPositionMs int64            `protobuf:"varint,10,opt,name=player_position_ms,json=playerPositionMs,proto3" json:"player_position_ms,omitempty"`
+	ScrollPosition   float64          `protobuf:"fixed64,11,opt,name=scroll_position,json=scrollPosition,proto3" json:"scroll_position,omitempty"`
+	ListState        ArticleListState `protobuf:"varint,12,opt,name=list_state,json=listState,proto3,enum=articles.v1.ArticleListState" json:"list_state,omitempty"`
+	IsFavorite       bool             `protobuf:"varint,13,opt,name=is_favorite,json=isFavorite,proto3" json:"is_favorite,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -276,6 +383,20 @@ func (x *ArticlePreview) GetScrollPosition() float64 {
 	return 0
 }
 
+func (x *ArticlePreview) GetListState() ArticleListState {
+	if x != nil {
+		return x.ListState
+	}
+	return ArticleListState_ARTICLE_LIST_STATE_UNSPECIFIED
+}
+
+func (x *ArticlePreview) GetIsFavorite() bool {
+	if x != nil {
+		return x.IsFavorite
+	}
+	return false
+}
+
 // Full article with all content
 type Article struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -295,6 +416,8 @@ type Article struct {
 	PlayerPositionMs int64             `protobuf:"varint,13,opt,name=player_position_ms,json=playerPositionMs,proto3" json:"player_position_ms,omitempty"`
 	ScrollPosition   float64           `protobuf:"fixed64,14,opt,name=scroll_position,json=scrollPosition,proto3" json:"scroll_position,omitempty"`
 	PlaybackSpeed    float64           `protobuf:"fixed64,15,opt,name=playback_speed,json=playbackSpeed,proto3" json:"playback_speed,omitempty"`
+	ListState        ArticleListState  `protobuf:"varint,16,opt,name=list_state,json=listState,proto3,enum=articles.v1.ArticleListState" json:"list_state,omitempty"`
+	IsFavorite       bool              `protobuf:"varint,17,opt,name=is_favorite,json=isFavorite,proto3" json:"is_favorite,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -434,14 +557,30 @@ func (x *Article) GetPlaybackSpeed() float64 {
 	return 0
 }
 
+func (x *Article) GetListState() ArticleListState {
+	if x != nil {
+		return x.ListState
+	}
+	return ArticleListState_ARTICLE_LIST_STATE_UNSPECIFIED
+}
+
+func (x *Article) GetIsFavorite() bool {
+	if x != nil {
+		return x.IsFavorite
+	}
+	return false
+}
+
 type GetArticlesRequest struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	PageSize  int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	PageToken string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
 	// Optional filters
-	Categories    []string `protobuf:"bytes,3,rep,name=categories,proto3" json:"categories,omitempty"`
-	SearchQuery   *string  `protobuf:"bytes,4,opt,name=search_query,json=searchQuery,proto3,oneof" json:"search_query,omitempty"`
-	Author        *string  `protobuf:"bytes,5,opt,name=author,proto3,oneof" json:"author,omitempty"`
+	Categories  []string `protobuf:"bytes,3,rep,name=categories,proto3" json:"categories,omitempty"`
+	SearchQuery *string  `protobuf:"bytes,4,opt,name=search_query,json=searchQuery,proto3,oneof" json:"search_query,omitempty"`
+	Author      *string  `protobuf:"bytes,5,opt,name=author,proto3,oneof" json:"author,omitempty"`
+	// Which list to fetch. Unspecified defaults to inbox.
+	View          ArticleView `protobuf:"varint,6,opt,name=view,proto3,enum=articles.v1.ArticleView" json:"view,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -509,6 +648,13 @@ func (x *GetArticlesRequest) GetAuthor() string {
 		return *x.Author
 	}
 	return ""
+}
+
+func (x *GetArticlesRequest) GetView() ArticleView {
+	if x != nil {
+		return x.View
+	}
+	return ArticleView_ARTICLE_VIEW_UNSPECIFIED
 }
 
 type GetArticlesResponse struct {
@@ -821,6 +967,105 @@ func (*DeleteArticleResponse) Descriptor() ([]byte, []int) {
 	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{11}
 }
 
+// Moves an article between lists and/or toggles its favorite flag. Only the
+// provided fields are changed, so list_state and is_favorite can be updated
+// independently.
+type SetArticleStateRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	ListState     *ArticleListState      `protobuf:"varint,2,opt,name=list_state,json=listState,proto3,enum=articles.v1.ArticleListState,oneof" json:"list_state,omitempty"`
+	IsFavorite    *bool                  `protobuf:"varint,3,opt,name=is_favorite,json=isFavorite,proto3,oneof" json:"is_favorite,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetArticleStateRequest) Reset() {
+	*x = SetArticleStateRequest{}
+	mi := &file_articles_v1_articles_service_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetArticleStateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetArticleStateRequest) ProtoMessage() {}
+
+func (x *SetArticleStateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_articles_v1_articles_service_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetArticleStateRequest.ProtoReflect.Descriptor instead.
+func (*SetArticleStateRequest) Descriptor() ([]byte, []int) {
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *SetArticleStateRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *SetArticleStateRequest) GetListState() ArticleListState {
+	if x != nil && x.ListState != nil {
+		return *x.ListState
+	}
+	return ArticleListState_ARTICLE_LIST_STATE_UNSPECIFIED
+}
+
+func (x *SetArticleStateRequest) GetIsFavorite() bool {
+	if x != nil && x.IsFavorite != nil {
+		return *x.IsFavorite
+	}
+	return false
+}
+
+type SetArticleStateResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetArticleStateResponse) Reset() {
+	*x = SetArticleStateResponse{}
+	mi := &file_articles_v1_articles_service_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetArticleStateResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetArticleStateResponse) ProtoMessage() {}
+
+func (x *SetArticleStateResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_articles_v1_articles_service_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetArticleStateResponse.ProtoReflect.Descriptor instead.
+func (*SetArticleStateResponse) Descriptor() ([]byte, []int) {
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{13}
+}
+
 type SaveArticleProgressRequest struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	ArticleId        string                 `protobuf:"bytes,1,opt,name=article_id,json=articleId,proto3" json:"article_id,omitempty"`
@@ -833,7 +1078,7 @@ type SaveArticleProgressRequest struct {
 
 func (x *SaveArticleProgressRequest) Reset() {
 	*x = SaveArticleProgressRequest{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[12]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -845,7 +1090,7 @@ func (x *SaveArticleProgressRequest) String() string {
 func (*SaveArticleProgressRequest) ProtoMessage() {}
 
 func (x *SaveArticleProgressRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[12]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -858,7 +1103,7 @@ func (x *SaveArticleProgressRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SaveArticleProgressRequest.ProtoReflect.Descriptor instead.
 func (*SaveArticleProgressRequest) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{12}
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *SaveArticleProgressRequest) GetArticleId() string {
@@ -897,7 +1142,7 @@ type SaveArticleProgressResponse struct {
 
 func (x *SaveArticleProgressResponse) Reset() {
 	*x = SaveArticleProgressResponse{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[13]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -909,7 +1154,7 @@ func (x *SaveArticleProgressResponse) String() string {
 func (*SaveArticleProgressResponse) ProtoMessage() {}
 
 func (x *SaveArticleProgressResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[13]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -922,7 +1167,7 @@ func (x *SaveArticleProgressResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SaveArticleProgressResponse.ProtoReflect.Descriptor instead.
 func (*SaveArticleProgressResponse) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{13}
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{15}
 }
 
 type CheckForUpdatesRequest struct {
@@ -934,7 +1179,7 @@ type CheckForUpdatesRequest struct {
 
 func (x *CheckForUpdatesRequest) Reset() {
 	*x = CheckForUpdatesRequest{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[14]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -946,7 +1191,7 @@ func (x *CheckForUpdatesRequest) String() string {
 func (*CheckForUpdatesRequest) ProtoMessage() {}
 
 func (x *CheckForUpdatesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[14]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -959,7 +1204,7 @@ func (x *CheckForUpdatesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckForUpdatesRequest.ProtoReflect.Descriptor instead.
 func (*CheckForUpdatesRequest) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{14}
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *CheckForUpdatesRequest) GetLastCheckedAt() int64 {
@@ -980,7 +1225,7 @@ type CheckForUpdatesResponse struct {
 
 func (x *CheckForUpdatesResponse) Reset() {
 	*x = CheckForUpdatesResponse{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[15]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -992,7 +1237,7 @@ func (x *CheckForUpdatesResponse) String() string {
 func (*CheckForUpdatesResponse) ProtoMessage() {}
 
 func (x *CheckForUpdatesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[15]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1005,7 +1250,7 @@ func (x *CheckForUpdatesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckForUpdatesResponse.ProtoReflect.Descriptor instead.
 func (*CheckForUpdatesResponse) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{15}
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *CheckForUpdatesResponse) GetHasUpdates() bool {
@@ -1030,7 +1275,7 @@ type StreamArticleUpdatesRequest struct {
 
 func (x *StreamArticleUpdatesRequest) Reset() {
 	*x = StreamArticleUpdatesRequest{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[16]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1042,7 +1287,7 @@ func (x *StreamArticleUpdatesRequest) String() string {
 func (*StreamArticleUpdatesRequest) ProtoMessage() {}
 
 func (x *StreamArticleUpdatesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[16]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1055,13 +1300,13 @@ func (x *StreamArticleUpdatesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamArticleUpdatesRequest.ProtoReflect.Descriptor instead.
 func (*StreamArticleUpdatesRequest) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{16}
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{18}
 }
 
 type StreamArticleUpdatesResponse struct {
 	state   protoimpl.MessageState `protogen:"open.v1"`
 	Article *ArticlePreview        `protobuf:"bytes,1,opt,name=article,proto3" json:"article,omitempty"`
-	// "updated" | "heartbeat" (room for "deleted" later)
+	// "updated" | "heartbeat"
 	EventType     string `protobuf:"bytes,2,opt,name=event_type,json=eventType,proto3" json:"event_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1069,7 +1314,7 @@ type StreamArticleUpdatesResponse struct {
 
 func (x *StreamArticleUpdatesResponse) Reset() {
 	*x = StreamArticleUpdatesResponse{}
-	mi := &file_articles_v1_articles_service_proto_msgTypes[17]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1081,7 +1326,7 @@ func (x *StreamArticleUpdatesResponse) String() string {
 func (*StreamArticleUpdatesResponse) ProtoMessage() {}
 
 func (x *StreamArticleUpdatesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_articles_v1_articles_service_proto_msgTypes[17]
+	mi := &file_articles_v1_articles_service_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1094,7 +1339,7 @@ func (x *StreamArticleUpdatesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamArticleUpdatesResponse.ProtoReflect.Descriptor instead.
 func (*StreamArticleUpdatesResponse) Descriptor() ([]byte, []int) {
-	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{17}
+	return file_articles_v1_articles_service_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *StreamArticleUpdatesResponse) GetArticle() *ArticlePreview {
@@ -1126,7 +1371,7 @@ const file_articles_v1_articles_service_proto_rawDesc = "" +
 	"\bphonemes\x18\x02 \x01(\tR\bphonemes\x12\x1b\n" +
 	"\ttoken_ids\x18\x03 \x03(\x03R\btokenIds\x12?\n" +
 	"\n" +
-	"token_meta\x18\x04 \x03(\v2 .articles.v1.PhonemizerTokenMetaR\ttokenMeta\"\xdf\x02\n" +
+	"token_meta\x18\x04 \x03(\v2 .articles.v1.PhonemizerTokenMetaR\ttokenMeta\"\xbe\x03\n" +
 	"\x0eArticlePreview\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\x12\x14\n" +
@@ -1141,9 +1386,13 @@ const file_articles_v1_articles_service_proto_rawDesc = "" +
 	"\x05image\x18\t \x01(\tH\x01R\x05image\x88\x01\x01\x12,\n" +
 	"\x12player_position_ms\x18\n" +
 	" \x01(\x03R\x10playerPositionMs\x12'\n" +
-	"\x0fscroll_position\x18\v \x01(\x01R\x0escrollPositionB\x0e\n" +
+	"\x0fscroll_position\x18\v \x01(\x01R\x0escrollPosition\x12<\n" +
+	"\n" +
+	"list_state\x18\f \x01(\x0e2\x1d.articles.v1.ArticleListStateR\tlistState\x12\x1f\n" +
+	"\vis_favorite\x18\r \x01(\bR\n" +
+	"isFavoriteB\x0e\n" +
 	"\f_descriptionB\b\n" +
-	"\x06_image\"\x89\x04\n" +
+	"\x06_image\"\xe8\x04\n" +
 	"\aArticle\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\x12\x14\n" +
@@ -1162,9 +1411,13 @@ const file_articles_v1_articles_service_proto_rawDesc = "" +
 	"\x0fphonemizer_data\x18\f \x03(\v2\x1b.articles.v1.PhonemizerDataR\x0ephonemizerData\x12,\n" +
 	"\x12player_position_ms\x18\r \x01(\x03R\x10playerPositionMs\x12'\n" +
 	"\x0fscroll_position\x18\x0e \x01(\x01R\x0escrollPosition\x12%\n" +
-	"\x0eplayback_speed\x18\x0f \x01(\x01R\rplaybackSpeedB\x0e\n" +
+	"\x0eplayback_speed\x18\x0f \x01(\x01R\rplaybackSpeed\x12<\n" +
+	"\n" +
+	"list_state\x18\x10 \x01(\x0e2\x1d.articles.v1.ArticleListStateR\tlistState\x12\x1f\n" +
+	"\vis_favorite\x18\x11 \x01(\bR\n" +
+	"isFavoriteB\x0e\n" +
 	"\f_descriptionB\b\n" +
-	"\x06_image\"\xd1\x01\n" +
+	"\x06_image\"\xff\x01\n" +
 	"\x12GetArticlesRequest\x12\x1b\n" +
 	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
@@ -1173,7 +1426,8 @@ const file_articles_v1_articles_service_proto_rawDesc = "" +
 	"categories\x18\x03 \x03(\tR\n" +
 	"categories\x12&\n" +
 	"\fsearch_query\x18\x04 \x01(\tH\x00R\vsearchQuery\x88\x01\x01\x12\x1b\n" +
-	"\x06author\x18\x05 \x01(\tH\x01R\x06author\x88\x01\x01B\x0f\n" +
+	"\x06author\x18\x05 \x01(\tH\x01R\x06author\x88\x01\x01\x12,\n" +
+	"\x04view\x18\x06 \x01(\x0e2\x18.articles.v1.ArticleViewR\x04viewB\x0f\n" +
 	"\r_search_queryB\t\n" +
 	"\a_author\"\x97\x01\n" +
 	"\x13GetArticlesResponse\x127\n" +
@@ -1190,7 +1444,16 @@ const file_articles_v1_articles_service_proto_rawDesc = "" +
 	"\x14ParseArticleResponse\"&\n" +
 	"\x14DeleteArticleRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x17\n" +
-	"\x15DeleteArticleResponse\"\xb9\x01\n" +
+	"\x15DeleteArticleResponse\"\xb0\x01\n" +
+	"\x16SetArticleStateRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12A\n" +
+	"\n" +
+	"list_state\x18\x02 \x01(\x0e2\x1d.articles.v1.ArticleListStateH\x00R\tlistState\x88\x01\x01\x12$\n" +
+	"\vis_favorite\x18\x03 \x01(\bH\x01R\n" +
+	"isFavorite\x88\x01\x01B\r\n" +
+	"\v_list_stateB\x0e\n" +
+	"\f_is_favorite\"\x19\n" +
+	"\x17SetArticleStateResponse\"\xb9\x01\n" +
 	"\x1aSaveArticleProgressRequest\x12\x1d\n" +
 	"\n" +
 	"article_id\x18\x01 \x01(\tR\tarticleId\x12,\n" +
@@ -1208,13 +1471,23 @@ const file_articles_v1_articles_service_proto_rawDesc = "" +
 	"\x1cStreamArticleUpdatesResponse\x125\n" +
 	"\aarticle\x18\x01 \x01(\v2\x1b.articles.v1.ArticlePreviewR\aarticle\x12\x1d\n" +
 	"\n" +
-	"event_type\x18\x02 \x01(\tR\teventType2\x96\x05\n" +
+	"event_type\x18\x02 \x01(\tR\teventType*t\n" +
+	"\x10ArticleListState\x12\"\n" +
+	"\x1eARTICLE_LIST_STATE_UNSPECIFIED\x10\x00\x12\x1c\n" +
+	"\x18ARTICLE_LIST_STATE_INBOX\x10\x01\x12\x1e\n" +
+	"\x1aARTICLE_LIST_STATE_ARCHIVE\x10\x02*x\n" +
+	"\vArticleView\x12\x1c\n" +
+	"\x18ARTICLE_VIEW_UNSPECIFIED\x10\x00\x12\x16\n" +
+	"\x12ARTICLE_VIEW_INBOX\x10\x01\x12\x19\n" +
+	"\x15ARTICLE_VIEW_FAVORITE\x10\x02\x12\x18\n" +
+	"\x14ARTICLE_VIEW_ARCHIVE\x10\x032\xf4\x05\n" +
 	"\x0fArticlesService\x12S\n" +
 	"\fParseArticle\x12 .articles.v1.ParseArticleRequest\x1a!.articles.v1.ParseArticleResponse\x12P\n" +
 	"\vGetArticles\x12\x1f.articles.v1.GetArticlesRequest\x1a .articles.v1.GetArticlesResponse\x12M\n" +
 	"\n" +
 	"GetArticle\x12\x1e.articles.v1.GetArticleRequest\x1a\x1f.articles.v1.GetArticleResponse\x12V\n" +
 	"\rDeleteArticle\x12!.articles.v1.DeleteArticleRequest\x1a\".articles.v1.DeleteArticleResponse\x12\\\n" +
+	"\x0fSetArticleState\x12#.articles.v1.SetArticleStateRequest\x1a$.articles.v1.SetArticleStateResponse\x12\\\n" +
 	"\x0fCheckForUpdates\x12#.articles.v1.CheckForUpdatesRequest\x1a$.articles.v1.CheckForUpdatesResponse\x12h\n" +
 	"\x13SaveArticleProgress\x12'.articles.v1.SaveArticleProgressRequest\x1a(.articles.v1.SaveArticleProgressResponse\x12m\n" +
 	"\x14StreamArticleUpdates\x12(.articles.v1.StreamArticleUpdatesRequest\x1a).articles.v1.StreamArticleUpdatesResponse0\x01BGZEgithub.com/gogotchuri/readintent/backend/proto/articles/v1;articlesv1b\x06proto3"
@@ -1231,52 +1504,63 @@ func file_articles_v1_articles_service_proto_rawDescGZIP() []byte {
 	return file_articles_v1_articles_service_proto_rawDescData
 }
 
-var file_articles_v1_articles_service_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_articles_v1_articles_service_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_articles_v1_articles_service_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_articles_v1_articles_service_proto_goTypes = []any{
-	(*PhonemizerTokenMeta)(nil),          // 0: articles.v1.PhonemizerTokenMeta
-	(*PhonemizerData)(nil),               // 1: articles.v1.PhonemizerData
-	(*ArticlePreview)(nil),               // 2: articles.v1.ArticlePreview
-	(*Article)(nil),                      // 3: articles.v1.Article
-	(*GetArticlesRequest)(nil),           // 4: articles.v1.GetArticlesRequest
-	(*GetArticlesResponse)(nil),          // 5: articles.v1.GetArticlesResponse
-	(*GetArticleRequest)(nil),            // 6: articles.v1.GetArticleRequest
-	(*GetArticleResponse)(nil),           // 7: articles.v1.GetArticleResponse
-	(*ParseArticleRequest)(nil),          // 8: articles.v1.ParseArticleRequest
-	(*ParseArticleResponse)(nil),         // 9: articles.v1.ParseArticleResponse
-	(*DeleteArticleRequest)(nil),         // 10: articles.v1.DeleteArticleRequest
-	(*DeleteArticleResponse)(nil),        // 11: articles.v1.DeleteArticleResponse
-	(*SaveArticleProgressRequest)(nil),   // 12: articles.v1.SaveArticleProgressRequest
-	(*SaveArticleProgressResponse)(nil),  // 13: articles.v1.SaveArticleProgressResponse
-	(*CheckForUpdatesRequest)(nil),       // 14: articles.v1.CheckForUpdatesRequest
-	(*CheckForUpdatesResponse)(nil),      // 15: articles.v1.CheckForUpdatesResponse
-	(*StreamArticleUpdatesRequest)(nil),  // 16: articles.v1.StreamArticleUpdatesRequest
-	(*StreamArticleUpdatesResponse)(nil), // 17: articles.v1.StreamArticleUpdatesResponse
+	(ArticleListState)(0),                // 0: articles.v1.ArticleListState
+	(ArticleView)(0),                     // 1: articles.v1.ArticleView
+	(*PhonemizerTokenMeta)(nil),          // 2: articles.v1.PhonemizerTokenMeta
+	(*PhonemizerData)(nil),               // 3: articles.v1.PhonemizerData
+	(*ArticlePreview)(nil),               // 4: articles.v1.ArticlePreview
+	(*Article)(nil),                      // 5: articles.v1.Article
+	(*GetArticlesRequest)(nil),           // 6: articles.v1.GetArticlesRequest
+	(*GetArticlesResponse)(nil),          // 7: articles.v1.GetArticlesResponse
+	(*GetArticleRequest)(nil),            // 8: articles.v1.GetArticleRequest
+	(*GetArticleResponse)(nil),           // 9: articles.v1.GetArticleResponse
+	(*ParseArticleRequest)(nil),          // 10: articles.v1.ParseArticleRequest
+	(*ParseArticleResponse)(nil),         // 11: articles.v1.ParseArticleResponse
+	(*DeleteArticleRequest)(nil),         // 12: articles.v1.DeleteArticleRequest
+	(*DeleteArticleResponse)(nil),        // 13: articles.v1.DeleteArticleResponse
+	(*SetArticleStateRequest)(nil),       // 14: articles.v1.SetArticleStateRequest
+	(*SetArticleStateResponse)(nil),      // 15: articles.v1.SetArticleStateResponse
+	(*SaveArticleProgressRequest)(nil),   // 16: articles.v1.SaveArticleProgressRequest
+	(*SaveArticleProgressResponse)(nil),  // 17: articles.v1.SaveArticleProgressResponse
+	(*CheckForUpdatesRequest)(nil),       // 18: articles.v1.CheckForUpdatesRequest
+	(*CheckForUpdatesResponse)(nil),      // 19: articles.v1.CheckForUpdatesResponse
+	(*StreamArticleUpdatesRequest)(nil),  // 20: articles.v1.StreamArticleUpdatesRequest
+	(*StreamArticleUpdatesResponse)(nil), // 21: articles.v1.StreamArticleUpdatesResponse
 }
 var file_articles_v1_articles_service_proto_depIdxs = []int32{
-	0,  // 0: articles.v1.PhonemizerData.token_meta:type_name -> articles.v1.PhonemizerTokenMeta
-	1,  // 1: articles.v1.Article.phonemizer_data:type_name -> articles.v1.PhonemizerData
-	2,  // 2: articles.v1.GetArticlesResponse.articles:type_name -> articles.v1.ArticlePreview
-	3,  // 3: articles.v1.GetArticleResponse.article:type_name -> articles.v1.Article
-	2,  // 4: articles.v1.StreamArticleUpdatesResponse.article:type_name -> articles.v1.ArticlePreview
-	8,  // 5: articles.v1.ArticlesService.ParseArticle:input_type -> articles.v1.ParseArticleRequest
-	4,  // 6: articles.v1.ArticlesService.GetArticles:input_type -> articles.v1.GetArticlesRequest
-	6,  // 7: articles.v1.ArticlesService.GetArticle:input_type -> articles.v1.GetArticleRequest
-	10, // 8: articles.v1.ArticlesService.DeleteArticle:input_type -> articles.v1.DeleteArticleRequest
-	14, // 9: articles.v1.ArticlesService.CheckForUpdates:input_type -> articles.v1.CheckForUpdatesRequest
-	12, // 10: articles.v1.ArticlesService.SaveArticleProgress:input_type -> articles.v1.SaveArticleProgressRequest
-	16, // 11: articles.v1.ArticlesService.StreamArticleUpdates:input_type -> articles.v1.StreamArticleUpdatesRequest
-	9,  // 12: articles.v1.ArticlesService.ParseArticle:output_type -> articles.v1.ParseArticleResponse
-	5,  // 13: articles.v1.ArticlesService.GetArticles:output_type -> articles.v1.GetArticlesResponse
-	7,  // 14: articles.v1.ArticlesService.GetArticle:output_type -> articles.v1.GetArticleResponse
-	11, // 15: articles.v1.ArticlesService.DeleteArticle:output_type -> articles.v1.DeleteArticleResponse
-	15, // 16: articles.v1.ArticlesService.CheckForUpdates:output_type -> articles.v1.CheckForUpdatesResponse
-	13, // 17: articles.v1.ArticlesService.SaveArticleProgress:output_type -> articles.v1.SaveArticleProgressResponse
-	17, // 18: articles.v1.ArticlesService.StreamArticleUpdates:output_type -> articles.v1.StreamArticleUpdatesResponse
-	12, // [12:19] is the sub-list for method output_type
-	5,  // [5:12] is the sub-list for method input_type
-	5,  // [5:5] is the sub-list for extension type_name
-	5,  // [5:5] is the sub-list for extension extendee
-	0,  // [0:5] is the sub-list for field type_name
+	2,  // 0: articles.v1.PhonemizerData.token_meta:type_name -> articles.v1.PhonemizerTokenMeta
+	0,  // 1: articles.v1.ArticlePreview.list_state:type_name -> articles.v1.ArticleListState
+	3,  // 2: articles.v1.Article.phonemizer_data:type_name -> articles.v1.PhonemizerData
+	0,  // 3: articles.v1.Article.list_state:type_name -> articles.v1.ArticleListState
+	1,  // 4: articles.v1.GetArticlesRequest.view:type_name -> articles.v1.ArticleView
+	4,  // 5: articles.v1.GetArticlesResponse.articles:type_name -> articles.v1.ArticlePreview
+	5,  // 6: articles.v1.GetArticleResponse.article:type_name -> articles.v1.Article
+	0,  // 7: articles.v1.SetArticleStateRequest.list_state:type_name -> articles.v1.ArticleListState
+	4,  // 8: articles.v1.StreamArticleUpdatesResponse.article:type_name -> articles.v1.ArticlePreview
+	10, // 9: articles.v1.ArticlesService.ParseArticle:input_type -> articles.v1.ParseArticleRequest
+	6,  // 10: articles.v1.ArticlesService.GetArticles:input_type -> articles.v1.GetArticlesRequest
+	8,  // 11: articles.v1.ArticlesService.GetArticle:input_type -> articles.v1.GetArticleRequest
+	12, // 12: articles.v1.ArticlesService.DeleteArticle:input_type -> articles.v1.DeleteArticleRequest
+	14, // 13: articles.v1.ArticlesService.SetArticleState:input_type -> articles.v1.SetArticleStateRequest
+	18, // 14: articles.v1.ArticlesService.CheckForUpdates:input_type -> articles.v1.CheckForUpdatesRequest
+	16, // 15: articles.v1.ArticlesService.SaveArticleProgress:input_type -> articles.v1.SaveArticleProgressRequest
+	20, // 16: articles.v1.ArticlesService.StreamArticleUpdates:input_type -> articles.v1.StreamArticleUpdatesRequest
+	11, // 17: articles.v1.ArticlesService.ParseArticle:output_type -> articles.v1.ParseArticleResponse
+	7,  // 18: articles.v1.ArticlesService.GetArticles:output_type -> articles.v1.GetArticlesResponse
+	9,  // 19: articles.v1.ArticlesService.GetArticle:output_type -> articles.v1.GetArticleResponse
+	13, // 20: articles.v1.ArticlesService.DeleteArticle:output_type -> articles.v1.DeleteArticleResponse
+	15, // 21: articles.v1.ArticlesService.SetArticleState:output_type -> articles.v1.SetArticleStateResponse
+	19, // 22: articles.v1.ArticlesService.CheckForUpdates:output_type -> articles.v1.CheckForUpdatesResponse
+	17, // 23: articles.v1.ArticlesService.SaveArticleProgress:output_type -> articles.v1.SaveArticleProgressResponse
+	21, // 24: articles.v1.ArticlesService.StreamArticleUpdates:output_type -> articles.v1.StreamArticleUpdatesResponse
+	17, // [17:25] is the sub-list for method output_type
+	9,  // [9:17] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_articles_v1_articles_service_proto_init() }
@@ -1287,18 +1571,20 @@ func file_articles_v1_articles_service_proto_init() {
 	file_articles_v1_articles_service_proto_msgTypes[2].OneofWrappers = []any{}
 	file_articles_v1_articles_service_proto_msgTypes[3].OneofWrappers = []any{}
 	file_articles_v1_articles_service_proto_msgTypes[4].OneofWrappers = []any{}
+	file_articles_v1_articles_service_proto_msgTypes[12].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_articles_v1_articles_service_proto_rawDesc), len(file_articles_v1_articles_service_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   18,
+			NumEnums:      2,
+			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_articles_v1_articles_service_proto_goTypes,
 		DependencyIndexes: file_articles_v1_articles_service_proto_depIdxs,
+		EnumInfos:         file_articles_v1_articles_service_proto_enumTypes,
 		MessageInfos:      file_articles_v1_articles_service_proto_msgTypes,
 	}.Build()
 	File_articles_v1_articles_service_proto = out.File

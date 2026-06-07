@@ -15,6 +15,10 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
+import 'articles_service.pbenum.dart';
+
+export 'articles_service.pbenum.dart';
+
 class PhonemizerTokenMeta extends $pb.GeneratedMessage {
   factory PhonemizerTokenMeta({
     $core.String? text,
@@ -219,6 +223,8 @@ class ArticlePreview extends $pb.GeneratedMessage {
     $core.String? image,
     $fixnum.Int64? playerPositionMs,
     $core.double? scrollPosition,
+    ArticleListState? listState,
+    $core.bool? isFavorite,
   }) {
     final $result = create();
     if (id != null) {
@@ -254,6 +260,12 @@ class ArticlePreview extends $pb.GeneratedMessage {
     if (scrollPosition != null) {
       $result.scrollPosition = scrollPosition;
     }
+    if (listState != null) {
+      $result.listState = listState;
+    }
+    if (isFavorite != null) {
+      $result.isFavorite = isFavorite;
+    }
     return $result;
   }
   ArticlePreview._() : super();
@@ -280,6 +292,12 @@ class ArticlePreview extends $pb.GeneratedMessage {
     ..aInt64(10, _omitFieldNames ? '' : 'playerPositionMs')
     ..a<$core.double>(
         11, _omitFieldNames ? '' : 'scrollPosition', $pb.PbFieldType.OD)
+    ..e<ArticleListState>(
+        12, _omitFieldNames ? '' : 'listState', $pb.PbFieldType.OE,
+        defaultOrMaker: ArticleListState.ARTICLE_LIST_STATE_UNSPECIFIED,
+        valueOf: ArticleListState.valueOf,
+        enumValues: ArticleListState.values)
+    ..aOB(13, _omitFieldNames ? '' : 'isFavorite')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('Using this can add significant overhead to your binary. '
@@ -430,6 +448,30 @@ class ArticlePreview extends $pb.GeneratedMessage {
   $core.bool hasScrollPosition() => $_has(10);
   @$pb.TagNumber(11)
   void clearScrollPosition() => clearField(11);
+
+  @$pb.TagNumber(12)
+  ArticleListState get listState => $_getN(11);
+  @$pb.TagNumber(12)
+  set listState(ArticleListState v) {
+    setField(12, v);
+  }
+
+  @$pb.TagNumber(12)
+  $core.bool hasListState() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearListState() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.bool get isFavorite => $_getBF(12);
+  @$pb.TagNumber(13)
+  set isFavorite($core.bool v) {
+    $_setBool(12, v);
+  }
+
+  @$pb.TagNumber(13)
+  $core.bool hasIsFavorite() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearIsFavorite() => clearField(13);
 }
 
 /// Full article with all content
@@ -450,6 +492,8 @@ class Article extends $pb.GeneratedMessage {
     $fixnum.Int64? playerPositionMs,
     $core.double? scrollPosition,
     $core.double? playbackSpeed,
+    ArticleListState? listState,
+    $core.bool? isFavorite,
   }) {
     final $result = create();
     if (id != null) {
@@ -497,6 +541,12 @@ class Article extends $pb.GeneratedMessage {
     if (playbackSpeed != null) {
       $result.playbackSpeed = playbackSpeed;
     }
+    if (listState != null) {
+      $result.listState = listState;
+    }
+    if (isFavorite != null) {
+      $result.isFavorite = isFavorite;
+    }
     return $result;
   }
   Article._() : super();
@@ -530,6 +580,12 @@ class Article extends $pb.GeneratedMessage {
         14, _omitFieldNames ? '' : 'scrollPosition', $pb.PbFieldType.OD)
     ..a<$core.double>(
         15, _omitFieldNames ? '' : 'playbackSpeed', $pb.PbFieldType.OD)
+    ..e<ArticleListState>(
+        16, _omitFieldNames ? '' : 'listState', $pb.PbFieldType.OE,
+        defaultOrMaker: ArticleListState.ARTICLE_LIST_STATE_UNSPECIFIED,
+        valueOf: ArticleListState.valueOf,
+        enumValues: ArticleListState.values)
+    ..aOB(17, _omitFieldNames ? '' : 'isFavorite')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('Using this can add significant overhead to your binary. '
@@ -715,6 +771,30 @@ class Article extends $pb.GeneratedMessage {
   $core.bool hasPlaybackSpeed() => $_has(14);
   @$pb.TagNumber(15)
   void clearPlaybackSpeed() => clearField(15);
+
+  @$pb.TagNumber(16)
+  ArticleListState get listState => $_getN(15);
+  @$pb.TagNumber(16)
+  set listState(ArticleListState v) {
+    setField(16, v);
+  }
+
+  @$pb.TagNumber(16)
+  $core.bool hasListState() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearListState() => clearField(16);
+
+  @$pb.TagNumber(17)
+  $core.bool get isFavorite => $_getBF(16);
+  @$pb.TagNumber(17)
+  set isFavorite($core.bool v) {
+    $_setBool(16, v);
+  }
+
+  @$pb.TagNumber(17)
+  $core.bool hasIsFavorite() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearIsFavorite() => clearField(17);
 }
 
 class GetArticlesRequest extends $pb.GeneratedMessage {
@@ -724,6 +804,7 @@ class GetArticlesRequest extends $pb.GeneratedMessage {
     $core.Iterable<$core.String>? categories,
     $core.String? searchQuery,
     $core.String? author,
+    ArticleView? view,
   }) {
     final $result = create();
     if (pageSize != null) {
@@ -740,6 +821,9 @@ class GetArticlesRequest extends $pb.GeneratedMessage {
     }
     if (author != null) {
       $result.author = author;
+    }
+    if (view != null) {
+      $result.view = view;
     }
     return $result;
   }
@@ -760,6 +844,10 @@ class GetArticlesRequest extends $pb.GeneratedMessage {
     ..pPS(3, _omitFieldNames ? '' : 'categories')
     ..aOS(4, _omitFieldNames ? '' : 'searchQuery')
     ..aOS(5, _omitFieldNames ? '' : 'author')
+    ..e<ArticleView>(6, _omitFieldNames ? '' : 'view', $pb.PbFieldType.OE,
+        defaultOrMaker: ArticleView.ARTICLE_VIEW_UNSPECIFIED,
+        valueOf: ArticleView.valueOf,
+        enumValues: ArticleView.values)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('Using this can add significant overhead to your binary. '
@@ -836,6 +924,19 @@ class GetArticlesRequest extends $pb.GeneratedMessage {
   $core.bool hasAuthor() => $_has(4);
   @$pb.TagNumber(5)
   void clearAuthor() => clearField(5);
+
+  /// Which list to fetch. Unspecified defaults to inbox.
+  @$pb.TagNumber(6)
+  ArticleView get view => $_getN(5);
+  @$pb.TagNumber(6)
+  set view(ArticleView v) {
+    setField(6, v);
+  }
+
+  @$pb.TagNumber(6)
+  $core.bool hasView() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearView() => clearField(6);
 }
 
 class GetArticlesResponse extends $pb.GeneratedMessage {
@@ -1259,6 +1360,152 @@ class DeleteArticleResponse extends $pb.GeneratedMessage {
   static DeleteArticleResponse? _defaultInstance;
 }
 
+/// Moves an article between lists and/or toggles its favorite flag. Only the
+/// provided fields are changed, so list_state and is_favorite can be updated
+/// independently.
+class SetArticleStateRequest extends $pb.GeneratedMessage {
+  factory SetArticleStateRequest({
+    $core.String? id,
+    ArticleListState? listState,
+    $core.bool? isFavorite,
+  }) {
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (listState != null) {
+      $result.listState = listState;
+    }
+    if (isFavorite != null) {
+      $result.isFavorite = isFavorite;
+    }
+    return $result;
+  }
+  SetArticleStateRequest._() : super();
+  factory SetArticleStateRequest.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory SetArticleStateRequest.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SetArticleStateRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'articles.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..e<ArticleListState>(
+        2, _omitFieldNames ? '' : 'listState', $pb.PbFieldType.OE,
+        defaultOrMaker: ArticleListState.ARTICLE_LIST_STATE_UNSPECIFIED,
+        valueOf: ArticleListState.valueOf,
+        enumValues: ArticleListState.values)
+    ..aOB(3, _omitFieldNames ? '' : 'isFavorite')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  SetArticleStateRequest clone() =>
+      SetArticleStateRequest()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  SetArticleStateRequest copyWith(
+          void Function(SetArticleStateRequest) updates) =>
+      super.copyWith((message) => updates(message as SetArticleStateRequest))
+          as SetArticleStateRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SetArticleStateRequest create() => SetArticleStateRequest._();
+  SetArticleStateRequest createEmptyInstance() => create();
+  static $pb.PbList<SetArticleStateRequest> createRepeated() =>
+      $pb.PbList<SetArticleStateRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SetArticleStateRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SetArticleStateRequest>(create);
+  static SetArticleStateRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) {
+    $_setString(0, v);
+  }
+
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  ArticleListState get listState => $_getN(1);
+  @$pb.TagNumber(2)
+  set listState(ArticleListState v) {
+    setField(2, v);
+  }
+
+  @$pb.TagNumber(2)
+  $core.bool hasListState() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearListState() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get isFavorite => $_getBF(2);
+  @$pb.TagNumber(3)
+  set isFavorite($core.bool v) {
+    $_setBool(2, v);
+  }
+
+  @$pb.TagNumber(3)
+  $core.bool hasIsFavorite() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearIsFavorite() => clearField(3);
+}
+
+class SetArticleStateResponse extends $pb.GeneratedMessage {
+  factory SetArticleStateResponse() => create();
+  SetArticleStateResponse._() : super();
+  factory SetArticleStateResponse.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory SetArticleStateResponse.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SetArticleStateResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'articles.v1'),
+      createEmptyInstance: create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  SetArticleStateResponse clone() =>
+      SetArticleStateResponse()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  SetArticleStateResponse copyWith(
+          void Function(SetArticleStateResponse) updates) =>
+      super.copyWith((message) => updates(message as SetArticleStateResponse))
+          as SetArticleStateResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SetArticleStateResponse create() => SetArticleStateResponse._();
+  SetArticleStateResponse createEmptyInstance() => create();
+  static $pb.PbList<SetArticleStateResponse> createRepeated() =>
+      $pb.PbList<SetArticleStateResponse>();
+  @$core.pragma('dart2js:noInline')
+  static SetArticleStateResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SetArticleStateResponse>(create);
+  static SetArticleStateResponse? _defaultInstance;
+}
+
 class SaveArticleProgressRequest extends $pb.GeneratedMessage {
   factory SaveArticleProgressRequest({
     $core.String? articleId,
@@ -1680,7 +1927,7 @@ class StreamArticleUpdatesResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   ArticlePreview ensureArticle() => $_ensure(0);
 
-  /// "updated" | "heartbeat" (room for "deleted" later)
+  /// "updated" | "heartbeat"
   @$pb.TagNumber(2)
   $core.String get eventType => $_getSZ(1);
   @$pb.TagNumber(2)
@@ -1714,6 +1961,10 @@ class ArticlesServiceApi {
           $pb.ClientContext? ctx, DeleteArticleRequest request) =>
       _client.invoke<DeleteArticleResponse>(ctx, 'ArticlesService',
           'DeleteArticle', request, DeleteArticleResponse());
+  $async.Future<SetArticleStateResponse> setArticleState(
+          $pb.ClientContext? ctx, SetArticleStateRequest request) =>
+      _client.invoke<SetArticleStateResponse>(ctx, 'ArticlesService',
+          'SetArticleState', request, SetArticleStateResponse());
   $async.Future<CheckForUpdatesResponse> checkForUpdates(
           $pb.ClientContext? ctx, CheckForUpdatesRequest request) =>
       _client.invoke<CheckForUpdatesResponse>(ctx, 'ArticlesService',

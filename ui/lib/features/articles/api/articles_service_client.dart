@@ -17,6 +17,9 @@ abstract class ArticlesServiceClientI {
   Future<articles_pb.DeleteArticleResponse> deleteArticle(
     articles_pb.DeleteArticleRequest input,
   );
+  Future<articles_pb.SetArticleStateResponse> setArticleState(
+    articles_pb.SetArticleStateRequest input,
+  );
   Future<articles_pb.CheckForUpdatesResponse> checkForUpdates(
     articles_pb.CheckForUpdatesRequest input,
   );
@@ -48,6 +51,10 @@ class ConnectArticlesServiceClient implements ArticlesServiceClientI {
   Future<articles_pb.DeleteArticleResponse> deleteArticle(
     articles_pb.DeleteArticleRequest input,
   ) => _client.deleteArticle(input);
+  @override
+  Future<articles_pb.SetArticleStateResponse> setArticleState(
+    articles_pb.SetArticleStateRequest input,
+  ) => _client.setArticleState(input);
   @override
   Future<articles_pb.CheckForUpdatesResponse> checkForUpdates(
     articles_pb.CheckForUpdatesRequest input,

@@ -175,6 +175,16 @@ func (s Service) DeleteArticle(ctx context.Context, userID string, id int64) err
 	return s.articleRepo.DeleteArticle(ctx, userID, id)
 }
 
+// SetArticleState moves an article between lists and/or toggles its favorite
+// flag for the user. Use nil for any field that should be left unchanged.
+func (s Service) SetArticleState(ctx context.Context, userID string, id int64, listState *string, isFavorite *bool) error {
+	if err := s.articleRepo.SetArticleState(ctx, userID, id, listState, isFavorite); err != nil {
+		return err
+	}
+	s.publishArticleUpdate(ctx, id)
+	return nil
+}
+
 func (s Service) SaveArticleProgress(ctx context.Context, userID string, articleID int64, playerPositionMs int64, scrollPosition float64, playbackSpeed float64) error {
 	return s.articleRepo.SaveArticleProgress(ctx, userID, articleID, playerPositionMs, scrollPosition, playbackSpeed)
 }

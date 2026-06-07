@@ -25,6 +25,7 @@ type Repository interface {
 	ApplyPhonemizerResult(ctx context.Context, articleID int64, data models.JSONB[[]models.PhonemizerData]) error
 
 	DeleteArticle(ctx context.Context, userID string, id int64) error
+	SetArticleState(ctx context.Context, userID string, articleID int64, listState *string, isFavorite *bool) error
 
 	HasUpdatedArticles(ctx context.Context, userID string, since time.Time) (bool, error)
 	SaveArticleProgress(ctx context.Context, userID string, articleID int64, playerPositionMs int64, scrollPosition float64, playbackSpeed float64) error

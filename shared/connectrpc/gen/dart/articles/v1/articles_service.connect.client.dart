@@ -76,6 +76,23 @@ extension type ArticlesServiceClient (connect.Transport _transport) {
     );
   }
 
+  Future<articlesv1articles_service.SetArticleStateResponse> setArticleState(
+    articlesv1articles_service.SetArticleStateRequest input, {
+    connect.Headers? headers,
+    connect.AbortSignal? signal,
+    Function(connect.Headers)? onHeader,
+    Function(connect.Headers)? onTrailer,
+  }) {
+    return connect.Client(_transport).unary(
+      specs.ArticlesService.setArticleState,
+      input,
+      signal: signal,
+      headers: headers,
+      onHeader: onHeader,
+      onTrailer: onTrailer,
+    );
+  }
+
   Future<articlesv1articles_service.CheckForUpdatesResponse> checkForUpdates(
     articlesv1articles_service.CheckForUpdatesRequest input, {
     connect.Headers? headers,
@@ -111,8 +128,8 @@ extension type ArticlesServiceClient (connect.Transport _transport) {
   }
 
   /// StreamArticleUpdates pushes the full updated ArticlePreview whenever an
-  /// article's status changes for the authenticated user. Periodic heartbeat
-  /// events keep the connection alive through idle proxy timeouts.
+  /// article's status changes for the authenticated user.
+  /// Or send a Periodic heartbeat events tp keep the connection alive
   Stream<articlesv1articles_service.StreamArticleUpdatesResponse> streamArticleUpdates(
     articlesv1articles_service.StreamArticleUpdatesRequest input, {
     connect.Headers? headers,

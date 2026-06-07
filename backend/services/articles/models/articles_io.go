@@ -7,12 +7,20 @@ import (
 	"github.com/gogotchuri/readintent/backend/database/models"
 )
 
+const (
+	ViewInbox    = "inbox"
+	ViewFavorite = "favorite"
+	ViewArchive  = "archive"
+)
+
 type GetArticlesRequest struct {
 	PageSize    int32
 	PageToken   string
 	Categories  []string
 	SearchQuery string
 	Author      string
+	// One of ViewInbox/ViewFavorite/ViewArchive. Empty defaults to inbox.
+	View string
 }
 
 type GetArticlesResponse struct {

@@ -25,6 +25,7 @@ abstract class ArticlesServiceBase extends $pb.GeneratedService {
   $async.Future<$0.GetArticlesResponse> getArticles($pb.ServerContext ctx, $0.GetArticlesRequest request);
   $async.Future<$0.GetArticleResponse> getArticle($pb.ServerContext ctx, $0.GetArticleRequest request);
   $async.Future<$0.DeleteArticleResponse> deleteArticle($pb.ServerContext ctx, $0.DeleteArticleRequest request);
+  $async.Future<$0.SetArticleStateResponse> setArticleState($pb.ServerContext ctx, $0.SetArticleStateRequest request);
   $async.Future<$0.CheckForUpdatesResponse> checkForUpdates($pb.ServerContext ctx, $0.CheckForUpdatesRequest request);
   $async.Future<$0.SaveArticleProgressResponse> saveArticleProgress($pb.ServerContext ctx, $0.SaveArticleProgressRequest request);
   $async.Future<$0.StreamArticleUpdatesResponse> streamArticleUpdates($pb.ServerContext ctx, $0.StreamArticleUpdatesRequest request);
@@ -35,6 +36,7 @@ abstract class ArticlesServiceBase extends $pb.GeneratedService {
       case 'GetArticles': return $0.GetArticlesRequest();
       case 'GetArticle': return $0.GetArticleRequest();
       case 'DeleteArticle': return $0.DeleteArticleRequest();
+      case 'SetArticleState': return $0.SetArticleStateRequest();
       case 'CheckForUpdates': return $0.CheckForUpdatesRequest();
       case 'SaveArticleProgress': return $0.SaveArticleProgressRequest();
       case 'StreamArticleUpdates': return $0.StreamArticleUpdatesRequest();
@@ -48,6 +50,7 @@ abstract class ArticlesServiceBase extends $pb.GeneratedService {
       case 'GetArticles': return this.getArticles(ctx, request as $0.GetArticlesRequest);
       case 'GetArticle': return this.getArticle(ctx, request as $0.GetArticleRequest);
       case 'DeleteArticle': return this.deleteArticle(ctx, request as $0.DeleteArticleRequest);
+      case 'SetArticleState': return this.setArticleState(ctx, request as $0.SetArticleStateRequest);
       case 'CheckForUpdates': return this.checkForUpdates(ctx, request as $0.CheckForUpdatesRequest);
       case 'SaveArticleProgress': return this.saveArticleProgress(ctx, request as $0.SaveArticleProgressRequest);
       case 'StreamArticleUpdates': return this.streamArticleUpdates(ctx, request as $0.StreamArticleUpdatesRequest);
