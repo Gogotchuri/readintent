@@ -50,15 +50,21 @@ class _FakeDeleteArticleResponse_3 extends _i1.SmartFake
     : super(parent, parentInvocation);
 }
 
-class _FakeCheckForUpdatesResponse_4 extends _i1.SmartFake
-    implements _i2.CheckForUpdatesResponse {
-  _FakeCheckForUpdatesResponse_4(Object parent, Invocation parentInvocation)
+class _FakeSetArticleStateResponse_4 extends _i1.SmartFake
+    implements _i2.SetArticleStateResponse {
+  _FakeSetArticleStateResponse_4(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeSaveArticleProgressResponse_5 extends _i1.SmartFake
+class _FakeCheckForUpdatesResponse_5 extends _i1.SmartFake
+    implements _i2.CheckForUpdatesResponse {
+  _FakeCheckForUpdatesResponse_5(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeSaveArticleProgressResponse_6 extends _i1.SmartFake
     implements _i2.SaveArticleProgressResponse {
-  _FakeSaveArticleProgressResponse_5(Object parent, Invocation parentInvocation)
+  _FakeSaveArticleProgressResponse_6(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
@@ -130,13 +136,28 @@ class MockArticlesServiceClientI extends _i1.Mock
           as _i4.Future<_i2.DeleteArticleResponse>);
 
   @override
+  _i4.Future<_i2.SetArticleStateResponse> setArticleState(
+    _i2.SetArticleStateRequest? input,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#setArticleState, [input]),
+            returnValue: _i4.Future<_i2.SetArticleStateResponse>.value(
+              _FakeSetArticleStateResponse_4(
+                this,
+                Invocation.method(#setArticleState, [input]),
+              ),
+            ),
+          )
+          as _i4.Future<_i2.SetArticleStateResponse>);
+
+  @override
   _i4.Future<_i2.CheckForUpdatesResponse> checkForUpdates(
     _i2.CheckForUpdatesRequest? input,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#checkForUpdates, [input]),
             returnValue: _i4.Future<_i2.CheckForUpdatesResponse>.value(
-              _FakeCheckForUpdatesResponse_4(
+              _FakeCheckForUpdatesResponse_5(
                 this,
                 Invocation.method(#checkForUpdates, [input]),
               ),
@@ -151,7 +172,7 @@ class MockArticlesServiceClientI extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#saveArticleProgress, [input]),
             returnValue: _i4.Future<_i2.SaveArticleProgressResponse>.value(
-              _FakeSaveArticleProgressResponse_5(
+              _FakeSaveArticleProgressResponse_6(
                 this,
                 Invocation.method(#saveArticleProgress, [input]),
               ),

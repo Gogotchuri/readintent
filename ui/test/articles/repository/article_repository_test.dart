@@ -11,6 +11,7 @@ import "package:mockito/mockito.dart";
 import "package:readintent_flutter/core/connectivity.dart";
 import "package:readintent_flutter/core/database/app_database.dart";
 import "package:readintent_flutter/features/articles/api/articles_client.dart";
+import "package:readintent_flutter/features/articles/models/article_view.dart";
 import "package:readintent_flutter/features/articles/repository/article_repository.dart";
 import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
     as articles_pb;
@@ -33,6 +34,8 @@ ArticlePreview makePreviewRow({
   int cachedAt = 1000,
   int playerPositionMs = 0,
   double scrollPosition = 0.0,
+  String listState = "inbox",
+  bool isFavorite = false,
 }) {
   return ArticlePreview(
     id: id,
@@ -48,6 +51,8 @@ ArticlePreview makePreviewRow({
     cachedAt: cachedAt,
     playerPositionMs: playerPositionMs,
     scrollPosition: scrollPosition,
+    listState: listState,
+    isFavorite: isFavorite,
   );
 }
 
@@ -159,10 +164,15 @@ void main() {
         makePreviewRow(id: 1),
         makePreviewRow(id: 2, title: "Second"),
       ];
-      when(mockDb.getAllPreviews()).thenAnswer((_) async => rows);
+      when(
+        mockDb.getPreviewsByView(
+          listState: anyNamed("listState"),
+          favoritesOnly: anyNamed("favoritesOnly"),
+        ),
+      ).thenAnswer((_) async => rows);
 
       repository = createRepository(isOnline: false);
-      final result = await repository.getArticles();
+      final result = await repository.getArticles(view: ArticleView.inbox);
 
       expect(result.articles.length, 2);
       expect(result.articles[0].id, Int64(1));
@@ -170,7 +180,12 @@ void main() {
     });
 
     test("triggers background fetch when online", () async {
-      when(mockDb.getAllPreviews()).thenAnswer((_) async => []);
+      when(
+        mockDb.getPreviewsByView(
+          listState: anyNamed("listState"),
+          favoritesOnly: anyNamed("favoritesOnly"),
+        ),
+      ).thenAnswer((_) async => []);
 
       final serverResponse = articles_pb.GetArticlesResponse(
         articles: [makePreviewProto()],
@@ -180,12 +195,13 @@ void main() {
         mockRemote.getArticles(
           pageSize: anyNamed("pageSize"),
           pageToken: anyNamed("pageToken"),
+          view: anyNamed("view"),
         ),
       ).thenAnswer((_) async => serverResponse);
       when(mockDb.replacePreviews(any)).thenAnswer((_) async {});
 
       repository = createRepository(isOnline: true);
-      await repository.getArticles();
+      await repository.getArticles(view: ArticleView.inbox);
 
       // Allow background future to complete
       await Future.delayed(Duration.zero);
@@ -194,13 +210,19 @@ void main() {
         mockRemote.getArticles(
           pageSize: anyNamed("pageSize"),
           pageToken: anyNamed("pageToken"),
+          view: anyNamed("view"),
         ),
       ).called(1);
       verify(mockDb.replacePreviews(any)).called(1);
     });
 
     test("calls onUpdated with fresh data when online", () async {
-      when(mockDb.getAllPreviews()).thenAnswer((_) async => []);
+      when(
+        mockDb.getPreviewsByView(
+          listState: anyNamed("listState"),
+          favoritesOnly: anyNamed("favoritesOnly"),
+        ),
+      ).thenAnswer((_) async => []);
 
       final serverResponse = articles_pb.GetArticlesResponse(
         articles: [makePreviewProto(title: "Fresh")],
@@ -210,6 +232,7 @@ void main() {
         mockRemote.getArticles(
           pageSize: anyNamed("pageSize"),
           pageToken: anyNamed("pageToken"),
+          view: anyNamed("view"),
         ),
       ).thenAnswer((_) async => serverResponse);
       when(mockDb.replacePreviews(any)).thenAnswer((_) async {});
@@ -218,6 +241,7 @@ void main() {
       final completer = Completer<articles_pb.GetArticlesResponse>();
 
       await repository.getArticles(
+        view: ArticleView.inbox,
         onUpdated: (updated) => completer.complete(updated),
       );
 
@@ -226,32 +250,44 @@ void main() {
     });
 
     test("does NOT fetch from server when offline", () async {
-      when(mockDb.getAllPreviews()).thenAnswer((_) async => []);
+      when(
+        mockDb.getPreviewsByView(
+          listState: anyNamed("listState"),
+          favoritesOnly: anyNamed("favoritesOnly"),
+        ),
+      ).thenAnswer((_) async => []);
 
       repository = createRepository(isOnline: false);
-      await repository.getArticles();
+      await repository.getArticles(view: ArticleView.inbox);
 
       await Future.delayed(Duration.zero);
       verifyNever(
         mockRemote.getArticles(
           pageSize: anyNamed("pageSize"),
           pageToken: anyNamed("pageToken"),
+          view: anyNamed("view"),
         ),
       );
     });
 
     test("ignores background fetch errors", () async {
-      when(mockDb.getAllPreviews()).thenAnswer((_) async => []);
+      when(
+        mockDb.getPreviewsByView(
+          listState: anyNamed("listState"),
+          favoritesOnly: anyNamed("favoritesOnly"),
+        ),
+      ).thenAnswer((_) async => []);
       when(
         mockRemote.getArticles(
           pageSize: anyNamed("pageSize"),
           pageToken: anyNamed("pageToken"),
+          view: anyNamed("view"),
         ),
       ).thenThrow(Exception("Network error"));
 
       repository = createRepository(isOnline: true);
       // Should not throw
-      final result = await repository.getArticles();
+      final result = await repository.getArticles(view: ArticleView.inbox);
 
       await Future.delayed(Duration.zero);
       expect(result.articles, isEmpty);

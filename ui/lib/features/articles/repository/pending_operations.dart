@@ -5,6 +5,7 @@ import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:readintent_flutter/core/connectivity.dart";
 import "package:readintent_flutter/core/database/app_database.dart";
 import "package:readintent_flutter/features/articles/api/articles_client.dart";
+import "package:readintent_flutter/features/articles/models/article_view.dart";
 import "package:readintent_flutter/features/articles/providers/articles_provider.dart";
 import "package:readintent_flutter/models/operation.dart";
 
@@ -58,6 +59,16 @@ class PendingOperationsProcessor {
           break;
         case opDeleteArticle:
           await _remote.deleteArticle(payload["article_id"] as String);
+          break;
+        case opSetArticleState:
+          final listStateStr = payload["list_state"] as String?;
+          await _remote.setArticleState(
+            payload["article_id"] as String,
+            listState: listStateStr != null
+                ? ArticleListState.fromDb(listStateStr)
+                : null,
+            isFavorite: payload["is_favorite"] as bool?,
+          );
           break;
         default:
           // Unknown op type

@@ -6,6 +6,7 @@ import "package:flutter_test/flutter_test.dart";
 import "package:mockito/annotations.dart";
 import "package:mockito/mockito.dart";
 import "package:readintent_flutter/core/connectivity.dart";
+import "package:readintent_flutter/features/articles/models/article_view.dart";
 import "package:readintent_flutter/features/articles/providers/articles_provider.dart";
 import "package:readintent_flutter/features/articles/repository/article_repository.dart";
 import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
@@ -54,6 +55,7 @@ void main() {
     when(
       mockRepo.getArticles(
         pageSize: anyNamed("pageSize"),
+        view: anyNamed("view"),
         onUpdated: anyNamed("onUpdated"),
       ),
     ).thenAnswer(
@@ -62,7 +64,7 @@ void main() {
     );
 
     final c = createContainer();
-    final state = await c.read(articlesProvider.future);
+    final state = await c.read(articlesProvider(ArticleView.inbox).future);
 
     expect(state.articles.length, 2);
     expect(state.totalCount, 2);
@@ -74,6 +76,7 @@ void main() {
       when(
         mockRepo.getArticles(
           pageSize: anyNamed("pageSize"),
+          view: anyNamed("view"),
           onUpdated: anyNamed("onUpdated"),
         ),
       ).thenAnswer(
@@ -89,6 +92,7 @@ void main() {
         mockRepo.getArticlesPage(
           pageSize: anyNamed("pageSize"),
           pageToken: anyNamed("pageToken"),
+          view: anyNamed("view"),
         ),
       ).thenAnswer(
         (_) async => articles_pb.GetArticlesResponse(
@@ -98,11 +102,11 @@ void main() {
       );
 
       final c = createContainer(isOnline: true);
-      await c.read(articlesProvider.future);
+      await c.read(articlesProvider(ArticleView.inbox).future);
 
-      await c.read(articlesProvider.notifier).loadMore();
+      await c.read(articlesProvider(ArticleView.inbox).notifier).loadMore();
 
-      final state = c.read(articlesProvider).value!;
+      final state = c.read(articlesProvider(ArticleView.inbox)).value!;
       expect(state.articles.length, 2);
       expect(state.articles[1].title, "Page2");
     });
@@ -111,6 +115,7 @@ void main() {
       when(
         mockRepo.getArticles(
           pageSize: anyNamed("pageSize"),
+          view: anyNamed("view"),
           onUpdated: anyNamed("onUpdated"),
         ),
       ).thenAnswer(
@@ -122,14 +127,15 @@ void main() {
       );
 
       final c = createContainer(isOnline: false);
-      await c.read(articlesProvider.future);
+      await c.read(articlesProvider(ArticleView.inbox).future);
 
-      await c.read(articlesProvider.notifier).loadMore();
+      await c.read(articlesProvider(ArticleView.inbox).notifier).loadMore();
 
       verifyNever(
         mockRepo.getArticlesPage(
           pageSize: anyNamed("pageSize"),
           pageToken: anyNamed("pageToken"),
+          view: anyNamed("view"),
         ),
       );
     });
@@ -138,6 +144,7 @@ void main() {
       when(
         mockRepo.getArticles(
           pageSize: anyNamed("pageSize"),
+          view: anyNamed("view"),
           onUpdated: anyNamed("onUpdated"),
         ),
       ).thenAnswer(
@@ -149,14 +156,15 @@ void main() {
       );
 
       final c = createContainer(isOnline: true);
-      await c.read(articlesProvider.future);
+      await c.read(articlesProvider(ArticleView.inbox).future);
 
-      await c.read(articlesProvider.notifier).loadMore();
+      await c.read(articlesProvider(ArticleView.inbox).notifier).loadMore();
 
       verifyNever(
         mockRepo.getArticlesPage(
           pageSize: anyNamed("pageSize"),
           pageToken: anyNamed("pageToken"),
+          view: anyNamed("view"),
         ),
       );
     });
@@ -165,6 +173,7 @@ void main() {
       when(
         mockRepo.getArticles(
           pageSize: anyNamed("pageSize"),
+          view: anyNamed("view"),
           onUpdated: anyNamed("onUpdated"),
         ),
       ).thenAnswer(
@@ -178,15 +187,16 @@ void main() {
         mockRepo.getArticlesPage(
           pageSize: anyNamed("pageSize"),
           pageToken: anyNamed("pageToken"),
+          view: anyNamed("view"),
         ),
       ).thenThrow(Exception("Network error"));
 
       final c = createContainer(isOnline: true);
-      await c.read(articlesProvider.future);
+      await c.read(articlesProvider(ArticleView.inbox).future);
 
-      await c.read(articlesProvider.notifier).loadMore();
+      await c.read(articlesProvider(ArticleView.inbox).notifier).loadMore();
 
-      final state = c.read(articlesProvider).value!;
+      final state = c.read(articlesProvider(ArticleView.inbox)).value!;
       expect(state.hasError, true);
       expect(state.error, contains("Network error"));
     });
@@ -197,6 +207,7 @@ void main() {
       when(
         mockRepo.getArticles(
           pageSize: anyNamed("pageSize"),
+          view: anyNamed("view"),
           onUpdated: anyNamed("onUpdated"),
         ),
       ).thenAnswer((_) async => articles_pb.GetArticlesResponse());
@@ -205,10 +216,10 @@ void main() {
       ).thenAnswer((_) async => ParseArticleResult(queued: true));
 
       final c = createContainer();
-      await c.read(articlesProvider.future);
+      await c.read(articlesProvider(ArticleView.inbox).future);
 
       final result = await c
-          .read(articlesProvider.notifier)
+          .read(articlesProvider(ArticleView.inbox).notifier)
           .parseArticle("https://example.com");
       expect(result.queued, true);
 
@@ -221,6 +232,7 @@ void main() {
       when(
         mockRepo.getArticles(
           pageSize: anyNamed("pageSize"),
+          view: anyNamed("view"),
           onUpdated: anyNamed("onUpdated"),
         ),
       ).thenAnswer(
@@ -232,18 +244,15 @@ void main() {
       when(mockRepo.deleteArticle(any)).thenAnswer((_) async {});
 
       final c = createContainer();
-      await c.read(articlesProvider.future);
+      await c.read(articlesProvider(ArticleView.inbox).future);
 
-      await c.read(articlesProvider.notifier).deleteArticle("1");
+      await c
+          .read(articlesProvider(ArticleView.inbox).notifier)
+          .deleteArticle("1");
 
+      // Deletion routes through the shared hub, which removes the article from
+      // every view via a broadcast instead of refetching the list.
       verify(mockRepo.deleteArticle("1")).called(1);
-      // getArticles called twice: once in build, once in refresh after delete
-      verify(
-        mockRepo.getArticles(
-          pageSize: anyNamed("pageSize"),
-          onUpdated: anyNamed("onUpdated"),
-        ),
-      ).called(greaterThanOrEqualTo(2));
     });
   });
 }

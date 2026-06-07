@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
+import "package:readintent_flutter/features/articles/models/article_view.dart";
 import "package:readintent_flutter/features/articles/providers/articles_provider.dart";
 
 class AddArticleDialog extends ConsumerStatefulWidget {
@@ -28,7 +29,7 @@ class _AddArticleDialogState extends ConsumerState<AddArticleDialog> {
     });
     try {
       final result = await ref
-          .read(articlesProvider.notifier)
+          .read(articlesProvider(ArticleView.inbox).notifier)
           .parseArticle(_urlController.text.trim());
       if (mounted) {
         Navigator.of(context).pop();
@@ -41,11 +42,12 @@ class _AddArticleDialogState extends ConsumerState<AddArticleDialog> {
         }
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _error = e.toString();
           _isSubmitting = false;
         });
+      }
     }
   }
 

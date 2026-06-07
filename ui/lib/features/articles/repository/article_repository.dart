@@ -6,6 +6,7 @@ import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:readintent_flutter/core/connectivity.dart";
 import "package:readintent_flutter/core/database/app_database.dart";
 import "package:readintent_flutter/features/articles/api/articles_client.dart";
+import "package:readintent_flutter/features/articles/models/article_view.dart";
 import "package:readintent_flutter/features/articles/presentation/html_sentence_mapper.dart";
 import "package:readintent_flutter/features/tts/audio_generator.dart";
 import "package:readintent_flutter/features/tts/sentence_builder.dart";
@@ -31,15 +32,16 @@ class ArticleRepository {
   /// in background and calls [onUpdated] with the fresh response.
   Future<articles_pb.GetArticlesResponse> getArticles({
     int pageSize = 20,
+    required ArticleView view,
     void Function(articles_pb.GetArticlesResponse updated)? onUpdated,
   }) async {
     // Return cached data immediately
-    final cached = await _db.getAllPreviews();
+    final cached = await _cachedPreviewsFor(view);
     final cachedProtos = cached.map(previewRowToProto).toList();
 
     // If online, fetch first page from server in background
     if (_isOnline) {
-      _fetchAndCacheFirstPage(pageSize)
+      fetchFreshArticles(pageSize, view)
           .then((result) {
             if (onUpdated != null && result != null) {
               onUpdated(result);
@@ -54,16 +56,16 @@ class ArticleRepository {
     );
   }
 
-  Future<articles_pb.GetArticlesResponse?> _fetchAndCacheFirstPage(
-    int pageSize,
-  ) async {
-    try {
-      final response = await _remote.getArticles(pageSize: pageSize);
-      await _cacheFirstPage(response);
-      return response;
-    } catch (e) {
-      print("Failed to fetch first page of articles: $e");
-      return null;
+  /// Reads the cached previews matching [view] (inbox/archive by list_state,
+  /// favorite across both lists).
+  Future<List<ArticlePreview>> _cachedPreviewsFor(ArticleView view) {
+    switch (view) {
+      case ArticleView.inbox:
+        return _db.getPreviewsByView(listState: ArticleListState.dbInbox);
+      case ArticleView.archive:
+        return _db.getPreviewsByView(listState: ArticleListState.dbArchive);
+      case ArticleView.favorite:
+        return _db.getPreviewsByView(favoritesOnly: true);
     }
   }
 
@@ -89,10 +91,14 @@ class ArticleRepository {
   /// Returns null if offline or on error.
   Future<articles_pb.GetArticlesResponse?> fetchFreshArticles(
     int pageSize,
+    ArticleView view,
   ) async {
     if (!_isOnline) return null;
     try {
-      final response = await _remote.getArticles(pageSize: pageSize);
+      final response = await _remote.getArticles(
+        pageSize: pageSize,
+        view: view,
+      );
       await _cacheFirstPage(response);
       return response;
     } catch (_) {
@@ -121,8 +127,13 @@ class ArticleRepository {
   Future<articles_pb.GetArticlesResponse> getArticlesPage({
     int pageSize = 20,
     String? pageToken,
+    required ArticleView view,
   }) {
-    return _remote.getArticles(pageSize: pageSize, pageToken: pageToken);
+    return _remote.getArticles(
+      pageSize: pageSize,
+      pageToken: pageToken,
+      view: view,
+    );
   }
 
   Future<articles_pb.Article?> getArticle(
@@ -286,6 +297,60 @@ class ArticleRepository {
       );
     }
   }
+
+  /// Moves an article between lists and/or toggles its favorite flag. Updates
+  /// the local cache optimistically, then syncs to the server (or queues the
+  /// op when offline). Returns the updated preview for the caller to broadcast,
+  /// or null if the article isn't cached
+  Future<articles_pb.ArticlePreview?> setArticleState(
+    String id, {
+    ArticleListState? listState,
+    bool? isFavorite,
+  }) async {
+    final intId = int.parse(id);
+
+    final previous = await _db.getPreview(intId);
+    if (previous == null) return null;
+
+    // Optimistic local update
+    await _db.updateArticleFlags(
+      intId,
+      listState: listState?.db,
+      isFavorite: isFavorite,
+    );
+    final updated = await _db.getPreview(intId);
+    final updatedProto = updated != null ? previewRowToProto(updated) : null;
+
+    if (_isOnline) {
+      try {
+        await _remote.setArticleState(
+          id,
+          listState: listState,
+          isFavorite: isFavorite,
+        );
+      } catch (e) {
+        // Restore previous flags on failure
+        await _db.upsertPreview(previewRowToCompanion(previous));
+        rethrow;
+      }
+    } else {
+      // Queue for later
+      await _db.insertPendingOp(
+        PendingOperationsCompanion(
+          type: const Value(opSetArticleState),
+          payload: Value(
+            jsonEncode({
+              "article_id": id,
+              if (listState != null) "list_state": listState.db,
+              if (isFavorite != null) "is_favorite": isFavorite,
+            }),
+          ),
+          createdAt: Value(DateTime.now().millisecondsSinceEpoch),
+        ),
+      );
+    }
+    return updatedProto;
+  }
 }
 
 // Provider declaration for repository
@@ -309,6 +374,8 @@ articles_pb.ArticlePreview previewRowToProto(ArticlePreview row) {
     image: row.imageUrl,
     playerPositionMs: Int64(row.playerPositionMs),
     scrollPosition: row.scrollPosition,
+    listState: ArticleListState.fromDb(row.listState).proto,
+    isFavorite: row.isFavorite,
   );
 }
 
@@ -331,6 +398,8 @@ ArticlePreviewsCompanion previewProtoToCompanion(
     cachedAt: Value(cachedAt),
     playerPositionMs: Value(proto.playerPositionMs.toInt()),
     scrollPosition: Value(proto.scrollPosition),
+    listState: Value(ArticleListState.fromProto(proto.listState).db),
+    isFavorite: Value(proto.isFavorite),
   );
 }
 
@@ -353,6 +422,8 @@ ArticlePreviewsCompanion articleToPreviewCompanion(
     cachedAt: Value(cachedAt),
     playerPositionMs: Value(article.playerPositionMs.toInt()),
     scrollPosition: Value(article.scrollPosition),
+    listState: Value(ArticleListState.fromProto(article.listState).db),
+    isFavorite: Value(article.isFavorite),
   );
 }
 
@@ -371,6 +442,8 @@ ArticlePreviewsCompanion previewRowToCompanion(ArticlePreview row) {
     cachedAt: Value(row.cachedAt),
     playerPositionMs: Value(row.playerPositionMs),
     scrollPosition: Value(row.scrollPosition),
+    listState: Value(row.listState),
+    isFavorite: Value(row.isFavorite),
   );
 }
 
@@ -419,5 +492,7 @@ articles_pb.Article detailRowToProto(
     phonemizerData: phonemizerData,
     playerPositionMs: Int64(preview.playerPositionMs),
     scrollPosition: preview.scrollPosition,
+    listState: ArticleListState.fromDb(preview.listState).proto,
+    isFavorite: preview.isFavorite,
   );
 }

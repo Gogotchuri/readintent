@@ -2,16 +2,14 @@ import "dart:async";
 import "dart:math";
 
 import "package:readintent_flutter/core/connectivity.dart";
-import "package:readintent_flutter/features/articles/providers/article_updates_channel.dart";
+import "package:readintent_flutter/features/articles/models/article_view.dart";
+import "package:readintent_flutter/features/articles/providers/article_updates_hub.dart";
 import "package:readintent_flutter/features/articles/repository/article_repository.dart";
 import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
     as articles_pb;
 import "package:riverpod_annotation/riverpod_annotation.dart";
 
 part "articles_provider.g.dart";
-
-const _minCheckInterval = Duration(seconds: 1);
-const _maxCheckInterval = Duration(seconds: 5);
 
 class ArticlesState {
   final List<articles_pb.ArticlePreview> articles;
@@ -49,54 +47,36 @@ class ArticlesState {
   }
 }
 
+/// Per-view article list. One instance per [ArticleView] (inbox/favorite/
+/// archive), each independently paginated. The shared [ArticleUpdatesHub] owns
+/// the connection; this notifier only reacts to its broadcasts.
 @riverpod
 class Articles extends _$Articles {
   // Not `final`: assigned in build(), which Riverpod may re-run on the same
   // instance. `late final` would throw LateInitializationError on a rebuild.
   late ArticleRepository _repository;
-  late ArticleUpdatesChannel _channel;
+  late ArticleUpdatesHub _hub;
+  late ArticleView _view;
   static const int _pageSize = 20;
 
-  Timer? _checkTimer;
-  // Check interval starts at min and increases with backoff up to max if no updates are found
-  Duration _checkInterval = _minCheckInterval;
-  int _lastCheckedAt = 0;
-  // Guards the polling loop so a polling only runs in the fallback path.
-  bool _pollingActive = false;
-
   @override
-  Future<ArticlesState> build() async {
+  Future<ArticlesState> build(ArticleView? view) async {
+    _view = view ?? ArticleView.inbox; // Default to inbox if no view provided
     _repository = ref.read(articleRepositoryProvider);
+    _hub = ref.watch(articleUpdatesHubProvider);
 
-    // Streaming is primary; polling is only used as a fallback. The channel
-    // owns the connection lifecycle and tells us, via these streams, what to do.
-    _channel = ArticleUpdatesChannel(
-      connect: _repository.streamArticleUpdates,
-      isOnline: () => ref.read(isOnlineProvider),
-    );
     final subs = <StreamSubscription>[
-      _channel.previews.listen(_mergePreview),
-      _channel.resyncRequests.listen((_) => _resync()),
-      _channel.pollingMode.listen(
-        (poll) => poll ? _startChecking() : _stopChecking(),
-      ),
+      _hub.previews.listen(_mergePreview),
+      _hub.removals.listen(_removeById),
+      _hub.refreshRequests.listen((_) => _resync()),
     ];
     ref.onDispose(() {
       for (final s in subs) {
         s.cancel();
       }
     });
-    ref.onDispose(_channel.dispose);
-    ref.onDispose(_stopChecking);
 
-    ref.listen(
-      isOnlineProvider,
-      (_, online) => _channel.onConnectivity(online),
-    );
-
-    final initialState = await _fetchInitialPage();
-    _channel.start();
-    return initialState;
+    return _fetchInitialPage();
   }
 
   // Fetches first page from server and updates cache. Returns the fresh data or error if fetch fails.
@@ -104,6 +84,7 @@ class Articles extends _$Articles {
     try {
       final result = await _repository.getArticles(
         pageSize: _pageSize,
+        view: _view,
         onUpdated: (updated) {
           final newState = ArticlesState(
             articles: updated.articles,
@@ -113,7 +94,6 @@ class Articles extends _$Articles {
                 : updated.nextPageToken,
           );
           state = AsyncData(newState);
-          _lastCheckedAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
         },
       );
       return ArticlesState(
@@ -139,6 +119,7 @@ class Articles extends _$Articles {
       final response = await _repository.getArticlesPage(
         pageSize: _pageSize,
         pageToken: currentState.nextPageToken,
+        view: _view,
       );
       state = AsyncData(
         ArticlesState(
@@ -161,76 +142,21 @@ class Articles extends _$Articles {
     state = AsyncData(await _fetchInitialPage());
   }
 
-  Future<ParseArticleResult> parseArticle(String url) async {
-    final result = await _repository.parseArticle(url);
-    await refresh();
-    return result;
-  }
+  Future<ParseArticleResult> parseArticle(String url) => _hub.parseArticle(url);
 
-  Future<void> deleteArticle(String id) async {
-    await _repository.deleteArticle(id);
-    await refresh();
-  }
+  Future<void> deleteArticle(String id) => _hub.deleteArticle(id);
 
-  // -- Update checking --
+  Future<void> setArticleState(
+    String id, {
+    ArticleListState? listState,
+    bool? isFavorite,
+  }) => _hub.setArticleState(id, listState: listState, isFavorite: isFavorite);
 
-  void _startChecking() {
-    _checkTimer?.cancel();
-    _pollingActive = true;
-    _checkInterval = _minCheckInterval;
-    if (_lastCheckedAt == 0) {
-      _lastCheckedAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    }
-    _scheduleNextCheck();
-  }
-
-  void _stopChecking() {
-    _pollingActive = false;
-    _checkTimer?.cancel();
-    _checkTimer = null;
-  }
-
-  void _scheduleNextCheck() {
-    if (!_pollingActive) return;
-    _checkTimer = Timer(_checkInterval, _performCheck);
-  }
-
-  Future<void> _performCheck() async {
-    if (!ref.read(isOnlineProvider)) {
-      _scheduleNextCheck();
-      return;
-    }
-
-    try {
-      final response = await _repository.checkForUpdates(_lastCheckedAt);
-      if (response == null) {
-        _scheduleNextCheck();
-        return;
-      }
-      if (response.hasUpdates) {
-        _lastCheckedAt = response.serverTimestamp.toInt();
-        // Reset check interval on non-empty response
-        _checkInterval = _minCheckInterval;
-        // Fetch fresh data without showing loading state
-        final freshState = await _fetchFreshPage();
-        if (freshState != null) {
-          state = AsyncData(freshState);
-        }
-      } else {
-        // multiply by 1.3 can't exceed max
-        _checkInterval = Duration(
-          milliseconds: min(
-            (_checkInterval.inMilliseconds * 1.3).round(),
-            _maxCheckInterval.inMilliseconds,
-          ),
-        );
-      }
-    } catch (_) {
-      // On error, back off and retry
-      _checkInterval = _maxCheckInterval;
-    }
-
-    _scheduleNextCheck();
+  /// Refetches the first page with no loading state after a reconnect or
+  /// poll-detected update, recovering changes missed while disconnected.
+  Future<void> _resync() async {
+    final freshState = await _fetchFreshPage();
+    if (freshState != null) state = AsyncData(freshState);
   }
 
   /// Fetches fresh articles without showing loading state (silent refresh).
@@ -238,7 +164,7 @@ class Articles extends _$Articles {
   Future<ArticlesState?> _fetchFreshPage() async {
     final currentCount = state.value?.articles.length ?? _pageSize;
     final fetchSize = max(currentCount, _pageSize);
-    final response = await _repository.fetchFreshArticles(fetchSize);
+    final response = await _repository.fetchFreshArticles(fetchSize, _view);
     if (response == null) return null;
     return ArticlesState(
       articles: response.articles,
@@ -249,42 +175,51 @@ class Articles extends _$Articles {
     );
   }
 
-  // Streaming
-
-  /// Refetches the first page after a reconnect to recover updates missed while
-  /// disconnected. Silent (no loading state); the channel decides when to ask.
-  Future<void> _resync() async {
-    final freshState = await _fetchFreshPage();
-    if (freshState != null) state = AsyncData(freshState);
-  }
-
-  /// Merges a single pushed preview into state by id (replace, else prepend)
-  /// and persists it to the local cache.
+  /// Merges a single preview into this view
   void _mergePreview(articles_pb.ArticlePreview preview) {
-    _repository.upsertPreviewFromUpdate(preview).catchError((_) {});
     final current = state.value;
     if (current == null) return;
+
+    final belongs = _view.contains(preview);
     final articles = [...current.articles];
     final idx = articles.indexWhere((a) => a.id == preview.id);
-    final isNew = idx < 0;
-    if (isNew) {
+    final present = idx >= 0;
+
+    int delta = 0;
+    if (belongs && !present) {
       articles.insert(0, preview);
-    } else {
+      delta = 1;
+    } else if (belongs && present) {
       articles[idx] = preview;
+    } else if (!belongs && present) {
+      articles.removeAt(idx);
+      delta = -1;
+    } else {
+      return; // doesn't belong and isn't present
     }
     // Build explicitly to preserve nextPageToken.
     state = AsyncData(
       ArticlesState(
         articles: articles,
-        totalCount: isNew ? current.totalCount + 1 : current.totalCount,
+        totalCount: current.totalCount + delta,
         nextPageToken: current.nextPageToken,
       ),
     );
   }
 
-  /// Suspends all background activity while the app is backgrounded.
-  void suspendStream() => _channel.suspend();
-
-  /// Resumes streaming when the app returns to the foreground.
-  void resumeStream() => _channel.resume();
+  /// Drops a deleted article from this view if present.
+  void _removeById(int id) {
+    final current = state.value;
+    if (current == null) return;
+    final idx = current.articles.indexWhere((a) => a.id.toInt() == id);
+    if (idx < 0) return;
+    final articles = [...current.articles]..removeAt(idx);
+    state = AsyncData(
+      ArticlesState(
+        articles: articles,
+        totalCount: max(0, current.totalCount - 1),
+        nextPageToken: current.nextPageToken,
+      ),
+    );
+  }
 }

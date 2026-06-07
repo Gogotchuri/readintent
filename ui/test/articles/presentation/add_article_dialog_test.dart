@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_test/flutter_test.dart";
+import "package:readintent_flutter/features/articles/models/article_view.dart";
 import "package:readintent_flutter/features/articles/presentation/add_article_dialog.dart";
 import "package:readintent_flutter/features/articles/providers/articles_provider.dart";
 import "package:readintent_flutter/features/articles/repository/article_repository.dart";
@@ -10,7 +11,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         // ignore: deprecated_member_use
-        articlesProvider.overrideWith(createNotifier),
+        articlesProvider(ArticleView.inbox).overrideWith(createNotifier),
       ],
     );
     return UncontrolledProviderScope(
@@ -164,7 +165,7 @@ class _TestArticles extends Articles {
   _TestArticles({this.parseResult, this.parseError});
 
   @override
-  Future<ArticlesState> build() async => const ArticlesState();
+  Future<ArticlesState> build(ArticleView? view) async => const ArticlesState();
 
   @override
   Future<ParseArticleResult> parseArticle(String url) async {

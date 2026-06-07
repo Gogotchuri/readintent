@@ -2,15 +2,64 @@ import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 import "package:readintent_flutter/core/connectivity.dart";
+import "package:readintent_flutter/features/articles/models/article_view.dart";
 import "package:readintent_flutter/features/articles/presentation/article_player_widget.dart";
 import "package:readintent_flutter/features/articles/presentation/articles_screen.dart";
 import "package:readintent_flutter/features/articles/presentation/mini_player_widget.dart";
 import "package:readintent_flutter/features/articles/providers/article_player_provider.dart";
-import "package:readintent_flutter/features/articles/providers/articles_provider.dart";
+import "package:readintent_flutter/features/articles/providers/article_updates_hub.dart";
 import "package:readintent_flutter/features/settings/presentation/settings_screen.dart";
 import "package:readintent_flutter/features/tts/download_status_provider.dart";
 import "package:readintent_flutter/features/tts/model_downloader.dart";
 import "package:readintent_flutter/features/tts/presentation/download_status_bar.dart";
+
+enum _ShellTab {
+  inbox(
+    view: ArticleView.inbox,
+    icon: Icons.inbox_outlined,
+    selectedIcon: Icons.inbox,
+    label: "Inbox",
+  ),
+  favorite(
+    view: ArticleView.favorite,
+    icon: Icons.star_outline,
+    selectedIcon: Icons.star,
+    label: "Favorite",
+  ),
+  archive(
+    view: ArticleView.archive,
+    icon: Icons.archive_outlined,
+    selectedIcon: Icons.archive,
+    label: "Archive",
+  ),
+  settings(
+    view: null, // null view => the Settings screen
+    icon: Icons.settings_outlined,
+    selectedIcon: Icons.settings,
+    label: "Settings",
+  );
+
+  const _ShellTab({
+    required this.view,
+    required this.icon,
+    required this.selectedIcon,
+    required this.label,
+  });
+
+  final ArticleView? view;
+  final IconData icon;
+  final IconData selectedIcon;
+  final String label;
+
+  Widget get screen =>
+      view == null ? const SettingsScreen() : ArticlesScreen(view: view!);
+
+  NavigationDestination get destination => NavigationDestination(
+    icon: Icon(icon),
+    selectedIcon: Icon(selectedIcon),
+    label: label,
+  );
+}
 
 class PlayerShell extends ConsumerStatefulWidget {
   final Widget child;
@@ -57,18 +106,18 @@ class _PlayerShellState extends ConsumerState<PlayerShell>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused) {
       ref.read(activePlayerProvider.notifier).persistState();
-      ref.read(articlesProvider.notifier).suspendStream();
+      ref.read(articleUpdatesHubProvider).suspend();
     } else if (state == AppLifecycleState.resumed) {
-      ref.read(articlesProvider.notifier).resumeStream();
+      ref.read(articleUpdatesHubProvider).resume();
     }
   }
 
   /// Determine which bottom nav tab to highlight based on current route.
   int _computeSelectedIndex(String currentPath) {
     if (currentPath == "/home") return _selectedTabIndex;
-    if (currentPath.startsWith("/articles/")) return 0; // Articles tab
-    if (currentPath == "/pair-extension") return 1; // Settings tab
-    if (currentPath == "/voice-settings") return 1; // Settings tab
+    if (currentPath.startsWith("/articles/")) return _ShellTab.inbox.index;
+    if (currentPath == "/pair-extension") return _ShellTab.settings.index;
+    if (currentPath == "/voice-settings") return _ShellTab.settings.index;
     return _selectedTabIndex;
   }
 
@@ -85,6 +134,7 @@ class _PlayerShellState extends ConsumerState<PlayerShell>
       downloadStatusProvider.select((s) => s != null),
     );
     final isOnline = ref.watch(isOnlineProvider);
+    ref.watch(articleUpdatesHubProvider);
 
     // Route detection
     final currentPath = GoRouterState.of(context).uri.path;
@@ -122,7 +172,7 @@ class _PlayerShellState extends ConsumerState<PlayerShell>
           child: isOnHome
               ? IndexedStack(
                   index: _selectedTabIndex,
-                  children: const [ArticlesScreen(), SettingsScreen()],
+                  children: [for (final t in _ShellTab.values) t.screen],
                 )
               : widget.child,
         ),
@@ -141,18 +191,7 @@ class _PlayerShellState extends ConsumerState<PlayerShell>
         NavigationBar(
           selectedIndex: _computeSelectedIndex(currentPath),
           onDestinationSelected: (i) => _onTabSelected(i, isOnHome),
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.article_outlined),
-              selectedIcon: Icon(Icons.article),
-              label: "Articles",
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.settings_outlined),
-              selectedIcon: Icon(Icons.settings),
-              label: "Settings",
-            ),
-          ],
+          destinations: [for (final t in _ShellTab.values) t.destination],
         ),
       ],
     );

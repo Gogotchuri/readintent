@@ -6,6 +6,8 @@
 import 'dart:async' as _i4;
 
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:readintent_flutter/features/articles/models/article_view.dart'
+    as _i5;
 import 'package:readintent_flutter/features/articles/repository/article_repository.dart'
     as _i3;
 import 'package:readintent_flutter/proto/articles/v1/articles_service.pb.dart'
@@ -49,11 +51,13 @@ class MockArticleRepository extends _i1.Mock implements _i3.ArticleRepository {
   @override
   _i4.Future<_i2.GetArticlesResponse> getArticles({
     int? pageSize = 20,
+    required _i5.ArticleView? view,
     void Function(_i2.GetArticlesResponse)? onUpdated,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#getArticles, [], {
               #pageSize: pageSize,
+              #view: view,
               #onUpdated: onUpdated,
             }),
             returnValue: _i4.Future<_i2.GetArticlesResponse>.value(
@@ -61,6 +65,7 @@ class MockArticleRepository extends _i1.Mock implements _i3.ArticleRepository {
                 this,
                 Invocation.method(#getArticles, [], {
                   #pageSize: pageSize,
+                  #view: view,
                   #onUpdated: onUpdated,
                 }),
               ),
@@ -79,9 +84,12 @@ class MockArticleRepository extends _i1.Mock implements _i3.ArticleRepository {
           as _i4.Future<_i2.CheckForUpdatesResponse?>);
 
   @override
-  _i4.Future<_i2.GetArticlesResponse?> fetchFreshArticles(int? pageSize) =>
+  _i4.Future<_i2.GetArticlesResponse?> fetchFreshArticles(
+    int? pageSize,
+    _i5.ArticleView? view,
+  ) =>
       (super.noSuchMethod(
-            Invocation.method(#fetchFreshArticles, [pageSize]),
+            Invocation.method(#fetchFreshArticles, [pageSize, view]),
             returnValue: _i4.Future<_i2.GetArticlesResponse?>.value(),
           )
           as _i4.Future<_i2.GetArticlesResponse?>);
@@ -107,11 +115,13 @@ class MockArticleRepository extends _i1.Mock implements _i3.ArticleRepository {
   _i4.Future<_i2.GetArticlesResponse> getArticlesPage({
     int? pageSize = 20,
     String? pageToken,
+    required _i5.ArticleView? view,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#getArticlesPage, [], {
               #pageSize: pageSize,
               #pageToken: pageToken,
+              #view: view,
             }),
             returnValue: _i4.Future<_i2.GetArticlesResponse>.value(
               _FakeGetArticlesResponse_0(
@@ -119,6 +129,7 @@ class MockArticleRepository extends _i1.Mock implements _i3.ArticleRepository {
                 Invocation.method(#getArticlesPage, [], {
                   #pageSize: pageSize,
                   #pageToken: pageToken,
+                  #view: view,
                 }),
               ),
             ),
@@ -173,4 +184,20 @@ class MockArticleRepository extends _i1.Mock implements _i3.ArticleRepository {
             returnValueForMissingStub: _i4.Future<void>.value(),
           )
           as _i4.Future<void>);
+
+  @override
+  _i4.Future<_i2.ArticlePreview?> setArticleState(
+    String? id, {
+    _i5.ArticleListState? listState,
+    bool? isFavorite,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #setArticleState,
+              [id],
+              {#listState: listState, #isFavorite: isFavorite},
+            ),
+            returnValue: _i4.Future<_i2.ArticlePreview?>.value(),
+          )
+          as _i4.Future<_i2.ArticlePreview?>);
 }

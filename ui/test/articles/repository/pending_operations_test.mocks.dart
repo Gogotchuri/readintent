@@ -12,6 +12,8 @@ import 'package:mockito/src/dummies.dart' as _i7;
 import 'package:readintent_flutter/core/database/app_database.dart' as _i3;
 import 'package:readintent_flutter/features/articles/api/articles_client.dart'
     as _i8;
+import 'package:readintent_flutter/features/articles/models/article_view.dart'
+    as _i9;
 import 'package:readintent_flutter/proto/articles/v1/articles_service.pb.dart'
     as _i6;
 
@@ -358,6 +360,39 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
             ),
           )
           as _i5.Future<List<_i3.ArticlePreview>>);
+
+  @override
+  _i5.Future<List<_i3.ArticlePreview>> getPreviewsByView({
+    String? listState,
+    bool? favoritesOnly = false,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getPreviewsByView, [], {
+              #listState: listState,
+              #favoritesOnly: favoritesOnly,
+            }),
+            returnValue: _i5.Future<List<_i3.ArticlePreview>>.value(
+              <_i3.ArticlePreview>[],
+            ),
+          )
+          as _i5.Future<List<_i3.ArticlePreview>>);
+
+  @override
+  _i5.Future<void> updateArticleFlags(
+    int? articleId, {
+    String? listState,
+    bool? isFavorite,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #updateArticleFlags,
+              [articleId],
+              {#listState: listState, #isFavorite: isFavorite},
+            ),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
 
   @override
   _i5.Future<void> upsertPreview(_i3.ArticlePreviewsCompanion? entry) =>
@@ -962,11 +997,13 @@ class MockArticlesClient extends _i1.Mock implements _i8.ArticlesClient {
   _i5.Future<_i6.GetArticlesResponse> getArticles({
     int? pageSize = 20,
     String? pageToken,
+    required _i9.ArticleView? view,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#getArticles, [], {
               #pageSize: pageSize,
               #pageToken: pageToken,
+              #view: view,
             }),
             returnValue: _i5.Future<_i6.GetArticlesResponse>.value(
               _FakeGetArticlesResponse_22(
@@ -974,6 +1011,7 @@ class MockArticlesClient extends _i1.Mock implements _i8.ArticlesClient {
                 Invocation.method(#getArticles, [], {
                   #pageSize: pageSize,
                   #pageToken: pageToken,
+                  #view: view,
                 }),
               ),
             ),
@@ -1003,6 +1041,23 @@ class MockArticlesClient extends _i1.Mock implements _i8.ArticlesClient {
   _i5.Future<void> deleteArticle(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#deleteArticle, [id]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setArticleState(
+    String? id, {
+    _i9.ArticleListState? listState,
+    bool? isFavorite,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #setArticleState,
+              [id],
+              {#listState: listState, #isFavorite: isFavorite},
+            ),
             returnValue: _i5.Future<void>.value(),
             returnValueForMissingStub: _i5.Future<void>.value(),
           )
