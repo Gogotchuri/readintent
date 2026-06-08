@@ -11,8 +11,18 @@ import "package:readintent_flutter/features/tts/audio_handler.dart";
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   JustAudioMediaKit.ensureInitialized();
-  final audioHandler = await AudioService.init(
-    builder: () => AppAudioHandler(),
+  
+  final audioHandler = AppAudioHandler();
+
+  runApp(
+    ProviderScope(
+      overrides: [audioHandlerProvider.overrideWithValue(audioHandler)],
+      child: const MyApp(),
+    ),
+  );
+
+  AudioService.init(
+    builder: () => audioHandler,
     config: const AudioServiceConfig(
       androidNotificationChannelId: "com.readintent.audio",
       androidNotificationChannelName: "Article Audio",
@@ -20,13 +30,6 @@ Future<void> main() async {
       androidStopForegroundOnPause: true,
       fastForwardInterval: Duration(seconds: 10),
       rewindInterval: Duration(seconds: 10),
-    ),
-  );
-
-  runApp(
-    ProviderScope(
-      overrides: [audioHandlerProvider.overrideWithValue(audioHandler)],
-      child: const MyApp(),
     ),
   );
 }
