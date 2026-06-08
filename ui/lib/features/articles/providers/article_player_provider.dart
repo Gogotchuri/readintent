@@ -460,12 +460,7 @@ class ActivePlayer extends _$ActivePlayer {
         return;
       }
 
-      state = state.copyWith(
-        isPlaying: s.playing,
-        isLoading:
-            s.processingState == ProcessingState.loading ||
-            s.processingState == ProcessingState.buffering,
-      );
+      state = state.copyWith(isPlaying: s.playing);
     });
   }
 

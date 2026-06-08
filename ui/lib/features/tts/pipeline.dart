@@ -1,4 +1,5 @@
 import "dart:io";
+import "dart:isolate";
 import "dart:typed_data";
 
 import "package:flutter_riverpod/flutter_riverpod.dart";
@@ -81,24 +82,36 @@ class TTSPipeline {
 
   static Future<OrtSession> initializeONNXSession(String modelPath) async {
     OrtEnv.instance.init();
-    OrtSession? session;
     try {
-      final sessionOpts = OrtSessionOptions();
-      // This will try to load the providers for the fastest available device
-      // GPU > NPU > CPU
-      await sessionOpts.appendDefaultProviders();
-      session = OrtSession.fromFile(File(modelPath), sessionOpts);
-      sessionOpts.release();
-      //TODO certain models might fail to work on some devices, we need to detect such failures and fallback
+      // Build the session on a background isolate, and return address for main-isolate construction.
+      final address = await Isolate.run(() async {
+        OrtEnv.instance.init();
+        final sessionOpts = OrtSessionOptions();
+        try {
+          // This will try to load the providers for the fastest available device GPU > NPU > CPU
+          await sessionOpts.appendDefaultProviders();
+          final session = OrtSession.fromFile(File(modelPath), sessionOpts);
+          sessionOpts.release();
+          //TODO certain models might fail to work on some devices, we need to detect such failures and fallback
+          return session.address;
+        } catch (_) {
+          final fallback = OrtSessionOptions();
+          fallback.setIntraOpNumThreads(Platform.numberOfProcessors);
+          final s = OrtSession.fromFile(File(modelPath), fallback);
+          fallback.release();
+          return s.address;
+        }
+      });
+      return OrtSession.fromAddress(address);
     } catch (e) {
       // Manual fallback just in case (//TODO need to handle another failure casre)
       final sessionOpts = OrtSessionOptions();
       // Sets parallelism equal to the processor cores when running on CPU
       sessionOpts.setIntraOpNumThreads(Platform.numberOfProcessors);
-      session = OrtSession.fromFile(File(modelPath), sessionOpts);
+      final session = OrtSession.fromFile(File(modelPath), sessionOpts);
       sessionOpts.release();
+      return session;
     }
-    return session;
   }
 
   Future<KokoroResult> runInference(
