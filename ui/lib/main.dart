@@ -11,7 +11,7 @@ import "package:readintent_flutter/features/tts/audio_handler.dart";
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   JustAudioMediaKit.ensureInitialized();
-  
+
   final audioHandler = AppAudioHandler();
 
   runApp(

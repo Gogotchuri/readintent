@@ -27,6 +27,7 @@ void main() {
       mockAuthClient.getSession(),
     ).thenThrow(ConnectException(Code.unauthenticated, "Unauthenticated"));
     when(mockSessionStorage.getToken()).thenAnswer((_) async => null);
+    when(mockSessionStorage.getUser()).thenAnswer((_) async => null);
   });
 
   late ProviderContainer container;

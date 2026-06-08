@@ -64,20 +64,22 @@ class Auth extends _$Auth {
       return;
     }
 
+    // Optimistic restore:
+    _sessionValidated = false;
+    final cachedUser = await _sessionStorage.getUser();
+    if (cachedUser != null) {
+      state = AuthAuthenticated(sessionToken: token, user: cachedUser);
+    }
+
     final isOnline = await ref.read(connectivityMonitorProvider.future);
     if (isOnline) {
       // If we're online, we validate the session with the server to ensure it's still valid
       return _validateSession();
     }
-    // Since _restoreSession is called only during initialization, this will not interrup disconnected users with a valid session
-    _sessionValidated =
-        false; // We haven't validated the session with the server yet
-    // If we're offline but have a token, we can optimistically set the state to authenticated with cached user data
-    final cachedUser = await _sessionStorage.getUser();
-    if (cachedUser != null) {
-      state = AuthAuthenticated(sessionToken: token, user: cachedUser);
-    } else {
-      // If we don't have cached user data, we can't be sure about authentication status, so clear token and set unauthenticated
+
+    // Offline with no cached user: we can't confirm authentication, so clear the
+    // token and require a fresh login.
+    if (cachedUser == null) {
       await _sessionStorage.clearSession();
       state = const AuthUnauthenticated();
     }
