@@ -4,6 +4,7 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter/scheduler.dart";
 import "package:flutter_highlight/flutter_highlight.dart";
+import "package:flutter_highlight/themes/atom-one-dark.dart";
 import "package:flutter_highlight/themes/github.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart";
@@ -107,6 +108,11 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
       activePlayerProvider.select((s) => s.syncEnabled),
     );
 
+    // Active-sentence highlight while TTS plays
+    final highlightCss = Theme.of(context).brightness == Brightness.dark
+        ? "#7B2CBF"
+        : "#F7B267";
+
     // Auto-scroll when sentence changes and sync is enabled
     ref.listen(activePlayerProvider.select((s) => s.activeSentenceIndex), (
       prev,
@@ -167,7 +173,7 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                       final attr = element.attributes["data-sentence"];
                       if (attr != null &&
                           int.tryParse(attr) == activeSentenceIndex) {
-                        return {"background-color": "rgba(255, 255, 20, 0.4)"};
+                        return {"background-color": highlightCss};
                       }
                       return null;
                     },
@@ -225,11 +231,11 @@ class _ArticleHeader extends StatelessWidget {
               errorWidget: (_, __, ___) => Container(
                 width: double.infinity,
                 height: 200,
-                color: Colors.grey[200],
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 child: Icon(
                   Icons.broken_image_outlined,
                   size: 48,
-                  color: Colors.grey[400],
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ),
@@ -239,13 +245,19 @@ class _ArticleHeader extends StatelessWidget {
         Row(
           children: [
             if (article.author.isNotEmpty) ...[
-              Icon(Icons.person_outline, size: 16, color: Colors.grey[600]),
+              Icon(
+                Icons.person_outline,
+                size: 16,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
               const SizedBox(width: 4),
               Flexible(
                 child: Text(
                   article.author,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.bodySmall?.copyWith(color: Colors.grey[600]),
+                  style: theme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
@@ -254,12 +266,14 @@ class _ArticleHeader extends StatelessWidget {
               Icon(
                 Icons.calendar_today_outlined,
                 size: 16,
-                color: Colors.grey[600],
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               const SizedBox(width: 4),
               Text(
                 article.date,
-                style: theme.bodySmall?.copyWith(color: Colors.grey[600]),
+                style: theme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ],
@@ -358,20 +372,21 @@ class _CodeBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F8F8),
+        color: Theme.of(context).colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[300]!),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: HighlightView(
           code,
           language: language,
-          theme: githubTheme,
+          theme: isDark ? atomOneDarkTheme : githubTheme,
           padding: const EdgeInsets.all(12),
           textStyle: const TextStyle(fontFamily: "monospace", fontSize: 13),
         ),
@@ -394,9 +409,11 @@ class _InlineCode extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 4),
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
-          color: const Color(0xFFF0F0F0),
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(4),
-          border: Border.all(color: Colors.grey[300]!),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
         ),
         child: Text(
           code,

@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 import "package:readintent_flutter/core/connectivity.dart";
+import "package:readintent_flutter/core/theme/app_colors.dart";
 import "package:readintent_flutter/features/articles/models/article_view.dart";
 import "package:readintent_flutter/features/articles/presentation/article_player_widget.dart";
 import "package:readintent_flutter/features/articles/presentation/articles_screen.dart";
@@ -152,16 +153,23 @@ class _PlayerShellState extends ConsumerState<PlayerShell>
         if (!isOnline)
           Container(
             width: double.infinity,
-            color: Colors.orange[700],
+            color: context.appColors.warning,
             padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.cloud_off, size: 16, color: Colors.white),
-                SizedBox(width: 8),
+                Icon(
+                  Icons.cloud_off,
+                  size: 16,
+                  color: context.appColors.onWarning,
+                ),
+                const SizedBox(width: 8),
                 Text(
                   "You're offline",
-                  style: TextStyle(color: Colors.white, fontSize: 13),
+                  style: TextStyle(
+                    color: context.appColors.onWarning,
+                    fontSize: 13,
+                  ),
                 ),
               ],
             ),

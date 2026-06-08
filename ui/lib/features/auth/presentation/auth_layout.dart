@@ -54,9 +54,11 @@ class AuthLayout extends ConsumerWidget {
                       padding: const EdgeInsets.all(12),
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: Colors.red[50],
+                        color: Theme.of(context).colorScheme.errorContainer,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.red[200]!),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,7 +66,11 @@ class AuthLayout extends ConsumerWidget {
                             .map(
                               (e) => Text(
                                 "- $e",
-                                style: TextStyle(color: Colors.red[800]),
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onErrorContainer,
+                                ),
                               ),
                             )
                             .toList(),
@@ -112,7 +118,11 @@ class AuthLayout extends ConsumerWidget {
                               ),
                               child: Text(
                                 "OR",
-                                style: TextStyle(color: Colors.grey[500]),
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
                               ),
                             ),
                             const Expanded(child: Divider()),

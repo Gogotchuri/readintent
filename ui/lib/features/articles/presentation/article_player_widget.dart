@@ -182,7 +182,7 @@ class ArticlePlayerWidget extends ConsumerWidget {
           icon: const Icon(Icons.forward_10),
         ),
         const SizedBox(width: 8),
-        _buildSyncButton(ref),
+        _buildSyncButton(context, ref),
       ],
     );
   }
@@ -248,13 +248,15 @@ class ArticlePlayerWidget extends ConsumerWidget {
     );
   }
 
-  Widget _buildSyncButton(WidgetRef ref) {
+  Widget _buildSyncButton(BuildContext context, WidgetRef ref) {
     final syncEnabled = ref.watch(
       activePlayerProvider.select((s) => s.syncEnabled),
     );
     return IconButton(
       icon: Icon(syncEnabled ? Icons.sync : Icons.sync_disabled),
-      color: syncEnabled ? null : Colors.grey,
+      color: syncEnabled
+          ? null
+          : Theme.of(context).colorScheme.onSurfaceVariant,
       onPressed: () => ref.read(activePlayerProvider.notifier).toggleSync(),
       tooltip: syncEnabled ? "Disable auto-scroll" : "Enable auto-scroll",
     );

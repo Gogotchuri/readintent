@@ -10,6 +10,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final voice = ref.watch(appSettingsProvider.select((s) => s.voice));
+    final themeMode = ref.watch(appSettingsProvider.select((s) => s.themeMode));
     return Scaffold(
       appBar: AppBar(title: const Text("Settings")),
       body: ListView(
@@ -30,12 +31,59 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const Divider(),
           ListTile(
+            leading: const Icon(Icons.brightness_6),
+            title: const Text("Appearance"),
+            subtitle: Text(_themeModeLabel(themeMode)),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _showThemeModeSheet(context, ref, themeMode),
+          ),
+          const Divider(),
+          ListTile(
             leading: const Icon(Icons.logout),
             title: const Text("Logout"),
             onTap: () => ref.read(authProvider.notifier).logout(),
           ),
         ],
       ),
+    );
+  }
+
+  static String _themeModeLabel(ThemeMode mode) => switch (mode) {
+    ThemeMode.system => "System default",
+    ThemeMode.light => "Light",
+    ThemeMode.dark => "Dark",
+  };
+
+  void _showThemeModeSheet(
+    BuildContext context,
+    WidgetRef ref,
+    ThemeMode current,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: RadioGroup<ThemeMode>(
+            groupValue: current,
+            onChanged: (selected) {
+              if (selected != null) {
+                ref.read(appSettingsProvider.notifier).setThemeMode(selected);
+              }
+              Navigator.of(sheetContext).pop();
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final mode in ThemeMode.values)
+                  RadioListTile<ThemeMode>(
+                    value: mode,
+                    title: Text(_themeModeLabel(mode)),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

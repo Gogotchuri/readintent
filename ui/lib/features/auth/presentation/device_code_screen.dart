@@ -91,7 +91,10 @@ class _DeviceCodeScreenState extends ConsumerState<DeviceCodeScreen> {
                     const SizedBox(height: 12),
                     Text(
                       _error!,
-                      style: TextStyle(color: Colors.red[700], fontSize: 13),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                        fontSize: 13,
+                      ),
                     ),
                   ],
                 ],

@@ -2,6 +2,7 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
+import "package:readintent_flutter/core/theme/app_colors.dart";
 import "package:readintent_flutter/features/articles/models/article_view.dart";
 import "package:readintent_flutter/features/articles/presentation/add_article_dialog.dart";
 import "package:readintent_flutter/features/articles/providers/articles_provider.dart";
@@ -70,12 +71,20 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     final articlesAsync = ref.watch(articlesProvider(widget.view));
     return Scaffold(
       appBar: AppBar(title: Text(_title), actions: const [FontSizeButton()]),
-      floatingActionButton: widget.view == ArticleView.inbox
+      floatingActionButton:
+          widget.view == ArticleView.inbox ||
+              widget.view == ArticleView.favorite ||
+              widget.view == ArticleView.archive
           ? FloatingActionButton(
+              // Unique per view: all three ArticlesScreens are mounted at once
+              // inside the shell, so a shared default hero tag collides.
+              heroTag: "add-article-fab-${widget.view.name}",
               onPressed: () => showDialog(
                 context: context,
                 builder: (_) => const AddArticleDialog(),
               ),
+              foregroundColor: Theme.of(context).colorScheme.onSecondary,
+              backgroundColor: Theme.of(context).colorScheme.secondary,
               child: const Icon(Icons.add),
             )
           : null,
@@ -98,24 +107,25 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
         data: (state) {
           if (state.articles.isEmpty) {
             final empty = _emptyState;
+            final muted = Theme.of(context).colorScheme.onSurfaceVariant;
             return Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(empty.icon, size: 64, color: Colors.grey[400]),
+                  Icon(empty.icon, size: 64, color: muted),
                   const SizedBox(height: 16),
                   Text(
                     empty.title,
                     style: Theme.of(
                       context,
-                    ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
+                    ).textTheme.titleMedium?.copyWith(color: muted),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     empty.subtitle,
                     style: Theme.of(
                       context,
-                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
+                    ).textTheme.bodyMedium?.copyWith(color: muted),
                   ),
                 ],
               ),
@@ -156,11 +166,13 @@ class _TileAction {
   final IconData icon;
   final String label;
   final Color color;
+  final Color onColor;
   final Future<void> Function() run;
   const _TileAction({
     required this.icon,
     required this.label,
     required this.color,
+    required this.onColor,
     required this.run,
   });
 }
@@ -179,37 +191,52 @@ class _ArticleTile extends ConsumerWidget {
 
   Articles _actions(WidgetRef ref) => ref.read(articlesProvider(view).notifier);
 
-  _TileAction _favoriteAction(WidgetRef ref) => _TileAction(
-    icon: article.isFavorite ? Icons.star_outline : Icons.star,
-    label: article.isFavorite ? "Unfavorite" : "Favorite",
-    color: Colors.amber[700]!,
-    run: () =>
-        _actions(ref).setArticleState(_id, isFavorite: !article.isFavorite),
-  );
+  _TileAction _favoriteAction(BuildContext context, WidgetRef ref) =>
+      _TileAction(
+        icon: article.isFavorite ? Icons.star_outline : Icons.star,
+        label: article.isFavorite ? "Unfavorite" : "Favorite",
+        color: context.appColors.favorite,
+        onColor: context.appColors.onFavorite,
+        run: () =>
+            _actions(ref).setArticleState(_id, isFavorite: !article.isFavorite),
+      );
 
-  _TileAction _archiveAction(WidgetRef ref) => _TileAction(
-    icon: _isArchived ? Icons.unarchive : Icons.archive,
-    label: _isArchived ? "Unarchive" : "Archive",
-    color: _isArchived ? Colors.teal : Colors.blueGrey,
-    run: () => _actions(ref).setArticleState(
-      _id,
-      listState: _isArchived
-          ? ArticleListState.inbox
-          : ArticleListState.archive,
-    ),
-  );
+  _TileAction _archiveAction(BuildContext context, WidgetRef ref) =>
+      _TileAction(
+        icon: _isArchived ? Icons.unarchive : Icons.archive,
+        label: _isArchived ? "Unarchive" : "Archive",
+        color: _isArchived
+            ? context.appColors.archived
+            : context.appColors.archive,
+        onColor: context.appColors.onArchive,
+        run: () => _actions(ref).setArticleState(
+          _id,
+          listState: _isArchived
+              ? ArticleListState.inbox
+              : ArticleListState.archive,
+        ),
+      );
 
-  _TileAction _deleteAction(WidgetRef ref) => _TileAction(
+  _TileAction _deleteAction(BuildContext context, WidgetRef ref) => _TileAction(
     icon: Icons.delete_outline,
     label: "Delete",
-    color: Colors.red[400]!,
+    color: Theme.of(context).colorScheme.error,
+    onColor: Theme.of(context).colorScheme.onError,
     run: () => _actions(ref).deleteArticle(_id),
   );
 
-  ({_TileAction right, _TileAction left}) _swipeActions(WidgetRef ref) =>
-      view == ArticleView.favorite
-      ? (right: _archiveAction(ref), left: _favoriteAction(ref))
-      : (right: _favoriteAction(ref), left: _archiveAction(ref));
+  ({_TileAction right, _TileAction left}) _swipeActions(
+    BuildContext context,
+    WidgetRef ref,
+  ) => view == ArticleView.favorite
+      ? (
+          right: _archiveAction(context, ref),
+          left: _favoriteAction(context, ref),
+        )
+      : (
+          right: _favoriteAction(context, ref),
+          left: _archiveAction(context, ref),
+        );
 
   Widget _swipeBackground(_TileAction a, {required bool swipeRight}) {
     return Container(
@@ -219,9 +246,9 @@ class _ArticleTile extends ConsumerWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(a.icon, color: Colors.white),
+          Icon(a.icon, color: a.onColor),
           const SizedBox(width: 8),
-          Text(a.label, style: const TextStyle(color: Colors.white)),
+          Text(a.label, style: TextStyle(color: a.onColor)),
         ],
       ),
     );
@@ -229,9 +256,9 @@ class _ArticleTile extends ConsumerWidget {
 
   void _showActions(BuildContext context, WidgetRef ref) {
     final actions = [
-      _favoriteAction(ref),
-      _archiveAction(ref),
-      _deleteAction(ref),
+      _favoriteAction(context, ref),
+      _archiveAction(context, ref),
+      _deleteAction(context, ref),
     ];
     showModalBottomSheet(
       context: context,
@@ -243,7 +270,7 @@ class _ArticleTile extends ConsumerWidget {
               for (final a in actions)
                 ListTile(
                   leading: Icon(a.icon, color: a.color),
-                  title: Text(a.label, style: TextStyle(color: a.color)),
+                  title: Text(a.label),
                   onTap: () {
                     Navigator.of(sheetContext).pop();
                     a.run();
@@ -258,7 +285,7 @@ class _ArticleTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final swipe = _swipeActions(ref);
+    final swipe = _swipeActions(context, ref);
     return Dismissible(
       key: ValueKey(article.id.toInt()),
       background: _swipeBackground(swipe.right, swipeRight: true),
@@ -275,7 +302,7 @@ class _ArticleTile extends ConsumerWidget {
         title: Row(
           children: [
             if (article.isFavorite) ...[
-              Icon(Icons.star, size: 16, color: Colors.amber[700]),
+              Icon(Icons.star, size: 16, color: context.appColors.favorite),
               const SizedBox(width: 4),
             ],
             Expanded(
@@ -304,15 +331,19 @@ class _ArticleTile extends ConsumerWidget {
             Row(
               children: [
                 if (article.author.isNotEmpty) ...[
-                  Icon(Icons.person_outline, size: 14, color: Colors.grey[600]),
+                  Icon(
+                    Icons.person_outline,
+                    size: 14,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                   const SizedBox(width: 4),
                   Flexible(
                     child: Text(
                       article.author,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.labelSmall?.copyWith(color: Colors.grey[600]),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -321,14 +352,14 @@ class _ArticleTile extends ConsumerWidget {
                   Icon(
                     Icons.calendar_today_outlined,
                     size: 14,
-                    color: Colors.grey[600],
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: 4),
                   Text(
                     article.date,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.labelSmall?.copyWith(color: Colors.grey[600]),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ],
@@ -337,13 +368,17 @@ class _ArticleTile extends ConsumerWidget {
               const SizedBox(height: 4),
               Row(
                 children: [
-                  Icon(Icons.error_outline, size: 14, color: Colors.red[400]),
+                  Icon(
+                    Icons.error_outline,
+                    size: 14,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     "Processing failed",
-                    style: Theme.of(
-                      context,
-                    ).textTheme.labelSmall?.copyWith(color: Colors.red[400]),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                   ),
                 ],
               ),
@@ -362,10 +397,12 @@ class _ArticleTile extends ConsumerWidget {
                   errorWidget: (_, __, ___) => Container(
                     width: 80,
                     height: 80,
-                    color: Colors.grey[200],
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                     child: Icon(
                       Icons.broken_image_outlined,
-                      color: Colors.grey[400],
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),
@@ -412,65 +449,71 @@ class _ProcessingArticleTileState extends State<_ProcessingArticleTile>
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return AnimatedBuilder(
       animation: _animation,
-      builder: (context, _) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    height: 16,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300]!.withOpacity(_animation.value),
-                      borderRadius: BorderRadius.circular(4),
+      builder: (context, _) {
+        final skeleton = scheme.surfaceContainerHighest.withValues(
+          alpha: _animation.value,
+        );
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 16,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: skeleton,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    height: 12,
-                    width: MediaQuery.of(context).size.width * 0.5,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300]!.withOpacity(_animation.value),
-                      borderRadius: BorderRadius.circular(4),
+                    const SizedBox(height: 8),
+                    Container(
+                      height: 12,
+                      width: MediaQuery.of(context).size.width * 0.5,
+                      decoration: BoxDecoration(
+                        color: skeleton,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.article.url,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[500],
-                      fontStyle: FontStyle.italic,
+                    const SizedBox(height: 8),
+                    Text(
+                      widget.article.url,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "Processing...",
-                    style: Theme.of(
-                      context,
-                    ).textTheme.labelSmall?.copyWith(color: Colors.orange[400]),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      "Processing...",
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: context.appColors.warning,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.grey[300]!.withOpacity(_animation.value),
-                borderRadius: BorderRadius.circular(8),
+              const SizedBox(width: 12),
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: skeleton,
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
