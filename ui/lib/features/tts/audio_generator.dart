@@ -105,9 +105,6 @@ class AudioGenerator {
     _emitState(_state.copyWith(bufferedDuration: _audioFile!.bufferedDuration));
 
     try {
-      await _ensurePipeline();
-      if (_disposed) return;
-
       final totalTokens = chunks.fold<int>(
         0,
         (sum, c) => sum + c.tokenIds.length,
@@ -119,9 +116,17 @@ class AudioGenerator {
 
       bool bufferReadyCalled = false;
 
-      // If we are resuming from a previous session, we might already have enough buffered audio
+      // If we are resuming from a previous session, we already have buffered audio
       if (startIndex > 0) {
         await _restoreResumeState();
+        _updateEstimation(processedTokens, totalTokens);
+      }
+
+      await _ensurePipeline();
+      if (_disposed) return;
+
+      // Cached audio is restored - start playback of the buffered portion now.
+      if (startIndex > 0) {
         bufferReadyCalled = true;
         await onBufferReady();
       }
