@@ -20,6 +20,7 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: scheme,
       extensions: [appColors],
+      appBarTheme: const AppBarTheme(toolbarHeight: 44),
     );
   }
 }

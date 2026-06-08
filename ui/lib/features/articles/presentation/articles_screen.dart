@@ -137,7 +137,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                 ref.read(articlesProvider(widget.view).notifier).refresh(),
             child: ListView.separated(
               controller: _scrollController,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: state.articles.length + (state.isLoading ? 1 : 0),
               separatorBuilder: (_, __) => const Divider(height: 1),
               itemBuilder: (context, index) {

@@ -8,6 +8,7 @@ import "package:flutter_highlight/themes/atom-one-dark.dart";
 import "package:flutter_highlight/themes/github.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart";
+import "package:readintent_flutter/features/articles/presentation/auto_marquee.dart";
 import "package:readintent_flutter/features/articles/providers/article_detail_provider.dart";
 import "package:readintent_flutter/features/articles/providers/article_player_provider.dart";
 import "package:readintent_flutter/features/articles/repository/article_repository.dart";
@@ -125,7 +126,7 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(articleAsync.asData?.value.title ?? "Article"),
+        title: AutoMarquee(text: articleAsync.asData?.value.title ?? "Article"),
         actions: const [FontSizeButton()],
       ),
       body: articleAsync.when(
@@ -218,8 +219,6 @@ class _ArticleHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(article.title, style: theme.headlineSmall),
-        const SizedBox(height: 8),
         if (article.image.isNotEmpty) ...[
           ClipRRect(
             borderRadius: BorderRadius.circular(12),

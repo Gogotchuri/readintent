@@ -195,11 +195,17 @@ class _PlayerShellState extends ConsumerState<PlayerShell>
               ? const ArticlePlayerWidget()
               : const MiniPlayerWidget(),
 
-        // Bottom navigation bar
-        NavigationBar(
-          selectedIndex: _computeSelectedIndex(currentPath),
-          onDestinationSelected: (i) => _onTabSelected(i, isOnHome),
-          destinations: [for (final t in _ShellTab.values) t.destination],
+        // Bottom navigation bar.
+        // NavigationBar's internal SafeArea would otherwise add a large padding at the top,
+        MediaQuery.removePadding(
+          context: context,
+          removeTop: true,
+          child: NavigationBar(
+            selectedIndex: _computeSelectedIndex(currentPath),
+            onDestinationSelected: (i) => _onTabSelected(i, isOnHome),
+            destinations: [for (final t in _ShellTab.values) t.destination],
+            height: 68,
+          ),
         ),
       ],
     );

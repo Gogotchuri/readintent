@@ -1,6 +1,5 @@
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
-import "package:marquee/marquee.dart";
 
 import "package:readintent_flutter/features/articles/providers/article_player_provider.dart";
 
@@ -22,17 +21,17 @@ class ArticlePlayerWidget extends ConsumerWidget {
             ),
           ),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildProgressSlider(context, state, controller),
-            const SizedBox(height: 2),
+            const SizedBox(height: 1),
             _buildTimeLabels(context, state),
             _buildControls(context, ref, state, controller),
             if (state.error != null)
               Padding(
-                padding: const EdgeInsets.only(top: 2),
+                padding: const EdgeInsets.only(top: 1),
                 child: Text(
                   state.error!,
                   style: TextStyle(
@@ -183,32 +182,35 @@ class ArticlePlayerWidget extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Text(
-                "Playback Speed",
-                style: Theme.of(context).textTheme.titleMedium,
+        // Scrollable so the 7 options never overflow the sheet
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Text(
+                  "Playback Speed",
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
               ),
-            ),
-            for (final speed in _speedOptions)
-              ListTile(
-                title: Text("${speed}x"),
-                trailing: speed == currentSpeed
-                    ? const Icon(Icons.check)
-                    : null,
-                selected: speed == currentSpeed,
-                onTap: () {
-                  ref
-                      .read(activePlayerProvider.notifier)
-                      .setPlaybackSpeed(speed);
-                  Navigator.pop(ctx);
-                },
-              ),
-            const SizedBox(height: 8),
-          ],
+              for (final speed in _speedOptions)
+                ListTile(
+                  title: Text("${speed}x"),
+                  trailing: speed == currentSpeed
+                      ? const Icon(Icons.check)
+                      : null,
+                  selected: speed == currentSpeed,
+                  onTap: () {
+                    ref
+                        .read(activePlayerProvider.notifier)
+                        .setPlaybackSpeed(speed);
+                    Navigator.pop(ctx);
+                  },
+                ),
+              const SizedBox(height: 8),
+            ],
+          ),
         ),
       ),
     );
@@ -259,39 +261,5 @@ class ArticlePlayerWidget extends ConsumerWidget {
     final minutes = d.inMinutes;
     final seconds = d.inSeconds % 60;
     return "${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
-  }
-}
-
-/// Shows a plain Text if it fits, or a scrolling Marquee if it overflows.
-class _AutoMarquee extends StatelessWidget {
-  final String text;
-  final TextStyle style;
-
-  const _AutoMarquee({required this.text, required this.style});
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final textPainter = TextPainter(
-          text: TextSpan(text: text, style: style),
-          maxLines: 1,
-          textDirection: TextDirection.ltr,
-        )..layout();
-
-        if (textPainter.width <= constraints.maxWidth) {
-          return Text(text, style: style, maxLines: 1);
-        }
-
-        return Marquee(
-          text: text,
-          style: style,
-          velocity: 30,
-          blankSpace: 80,
-          pauseAfterRound: const Duration(seconds: 2),
-          startAfter: const Duration(seconds: 1),
-        );
-      },
-    );
   }
 }
