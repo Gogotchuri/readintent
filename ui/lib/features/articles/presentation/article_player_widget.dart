@@ -26,15 +26,13 @@ class ArticlePlayerWidget extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildTitleRow(context, state.articleTitle ?? "", controller),
-            const SizedBox(height: 4),
             _buildProgressSlider(context, state, controller),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             _buildTimeLabels(context, state),
             _buildControls(context, ref, state, controller),
             if (state.error != null)
               Padding(
-                padding: const EdgeInsets.only(top: 4),
+                padding: const EdgeInsets.only(top: 2),
                 child: Text(
                   state.error!,
                   style: TextStyle(
@@ -48,38 +46,6 @@ class ArticlePlayerWidget extends ConsumerWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildTitleRow(
-    BuildContext context,
-    String title,
-    ActivePlayer controller,
-  ) {
-    final style =
-        Theme.of(
-          context,
-        ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500) ??
-        const TextStyle(fontWeight: FontWeight.w500);
-    final fontSize = style.fontSize ?? 14.0;
-    final lineHeight = style.height ?? 1.2;
-
-    return Row(
-      children: [
-        Expanded(
-          child: SizedBox(
-            height: fontSize * lineHeight + 4,
-            child: _AutoMarquee(text: title, style: style),
-          ),
-        ),
-        IconButton(
-          icon: const Icon(Icons.close, size: 20),
-          onPressed: controller.stop,
-          tooltip: "Stop playback",
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(),
-        ),
-      ],
     );
   }
 
