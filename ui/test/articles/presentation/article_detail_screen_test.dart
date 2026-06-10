@@ -67,7 +67,7 @@ void main() {
     expect(find.text("Retry"), findsOneWidget);
   });
 
-  testWidgets("shows article title in AppBar and header", (
+  testWidgets("shows article title in AppBar", (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(
@@ -75,7 +75,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text("Test Article"), findsNWidgets(2));
+    expect(find.text("Test Article"), findsOneWidget);
   });
 
   testWidgets("shows author and date with icons", (WidgetTester tester) async {

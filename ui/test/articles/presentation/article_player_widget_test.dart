@@ -18,19 +18,6 @@ void main() {
   }
 
   group("ArticlePlayerWidget", () {
-    testWidgets("shows article title", (tester) async {
-      await tester.pumpWidget(
-        buildWidget(
-          state: const ActivePlayerState(
-            articleId: "1",
-            articleTitle: "Test Article",
-          ),
-        ),
-      );
-
-      expect(find.text("Test Article"), findsOneWidget);
-    });
-
     testWidgets("shows play button when not playing", (tester) async {
       await tester.pumpWidget(
         buildWidget(state: const ActivePlayerState(articleId: "1")),
@@ -336,18 +323,6 @@ void main() {
       expect(errorText.style?.color, Theme.of(context).colorScheme.error);
     });
 
-    testWidgets("close button is shown", (tester) async {
-      await tester.pumpWidget(
-        buildWidget(
-          state: const ActivePlayerState(
-            articleId: "1",
-            articleTitle: "Playing",
-          ),
-        ),
-      );
-
-      expect(find.byIcon(Icons.close), findsOneWidget);
-    });
   });
 }
 

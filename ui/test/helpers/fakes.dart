@@ -11,6 +11,7 @@ import "package:plugin_platform_interface/plugin_platform_interface.dart";
 
 import "package:readintent_flutter/core/connectivity.dart";
 import "package:readintent_flutter/core/player_persistence.dart";
+import "package:readintent_flutter/features/articles/repository/article_repository.dart";
 import "package:readintent_flutter/features/auth/providers/auth_provider.dart";
 import "package:readintent_flutter/features/tts/audio_handler.dart";
 import "package:readintent_flutter/features/tts/phoneme.dart";
@@ -166,6 +167,18 @@ class FakePathProvider extends Fake
   Future<String?> getTemporaryPath() async => tempDir.path;
 }
 
+// --- FakeArticleRepository ---
+
+class FakeArticleRepository extends Fake implements ArticleRepository {
+  @override
+  void saveArticleProgress({
+    required String articleId,
+    int playerPositionMs = 0,
+    double scrollPosition = 0,
+    double playbackSpeed = 0,
+  }) {}
+}
+
 // --- Test Container Helper ---
 
 ProviderContainer createTestContainer({
@@ -183,6 +196,7 @@ ProviderContainer createTestContainer({
       authProvider.overrideWithValue(const AuthInitial()),
       // Avoid hitting the real connectivity_plus plugin
       connectivityMonitorProvider.overrideWith((ref) => Stream.value(true)),
+      articleRepositoryProvider.overrideWithValue(FakeArticleRepository()),
     ],
   );
 }

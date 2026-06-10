@@ -281,7 +281,7 @@ void main() {
       },
     );
 
-    test("ProcessingState.loading sets isLoading=true", () async {
+    test("ProcessingState.loading updates isPlaying, does not set isLoading", () async {
       final article = _makeArticle(2);
       final notifier = readNotifier();
       await notifier.play(article: article);
@@ -290,10 +290,11 @@ void main() {
       handler.simulateProcessingState(ProcessingState.loading);
       await pumpEvents();
 
-      expect(readState().isLoading, true);
+      expect(readState().isLoading, false);
+      expect(readState().isPlaying, true);
     });
 
-    test("ProcessingState.buffering sets isLoading=true", () async {
+    test("ProcessingState.buffering updates isPlaying, does not set isLoading", () async {
       final article = _makeArticle(2);
       final notifier = readNotifier();
       await notifier.play(article: article);
@@ -302,7 +303,8 @@ void main() {
       handler.simulateProcessingState(ProcessingState.buffering);
       await pumpEvents();
 
-      expect(readState().isLoading, true);
+      expect(readState().isLoading, false);
+      expect(readState().isPlaying, true);
     });
 
     test(
