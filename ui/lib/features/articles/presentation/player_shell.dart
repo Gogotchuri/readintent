@@ -15,18 +15,8 @@ import "package:readintent_flutter/features/tts/model_downloader.dart";
 import "package:readintent_flutter/features/tts/presentation/download_status_bar.dart";
 
 enum _ShellTab {
-  inbox(
-    view: ArticleView.inbox,
-    icon: Icons.inbox_outlined,
-    selectedIcon: Icons.inbox,
-    label: "Inbox",
-  ),
-  favorite(
-    view: ArticleView.favorite,
-    icon: Icons.star_outline,
-    selectedIcon: Icons.star,
-    label: "Favorite",
-  ),
+  inbox(view: ArticleView.inbox, icon: Icons.inbox_outlined, selectedIcon: Icons.inbox, label: "Inbox"),
+  favorite(view: ArticleView.favorite, icon: Icons.star_outline, selectedIcon: Icons.star, label: "Favorite"),
   archive(
     view: ArticleView.archive,
     icon: Icons.archive_outlined,
@@ -40,26 +30,17 @@ enum _ShellTab {
     label: "Settings",
   );
 
-  const _ShellTab({
-    required this.view,
-    required this.icon,
-    required this.selectedIcon,
-    required this.label,
-  });
+  const _ShellTab({required this.view, required this.icon, required this.selectedIcon, required this.label});
 
   final ArticleView? view;
   final IconData icon;
   final IconData selectedIcon;
   final String label;
 
-  Widget get screen =>
-      view == null ? const SettingsScreen() : ArticlesScreen(view: view!);
+  Widget get screen => view == null ? const SettingsScreen() : ArticlesScreen(view: view!);
 
-  NavigationDestination get destination => NavigationDestination(
-    icon: Icon(icon),
-    selectedIcon: Icon(selectedIcon),
-    label: label,
-  );
+  NavigationDestination get destination =>
+      NavigationDestination(icon: Icon(icon), selectedIcon: Icon(selectedIcon), label: label);
 }
 
 class PlayerShell extends ConsumerStatefulWidget {
@@ -70,15 +51,19 @@ class PlayerShell extends ConsumerStatefulWidget {
   ConsumerState<PlayerShell> createState() => _PlayerShellState();
 }
 
-class _PlayerShellState extends ConsumerState<PlayerShell>
-    with WidgetsBindingObserver {
+class _PlayerShellState extends ConsumerState<PlayerShell> with WidgetsBindingObserver {
   int _selectedTabIndex = 0;
+  final _messengerKey = GlobalKey<ScaffoldMessengerState>();
+  bool _bannerShowing = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _preloadModel();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncOfflineBanner(ref.read(isOnlineProvider));
+    });
   }
 
   void _preloadModel() async {
@@ -94,6 +79,35 @@ class _PlayerShellState extends ConsumerState<PlayerShell>
     } catch (_) {
       notifier.set(null);
       // Silent fail - download retried when user plays
+    }
+  }
+
+  void _syncOfflineBanner(bool isOnline) {
+    final messenger = _messengerKey.currentState;
+    if (messenger == null) return;
+    if (!isOnline && !_bannerShowing) {
+      _bannerShowing = true;
+      final colors = context.appColors;
+      messenger.showMaterialBanner(
+        MaterialBanner(
+          minActionBarHeight: 24,
+          backgroundColor: colors.warning,
+          dividerColor: Colors.transparent,
+          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 22),
+          content: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.cloud_off, size: 16, color: colors.onWarning),
+              const SizedBox(width: 8),
+              Text("You're offline", style: TextStyle(color: colors.onWarning, fontSize: 13)),
+            ],
+          ),
+          actions: const [SizedBox.shrink()],
+        ),
+      );
+    } else if (isOnline && _bannerShowing) {
+      _bannerShowing = false;
+      messenger.hideCurrentMaterialBanner();
     }
   }
 
@@ -131,11 +145,9 @@ class _PlayerShellState extends ConsumerState<PlayerShell>
   Widget build(BuildContext context) {
     final activeState = ref.watch(activePlayerProvider);
     final hasActiveArticle = activeState.hasActiveArticle;
-    final hasDownloadStatus = ref.watch(
-      downloadStatusProvider.select((s) => s != null),
-    );
-    final isOnline = ref.watch(isOnlineProvider);
+    final hasDownloadStatus = ref.watch(downloadStatusProvider.select((s) => s != null));
     ref.watch(articleUpdatesHubProvider);
+    ref.listen<bool>(isOnlineProvider, (_, isOnline) => _syncOfflineBanner(isOnline));
 
     // Route detection
     final currentPath = GoRouterState.of(context).uri.path;
@@ -144,70 +156,44 @@ class _PlayerShellState extends ConsumerState<PlayerShell>
     try {
       routeArticleId = GoRouterState.of(context).pathParameters["id"];
     } catch (_) {}
-    final isOnMatchingDetail =
-        routeArticleId != null && routeArticleId == activeState.articleId;
+    final isOnMatchingDetail = routeArticleId != null && routeArticleId == activeState.articleId;
 
-    return Column(
-      children: [
-        // Offline banner
-        if (!isOnline)
-          Container(
-            width: double.infinity,
-            color: context.appColors.warning,
-            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.cloud_off,
-                  size: 16,
-                  color: context.appColors.onWarning,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  "You're offline",
-                  style: TextStyle(
-                    color: context.appColors.onWarning,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
+    return ScaffoldMessenger(
+      key: _messengerKey,
+      child: Column(
+        children: [
+          // Main content area
+          Expanded(
+            child: isOnHome
+                ? IndexedStack(
+                    index: _selectedTabIndex,
+                    children: [for (final t in _ShellTab.values) t.screen],
+                  )
+                : widget.child,
+          ),
+
+          // Download status bar OR player widget
+          if (hasDownloadStatus) const DownloadStatusBar(),
+          if (hasActiveArticle && !hasDownloadStatus)
+            // We will show a player of the current article always on the details page.
+            // In order to avoid flashing the player when user navigates between articles due to frame timing
+            // we show mini player and give the full player enough time to load and take over
+            isOnMatchingDetail ? const ArticlePlayerWidget() : const MiniPlayerWidget(),
+
+          // Bottom navigation bar.
+          // NavigationBar's internal SafeArea would otherwise add a large padding at the top,
+          MediaQuery.removePadding(
+            context: context,
+            removeTop: true,
+            child: NavigationBar(
+              selectedIndex: _computeSelectedIndex(currentPath),
+              onDestinationSelected: (i) => _onTabSelected(i, isOnHome),
+              destinations: [for (final t in _ShellTab.values) t.destination],
+              height: 68,
             ),
           ),
-
-        // Main content area
-        Expanded(
-          child: isOnHome
-              ? IndexedStack(
-                  index: _selectedTabIndex,
-                  children: [for (final t in _ShellTab.values) t.screen],
-                )
-              : widget.child,
-        ),
-
-        // Download status bar OR player widget
-        if (hasDownloadStatus) const DownloadStatusBar(),
-        if (hasActiveArticle && !hasDownloadStatus)
-          // We will show a player of the current article always on the details page.
-          // In order to avoid flashing the player when user navigates between articles due to frame timing
-          // we show mini player and give the full player enough time to load and take over
-          isOnMatchingDetail
-              ? const ArticlePlayerWidget()
-              : const MiniPlayerWidget(),
-
-        // Bottom navigation bar.
-        // NavigationBar's internal SafeArea would otherwise add a large padding at the top,
-        MediaQuery.removePadding(
-          context: context,
-          removeTop: true,
-          child: NavigationBar(
-            selectedIndex: _computeSelectedIndex(currentPath),
-            onDestinationSelected: (i) => _onTabSelected(i, isOnHome),
-            destinations: [for (final t in _ShellTab.values) t.destination],
-            height: 68,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
