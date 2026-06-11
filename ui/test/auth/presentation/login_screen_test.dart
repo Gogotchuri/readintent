@@ -157,6 +157,7 @@ void main() {
       );
       await tester.tap(find.widgetWithText(ElevatedButton, "Login"));
       await tester.pump(); // Start the login process
+      await tester.pump(const Duration(milliseconds: 600));
 
       // Should show loading indicator and nothing else while waiting for login future to complete
       expect(find.byType(CircularProgressIndicator), findsOneWidget);

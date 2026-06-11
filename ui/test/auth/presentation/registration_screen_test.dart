@@ -123,6 +123,10 @@ void main() {
         find.widgetWithText(TextField, "Confirm Password"),
         "correct-password",
       );
+      await tester.ensureVisible(
+        find.widgetWithText(ElevatedButton, "Sign Up"),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(ElevatedButton, "Sign Up"));
       await tester.pump(); // Start the registration process
 
@@ -171,8 +175,13 @@ void main() {
         find.widgetWithText(TextField, "Confirm Password"),
         "password123",
       );
+      await tester.ensureVisible(
+        find.widgetWithText(ElevatedButton, "Sign Up"),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(ElevatedButton, "Sign Up"));
       await tester.pump(); // Start the registration process
+      await tester.pump(const Duration(milliseconds: 600));
 
       // Should show loading indicator and nothing else while waiting for registration future to complete
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -232,6 +241,8 @@ void main() {
       find.widgetWithText(TextField, "Confirm Password"),
       "password123",
     );
+    await tester.ensureVisible(find.widgetWithText(ElevatedButton, "Sign Up"));
+    await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(ElevatedButton, "Sign Up"));
     await tester.pump(); // Start the registration process
     await tester
@@ -293,6 +304,10 @@ void main() {
         find.widgetWithText(TextField, "Confirm Password"),
         "correct-password",
       );
+      await tester.ensureVisible(
+        find.widgetWithText(ElevatedButton, "Sign Up"),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(ElevatedButton, "Sign Up"));
       await tester.pump(); // Start the registration process
       await tester
