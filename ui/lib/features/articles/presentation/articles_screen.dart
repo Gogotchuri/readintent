@@ -73,7 +73,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: Padding(
-          padding: const EdgeInsets.only(left: 24, top: 2, bottom: 2),
+          padding: const EdgeInsets.only(left: 22, top: 4, bottom: 4),
           child: SvgPicture.asset("assets/r-icon.svg"),
         ),
         title: Text(_title),
