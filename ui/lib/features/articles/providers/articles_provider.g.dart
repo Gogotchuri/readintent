@@ -59,7 +59,7 @@ final class ArticlesProvider
   }
 }
 
-String _$articlesHash() => r'bc2739493bf71006a3744dc4d7d1a5557d898986';
+String _$articlesHash() => r'a91648a34f1dbdcbc8fa7da3bb9343d9b05e9d22';
 
 /// Per-view article list. One instance per [ArticleView] (inbox/favorite/
 /// archive), each independently paginated. The shared [ArticleUpdatesHub] owns

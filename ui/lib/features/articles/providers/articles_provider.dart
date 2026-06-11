@@ -3,6 +3,7 @@ import "dart:math";
 
 import "package:readintent_flutter/core/connectivity.dart";
 import "package:readintent_flutter/features/articles/models/article_view.dart";
+import "package:readintent_flutter/features/articles/providers/article_prefetch_service.dart";
 import "package:readintent_flutter/features/articles/providers/article_updates_hub.dart";
 import "package:readintent_flutter/features/articles/repository/article_repository.dart";
 import "package:readintent_flutter/proto/articles/v1/articles_service.pb.dart"
@@ -189,6 +190,10 @@ class Articles extends _$Articles {
     if (belongs && !present) {
       articles.insert(0, preview);
       delta = 1;
+      // Enqueue a new article for prefetching and caching
+      ref
+          .read(articlePrefetchServiceProvider.notifier)
+          .enqueue(preview.id.toString());
     } else if (belongs && present) {
       articles[idx] = preview;
     } else if (!belongs && present) {
