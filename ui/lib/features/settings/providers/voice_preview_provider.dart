@@ -1,8 +1,6 @@
-import "dart:convert";
 import "dart:io";
 import "dart:typed_data";
 
-import "package:flutter/services.dart" show rootBundle;
 import "package:just_audio/just_audio.dart";
 import "package:path_provider/path_provider.dart";
 import "package:riverpod_annotation/riverpod_annotation.dart";
@@ -14,8 +12,74 @@ import "package:readintent_flutter/features/tts/voice_style.dart";
 
 part "voice_preview_provider.g.dart";
 
-const _samplePhonemesAsset = "assets/voice_samples/sample_phonemes.json";
 const _sampleRate = 24000; // Kokoro output sample rate
+
+// Pre-computed phoneme tokens for "Time is a drug. Too much of it kills you."
+const _previewSample = PhonemeChunk(
+  graphemes: "Time is a drug. Too much of it kills you.",
+  tokenIds: [
+    0,
+    62,
+    156,
+    25,
+    55,
+    16,
+    102,
+    68,
+    16,
+    70,
+    16,
+    46,
+    123,
+    156,
+    138,
+    92,
+    4,
+    4,
+    16,
+    62,
+    156,
+    63,
+    158,
+    16,
+    55,
+    156,
+    138,
+    133,
+    16,
+    71,
+    64,
+    16,
+    102,
+    62,
+    16,
+    53,
+    156,
+    102,
+    54,
+    68,
+    16,
+    52,
+    63,
+    158,
+    4,
+    0,
+  ],
+  tokenMeta: [
+    TokenMeta(text: "Time", phonemeLen: 4, hasWhitespace: true),
+    TokenMeta(text: "is", phonemeLen: 2, hasWhitespace: true),
+    TokenMeta(text: "a", phonemeLen: 1, hasWhitespace: true),
+    TokenMeta(text: "drug", phonemeLen: 5, hasWhitespace: false),
+    TokenMeta(text: ".", phonemeLen: 1, hasWhitespace: true),
+    TokenMeta(text: "Too", phonemeLen: 4, hasWhitespace: true),
+    TokenMeta(text: "much", phonemeLen: 4, hasWhitespace: true),
+    TokenMeta(text: "of", phonemeLen: 2, hasWhitespace: true),
+    TokenMeta(text: "it", phonemeLen: 2, hasWhitespace: true),
+    TokenMeta(text: "kills", phonemeLen: 5, hasWhitespace: true),
+    TokenMeta(text: "you", phonemeLen: 3, hasWhitespace: false),
+    TokenMeta(text: ".", phonemeLen: 1, hasWhitespace: false),
+  ],
+);
 
 enum VoicePreviewStatus { idle, generating, playing }
 
@@ -42,8 +106,6 @@ class VoicePreviewState {
 @Riverpod(keepAlive: true)
 class VoicePreview extends _$VoicePreview {
   final AudioPlayer _player = AudioPlayer();
-  PhonemeChunk? _sample;
-  bool _sampleLoaded = false;
 
   @override
   VoicePreviewState build() {
@@ -79,21 +141,12 @@ class VoicePreview extends _$VoicePreview {
     if (state.status == VoicePreviewStatus.generating) return; // busy
     await _player.stop();
 
-    final sample = await _loadSample();
-    if (sample == null || sample.tokenIds.isEmpty) {
-      state = VoicePreviewState(
-        error: "Preview unavailable",
-        activeVoice: voice,
-      );
-      return;
-    }
-
     state = VoicePreviewState(
       status: VoicePreviewStatus.generating,
       activeVoice: voice,
     );
     try {
-      final path = await _ensureClip(voice, sample);
+      final path = await _ensureClip(voice, _previewSample);
       await _player.setAudioSource(AudioSource.file(path));
       state = VoicePreviewState(
         status: VoicePreviewStatus.playing,
@@ -102,7 +155,7 @@ class VoicePreview extends _$VoicePreview {
       await _player.play();
     } catch (e) {
       state = VoicePreviewState(
-        error: "Preview unavailable",
+        error: "Preview unavailable: $e",
         activeVoice: voice,
       );
     }
@@ -129,32 +182,5 @@ class VoicePreview extends _$VoicePreview {
       channel[i] = samples[i].clamp(-1.0, 1.0).toDouble();
     }
     await Wav([channel], _sampleRate).writeFile(path);
-  }
-
-  Future<PhonemeChunk?> _loadSample() async {
-    if (_sampleLoaded) return _sample;
-    _sampleLoaded = true;
-    try {
-      final raw = await rootBundle.loadString(_samplePhonemesAsset);
-      final json = jsonDecode(raw) as Map<String, dynamic>;
-      final tokenIds = (json["tokenIds"] as List).map((e) => e as int).toList();
-      final tokenMeta = (json["tokenMeta"] as List)
-          .map(
-            (e) => TokenMeta(
-              text: e["text"] as String,
-              phonemeLen: e["phonemeLen"] as int,
-              hasWhitespace: e["hasWhitespace"] as bool,
-            ),
-          )
-          .toList();
-      _sample = PhonemeChunk(
-        graphemes: json["graphemes"] as String? ?? "",
-        tokenIds: tokenIds,
-        tokenMeta: tokenMeta,
-      );
-    } catch (_) {
-      _sample = null; // Asset missing or not yet populated.
-    }
-    return _sample;
   }
 }
