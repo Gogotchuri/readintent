@@ -67,9 +67,7 @@ void main() {
     expect(find.text("Retry"), findsOneWidget);
   });
 
-  testWidgets("shows article title in AppBar", (
-    WidgetTester tester,
-  ) async {
+  testWidgets("shows article title in AppBar", (WidgetTester tester) async {
     await tester.pumpWidget(
       createWidget(fetchArticle: () async => articleMock),
     );

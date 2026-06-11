@@ -77,7 +77,13 @@ GoRouter appRouter(Ref ref) {
         routes: [
           GoRoute(
             path: "/home",
-            builder: (context, state) => const HomeScreen(),
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: const HomeScreen(),
+              transitionDuration: const Duration(milliseconds: 500),
+              transitionsBuilder: (context, animation, _, child) =>
+                  FadeTransition(opacity: animation, child: child),
+            ),
           ),
           GoRoute(
             path: "/pair-extension",

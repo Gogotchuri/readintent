@@ -90,6 +90,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   path_provider_platform_interface: ^2.1.2
   plugin_platform_interface: ^2.1.8
+  flutter_launcher_icons: ^0.14.3
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -102,6 +103,9 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/r-icon.svg
+    - assets/full-logo-green.svg
+    - assets/app_icon.png
     - assets/images/
     - assets/voice_samples/
 
@@ -130,3 +134,14 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  image_path: "assets/app_icon.png"
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  macos:
+    generate: true
+  windows:
+    generate: true
+    icon_size: 256

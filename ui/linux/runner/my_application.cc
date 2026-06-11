@@ -1,3 +1,7 @@
+#include <filesystem>
+using namespace std;
+using namespace std::filesystem;
+
 #include "my_application.h"
 
 #include <flutter_linux/flutter_linux.h>
@@ -53,6 +57,11 @@ static void my_application_activate(GApplication* application) {
   }
 
   gtk_window_set_default_size(window, 1280, 720);
+
+  const string iconFilename = "assets/app_icon.png";
+  path execDir = canonical(read_symlink("/proc/self/exe")).parent_path();
+  path iconPath = execDir / "data/flutter_assets" / iconFilename;
+  gtk_window_set_icon_from_file(GTK_WINDOW(window), iconPath.c_str(), NULL);
 
   g_autoptr(FlDartProject) project = fl_dart_project_new();
   fl_dart_project_set_dart_entrypoint_arguments(

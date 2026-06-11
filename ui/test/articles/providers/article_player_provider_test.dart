@@ -281,31 +281,37 @@ void main() {
       },
     );
 
-    test("ProcessingState.loading updates isPlaying, does not set isLoading", () async {
-      final article = _makeArticle(2);
-      final notifier = readNotifier();
-      await notifier.play(article: article);
-      await pumpEvents();
+    test(
+      "ProcessingState.loading updates isPlaying, does not set isLoading",
+      () async {
+        final article = _makeArticle(2);
+        final notifier = readNotifier();
+        await notifier.play(article: article);
+        await pumpEvents();
 
-      handler.simulateProcessingState(ProcessingState.loading);
-      await pumpEvents();
+        handler.simulateProcessingState(ProcessingState.loading);
+        await pumpEvents();
 
-      expect(readState().isLoading, false);
-      expect(readState().isPlaying, true);
-    });
+        expect(readState().isLoading, false);
+        expect(readState().isPlaying, true);
+      },
+    );
 
-    test("ProcessingState.buffering updates isPlaying, does not set isLoading", () async {
-      final article = _makeArticle(2);
-      final notifier = readNotifier();
-      await notifier.play(article: article);
-      await pumpEvents();
+    test(
+      "ProcessingState.buffering updates isPlaying, does not set isLoading",
+      () async {
+        final article = _makeArticle(2);
+        final notifier = readNotifier();
+        await notifier.play(article: article);
+        await pumpEvents();
 
-      handler.simulateProcessingState(ProcessingState.buffering);
-      await pumpEvents();
+        handler.simulateProcessingState(ProcessingState.buffering);
+        await pumpEvents();
 
-      expect(readState().isLoading, false);
-      expect(readState().isPlaying, true);
-    });
+        expect(readState().isLoading, false);
+        expect(readState().isPlaying, true);
+      },
+    );
 
     test(
       "ProcessingState.ready + playing=true sets isPlaying=true, isLoading=false",

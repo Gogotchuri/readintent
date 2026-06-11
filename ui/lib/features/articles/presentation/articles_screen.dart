@@ -1,5 +1,6 @@
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
+import "package:flutter_svg/flutter_svg.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 import "package:readintent_flutter/core/theme/app_colors.dart";
@@ -70,7 +71,14 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
   Widget build(BuildContext context) {
     final articlesAsync = ref.watch(articlesProvider(widget.view));
     return Scaffold(
-      appBar: AppBar(title: Text(_title), actions: const [FontSizeButton()]),
+      appBar: AppBar(
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 24, top: 2, bottom: 2),
+          child: SvgPicture.asset("assets/r-icon.svg"),
+        ),
+        title: Text(_title),
+        actions: const [FontSizeButton()],
+      ),
       floatingActionButton:
           widget.view == ArticleView.inbox ||
               widget.view == ArticleView.favorite ||

@@ -322,7 +322,6 @@ void main() {
       final errorText = tester.widget<Text>(find.text("Network failure"));
       expect(errorText.style?.color, Theme.of(context).colorScheme.error);
     });
-
   });
 }
 
